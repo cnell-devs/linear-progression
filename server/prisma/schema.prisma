@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id       String        @id @default(uuid())
+  admin    Boolean       @default(false)
+  username String        @unique
+  password String
+  weights  WeightEntry[]
+
+  @@map("users")
+}
+
+model Workout {
+  id      Int           @id @default(autoincrement())
+  name    String
+  sets    Int
+  reps    String
+  amrap   Boolean       @default(false)
+  type    split
+  weights WeightEntry[] // Reverse relation to track all weight entries for a workout
+
+  supersettedId Int?     @unique
+  supersetted   Workout? @relation("Superset", fields: [supersettedId], references: [id])
+  superset      Workout? @relation("Superset")
+
+  primary   Workout? @relation("Alternate")
+  alternateId Int?     @unique
+  alternate Workout? @relation("Alternate", fields: [alternateId], references: [id])
+  @@map("workout")
+}
+
+model WeightEntry {
+  id        Int      @id @default(autoincrement())
+  user      Users    @relation(fields: [userId], references: [id])
+  userId    String
+  workout   Workout  @relation(fields: [workoutId], references: [id])
+  workoutId Int
+  weight    Decimal
+  date      DateTime @default(now())
+
+  @@map("weightentry")
+}
+
+enum split {
+  push
+  pull
+  legs
+}
