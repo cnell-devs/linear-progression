@@ -37,17 +37,30 @@ exports.getWorkouts = async (split) => {
       },
       include: {
         superset: true,
-        weights: true
+        weights: true,
       },
     });
-
-
 
     return workouts;
   } catch (error) {
     console.error(error);
 
     return error;
+  }
+};
+
+exports.getWeightEntry = async (userId, workoutId, date) => {
+  try {
+    const entry = await prisma.weightEntry.findFirst({
+      where: {
+        userId,
+        workoutId,
+        date: new Date(),
+      },
+    });
+    return entry;
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -63,35 +76,34 @@ exports.addWeightEntry = async (userId, workoutId, weight) => {
     });
 
     console.log("New weight entry created:", newEntry);
+    return newEntry
   } catch (error) {
     console.error("Error creating weight entry:", error.message);
-
   }
 };
 
-exports.updateWeightEntry = async (userId, workoutId, newWeight) => {
+exports.updateWeightEntry = async (id, userId, workoutId, newWeight) => {
   try {
     const updatedEntry = await prisma.weightEntry.update({
-      where: {
-        userId_workoutId: {
-          // Composite unique identifier
-          userId: userId,
-          workoutId: workoutId,
+      where:
+      {
+          id,
+          userId,
+          workoutId,
         },
-      },
+
       data: {
         weight: newWeight, // Update the weight
-        date: new Date(), // Optionally update the timestamp
+        // date: new Date(), // Optionally update the timestamp
       },
     });
 
     console.log("Weight updated:", updatedEntry);
+    return updatedEntry
   } catch (error) {
     console.error("Error updating weight:", error.message);
   }
 };
-
-
 
 exports.logout = (req, res, next) => {
   req.logout(function (err) {

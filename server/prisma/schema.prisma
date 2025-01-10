@@ -35,10 +35,13 @@ model Workout {
   supersettedId Int?     @unique
   supersetted   Workout? @relation("Superset", fields: [supersettedId], references: [id])
   superset      Workout? @relation("Superset")
+  ss Boolean @default(false)
 
-  primary   Workout? @relation("Alternate")
+  primary     Workout? @relation("Alternate")
   alternateId Int?     @unique
-  alternate Workout? @relation("Alternate", fields: [alternateId], references: [id])
+  alternate   Workout? @relation("Alternate", fields: [alternateId], references: [id])
+  alt         Boolean @default(false)
+
   @@map("workout")
 }
 
@@ -49,7 +52,7 @@ model WeightEntry {
   workout   Workout  @relation(fields: [workoutId], references: [id])
   workoutId Int
   weight    Decimal
-  date      DateTime @default(now())
+  date      DateTime @default(now()) @db.Date
 
   @@map("weightentry")
 }

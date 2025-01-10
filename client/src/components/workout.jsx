@@ -3,56 +3,63 @@ import { useAuth } from "./auth/authContext";
 
 /* eslint-disable react/prop-types */
 export const Workout = ({ workout }) => {
-    const { user } = useAuth();
+  const { user } = useAuth();
+  const [saved, setSaved] = useState(false);
 
-    if (workout.weights.length) {
+  if (workout.weights.length) {
+    var lastWeight =
+      workout.weights.filter((entry) => entry.userId == user.id).length - 1;
 
-        var lastWeight = workout.weights.filter(
-          (entry) => entry.userId == user.id
-        ).length - 1;
+    // console.log(
+    //   "LASTWEIGHT",
+    //  lastWeight
+    // );
+  }
 
-
-        // console.log(
-        //   "LASTWEIGHT",
-        //  lastWeight
-        // );
-
-    }
-
-        const [weight, setWeight] = useState(workout.weights.length ? Number(workout.weights.filter(entry => entry.userId == user.id)[lastWeight].weight) :  100);
-
-
-
+  const [weight, setWeight] = useState(
+    workout.weights.length
+      ? Number(
+          workout.weights.filter((entry) => entry.userId == user.id)[lastWeight]
+            .weight
+        )
+      : 100
+  );
 
   const increaseTopSet = () => setWeight(weight + 5);
   const decreaseTopSet = () => setWeight(weight ? weight - 5 : 0);
 
-// console.log(user);
+  // console.log(user);
 
   const saveWeight = async () => {
-    try {
-      const response = await fetch("/api/weight-entry", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          workoutId: workout.id,
-          weight: weight,
-        }),
-      });
+    if (!saved) {
+      try {
+        const response = await fetch("/api/weight-entry", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            workoutId: workout.id,
+            weight: weight,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Login failed");
-      } else {
-        // console.log(response);
+        if (!response.ok) {
+          throw new Error("Post failed");
+        } else {
+          setSaved(true);
+          console.log("SET");
+        }
+      } catch (error) {
+        console.error("Save failed", error);
+        alert("Save failed.");
       }
-    } catch (error) {
-      console.error("Save failed", error);
-      alert("Save failed.");
+    } else {
+      setSaved(false);
     }
   };
+  console.log(saved);
 
   return (
     <>
@@ -71,20 +78,29 @@ export const Workout = ({ workout }) => {
           <div>Top Set: {weight}</div>
         </div>
         <div className="grid grid-cols-2 grid-rows-2">
+          {!saved && (
+            <>
+              <button
+                onClick={increaseTopSet}
+                className="material-icons btn bg-transparent border-none shadow-none text-3xl font-normal"
+              >
+                add
+              </button>
+              <button
+                onClick={decreaseTopSet}
+                className="material-icons btn bg-transparent border-none shadow-none text-3xl font-normal"
+              >
+                remove
+              </button>
+            </>
+          )}
           <button
-            onClick={increaseTopSet}
-            className="material-icons btn bg-transparent border-none shadow-none text-3xl font-normal"
+            className={`btn col-span-2 ${
+              saved ? "row-span-2 bg-green-300" : ""
+            }`}
+            onClick={saveWeight}
           >
-            add
-          </button>
-          <button
-            onClick={decreaseTopSet}
-            className="material-icons btn bg-transparent border-none shadow-none text-3xl font-normal"
-          >
-            remove
-          </button>
-          <button className="btn col-span-2" onClick={saveWeight}>
-            save
+            {!saved ? "save" : "done ✅"}
           </button>
         </div>
       </div>

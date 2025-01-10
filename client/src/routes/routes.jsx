@@ -11,6 +11,7 @@ import { Logout } from "../components/pages/logOut";
 import { Exercises } from "../components/pages/exercises";
 import { Profile } from "../components/pages/profile";
 import { ProtectedRoute } from "../components/auth/protectedRoute";
+import { About } from "../components/pages/about";
 
 // import { ErrorPage } from "../components/pages/ErrorPage";
 
@@ -30,6 +31,7 @@ export const router = createBrowserRouter(
       <Route path="/signup" element={<SignUp />} />
       <Route path="/logout" element={<Logout />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/about" element={<About />} />
       <Route
         path="/exercises"
         element={

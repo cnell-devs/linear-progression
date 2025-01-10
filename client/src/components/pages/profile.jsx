@@ -1,19 +1,17 @@
-import { LineChart } from "@mui/x-charts";
+import { useAuth } from "../auth/authContext";
+import { GraphWorkout } from "../graphWorkout";
+
+import { Nav } from "../nav";
+import { useState } from "react";
 
 export const Profile = () => {
+  const { user } = useAuth();
 
-    return (
-      <>
-        <LineChart
-          xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
-          series={[
-            {
-              data: [2, 5.5, 2, 8.5, 1.5, 5],
-            },
-          ]}
-        //   width={500}
-        //   height={300}
-        />
-      </>
-    );
-}
+
+  return (
+    <>
+      <Nav />
+      <GraphWorkout />
+    </>
+  );
+};

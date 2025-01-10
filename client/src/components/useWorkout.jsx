@@ -4,10 +4,14 @@ export const useWorkout = (params) => {
   const [workouts, setWorkouts] = useState(null);
 
   useEffect(() => {
+    const url =
+      params === "all"
+        ? "api/workouts"
+        : `api/workouts?split=${params.get("split")}&alt=${params.get("alt")}`;
+
+
     const fetchWorkouts = async () => {
-      const response = await fetch(
-        `api/workouts?split=${params.get("split")}&alt=${params.get("alt")}`
-      );
+      const response = await fetch(url);
       //
       //    const response = await fetch(
       //   `api/workouts?split=${searchParams.get("split")}&alt=${searchParams.get(
@@ -16,8 +20,11 @@ export const useWorkout = (params) => {
       // );
 
       let data = await response.json();
+      if (params == "all") {
+        //pass
+      console.log("setting");
 
-      if (!params.get("alt")) {
+      } else if (params && !params.get("alt")) {
         const alternateIds = data
           .filter((workout) => workout.alternateId !== null)
           .map((workout) => workout.alternateId);

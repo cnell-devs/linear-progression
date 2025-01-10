@@ -5,7 +5,7 @@ import { useAuth } from "./auth/authContext";
 export const Nav = ({ workouts, split, setSplit }) => {
   const [searchParams] = useSearchParams();
   const back = searchParams.get("split");
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   const type = workouts
     ? workouts[0].type.charAt(0).toUpperCase() + workouts[0].type.slice(1)
@@ -22,17 +22,18 @@ export const Nav = ({ workouts, split, setSplit }) => {
                   <button className="material-icons">arrow_back_ios</button>
                 </Link>
               ) : (
-                  <button onClick={() => setSplit(null)} className="material-icons">arrow_back_ios</button>
-
+                <button
+                  onClick={() => setSplit(null)}
+                  className="material-icons"
+                >
+                  arrow_back_ios
+                </button>
               )}
               <div className="divider divider-horizontal"></div>
             </>
           )}
 
-          <Link
-            to={"/"}
-            className="text-3xl"
-          >
+          <Link to={"/"} className="text-3xl">
             {type}
           </Link>
         </div>
@@ -50,9 +51,14 @@ export const Nav = ({ workouts, split, setSplit }) => {
               tabIndex="0"
               className="menu dropdown-content z-[1] w-52 rounded-lg border bg-base-100 p-2 shadow"
             >
-            { user &&  <li>
-                <Link to="/profile">My Profile</Link>
-              </li>}
+              {user && (
+                <li>
+                  <Link to="/profile">My Profile</Link>
+                </li>
+              )}
+              <li>
+                <Link to="/about">About</Link>
+              </li>
               <li>
                 <Link to="/">Workouts</Link>
               </li>

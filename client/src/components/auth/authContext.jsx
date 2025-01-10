@@ -25,14 +25,12 @@ export const AuthProvider = ({ children }) => {
 
     // Save the JWT to localStorage
     if (token) {
-      console.log(token);
       localStorage.setItem("authToken", token);
       setUser(user);
     }
   };
 
   const logout = () => {
-    console.log("logging out");
 
     localStorage.removeItem("authToken");
     setUser(null);
@@ -43,22 +41,17 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("authToken");
     if (token) {
       // Validate token by sending it to the backend
-      console.log("validating front");
 
       const response = await fetch("/api/validate-token", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
-        console.log(response);
+        // console.log(response);
         const { user } = await response.json();
 
 
-
-        console.log("setting user",user);
-
         setUser(user);
       } else {
-        console.log("logging out");
 
         logout();
       }

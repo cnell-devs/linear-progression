@@ -1,41 +1,13 @@
-
 import { Nav } from "../nav";
 import { Workout } from "../workout";
 import { useSearchParams } from "react-router-dom";
 import { useWorkout } from "../useWorkout";
 
 export function Exercises() {
-//   const [workouts, setWorkouts] = useState(null);
+  //   const [workouts, setWorkouts] = useState(null);
 
-    const [searchParams] = useSearchParams();
-const workouts = useWorkout(searchParams)
-// setWorkouts()
-
-//   useEffect(() => {
-//     const fetchWorkouts = async () => {
-//       const response = await fetch(
-//         `api/workouts?split=${searchParams.get("split")}&alt=${searchParams.get(
-//           "alt"
-//         )}`
-//       );
-
-//       let data = await response.json();
-
-//       if (!searchParams.get("alt")) {
-//         const alternateIds = data
-//           .filter((workout) => workout.alternateId !== null)
-//           .map((workout) => workout.alternateId);
-
-//         data = data.filter((workout) => !alternateIds.includes(workout.id));
-//       } else {
-//         data = data.filter((workout) => !workout.alternateId);
-//       }
-
-//       setWorkouts(data);
-//     };
-
-//     fetchWorkouts();
-//   }, [searchParams]);
+  const [searchParams] = useSearchParams();
+  const workouts = useWorkout(searchParams);
 
   const showDivider = (index) => !(workouts && index == workouts.length - 1);
 
