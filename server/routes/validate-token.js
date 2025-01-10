@@ -19,10 +19,9 @@ validate.get(
   "/",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    console.log("validating back");
 
     // Set custom headers
-    res.set("Content-Type", "application/json"); // Example header
+    res.set("Content-Type", "application/json"); 
 
     const { user } = req;
     res.send(({ user }));

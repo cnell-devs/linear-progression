@@ -22,7 +22,6 @@ export const useWorkout = (params) => {
       let data = await response.json();
       if (params == "all") {
         //pass
-      console.log("setting");
 
       } else if (params && !params.get("alt")) {
         const alternateIds = data
