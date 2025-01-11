@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "./auth/authContext";
 import { useWorkout } from "./useWorkout";
+import { useMobile } from "./useMobile";
 
 export const PastWeek = () => {
     const { user } = useAuth();
-    const [week, setWeek] = useState(false)
+    const mobile = useMobile()
+
+  const [week, setWeek] = useState(false);
 
   const workouts = useWorkout("all");
 
-function getEntriesByDay(workouts, userId) {
+useEffect(() => {
   // Define the days of the week
   const daysOfWeek = [
     "Sunday",
@@ -20,54 +23,64 @@ function getEntriesByDay(workouts, userId) {
     "Saturday",
   ];
 
-  // Get today's date and start of the week (Sunday)
+  // Get today's date and start of the week (Sunday) in UTC
   const today = new Date();
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay()); // Move to Sunday
-  startOfWeek.setHours(0, 0, 0, 0);
+  const startOfWeek = new Date(
+    Date.UTC(
+      today.getUTCFullYear(),
+      today.getUTCMonth(),
+      today.getUTCDate() - today.getUTCDay(),
+      0,
+      0,
+      0
+    )
+  );
 
   // Create an object to track entries for each day of the week
   const entriesByDay = daysOfWeek.reduce((acc, day, index) => {
     const dayDate = new Date(startOfWeek); // Clone the startOfWeek date
-    dayDate.setDate(startOfWeek.getDate() + index); // Increment to the correct day
+    dayDate.setUTCDate(startOfWeek.getUTCDate() + index); // Increment to the correct day in UTC
 
-    // Check if any entry exists for this day and user
-    const hasEntry = workouts?.some((workout) =>
-      workout.weights?.some((weight) => {
+    // Check all weights for this day and user
+    const hasEntry = workouts?.reduce((found, workout) => {
+      const matches = workout.weights?.filter((weight) => {
+        // Parse weight date as UTC
         const entryDate = new Date(weight.date);
+        entryDate.setUTCHours(0, 0, 0, 0); // Reset to midnight UTC
+
         return (
-          weight.userId === userId && // Match user ID
-          entryDate.getFullYear() === dayDate.getFullYear() &&
-          entryDate.getMonth() === dayDate.getMonth() &&
-          entryDate.getDate() === dayDate.getDate()
+          weight.userId === user.id && // Match user ID
+          entryDate.getUTCFullYear() === dayDate.getUTCFullYear() &&
+          entryDate.getUTCMonth() === dayDate.getUTCMonth() &&
+          entryDate.getUTCDate() === dayDate.getUTCDate()
         );
-      })
-    );
+      });
 
-      acc[day] = hasEntry; // Set the result for this day
+      // If there are matches for this day, set `found` to true
+      return found || matches?.length > 0;
+    }, false);
 
+    acc[day] = hasEntry; // Set the result for this day
     return acc;
   }, {});
 
+  setWeek(entriesByDay);
+}, [workouts, user.id]);
 
-  return entriesByDay;
-}
-console.log(week);
-
-  console.log(workouts ? getEntriesByDay(workouts, user.id) : "loading");
 
   return (
     <>
       <h1 className="text-2xl">This Week</h1>
 
-      <ul className={`timeline`}>
+
+      <ul className={`timeline ${ mobile ? "timeline-vertical" : ""} mx-auto`}>
         <li>
           <div className="timeline-start timeline-box">Sun</div>
           <div className="timeline-middle">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
-              fill="currentColor"
+              fill={`${week?.Sunday ? "green" : "grey"}`}
               className="text-primary h-5 w-5"
             >
               <path
@@ -77,15 +90,15 @@ console.log(week);
               />
             </svg>
           </div>
-          <hr className="bg-primary" />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
         </li>
         <li>
-          <hr className="bg-primary" />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
           <div className="timeline-middle">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
-              fill="currentColor"
+              fill={`${week?.Monday ? "green" : "grey"}`}
               className="text-primary h-5 w-5"
             >
               <path
@@ -96,16 +109,16 @@ console.log(week);
             </svg>
           </div>
           <div className="timeline-end timeline-box">Mon</div>
-          <hr className="bg-primary" />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
         </li>
         <li>
-          <hr className="bg-primary" />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
           <div className="timeline-start timeline-box">Tues</div>
           <div className="timeline-middle">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
-              fill="currentColor"
+              fill={`${week?.Tuesday ? "green" : "grey"}`}
               className="text-primary h-5 w-5"
             >
               <path
@@ -115,15 +128,15 @@ console.log(week);
               />
             </svg>
           </div>
-          <hr />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
         </li>
         <li>
-          <hr />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
           <div className="timeline-middle">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
-              fill="currentColor"
+              fill={`${week?.Wednesday ? "green" : "grey"}`}
               className="h-5 w-5"
             >
               <path
@@ -134,16 +147,16 @@ console.log(week);
             </svg>
           </div>
           <div className="timeline-end timeline-box">Wed</div>
-          <hr />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
         </li>
         <li>
-          <hr />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
           <div className="timeline-start timeline-box">Thurs</div>
           <div className="timeline-middle">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
-              fill="currentColor"
+              fill={`${week?.Thursday ? "green" : "grey"}`}
               className="h-5 w-5"
             >
               <path
@@ -153,15 +166,15 @@ console.log(week);
               />
             </svg>
           </div>
-          <hr />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
         </li>
         <li>
-          <hr />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
           <div className="timeline-middle">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
-              fill="currentColor"
+              fill={`${week?.Friday ? "green" : "grey"}`}
               className="h-5 w-5"
             >
               <path
@@ -172,16 +185,16 @@ console.log(week);
             </svg>
           </div>
           <div className="timeline-end timeline-box">Fri</div>
-          <hr />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
         </li>
         <li>
-          <hr />
+              <hr className="bg-gray-500 h-0.5 sm:h-1 md:h-1.5 lg:h-2" />
           <div className="timeline-start timeline-box">Sat</div>
           <div className="timeline-middle">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
-              fill="currentColor"
+              fill={`${week?.Saturday ? "green" : "grey"}`}
               className="h-5 w-5"
             >
               <path

@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from "@visx/xychart";
 import { ParentSize } from "@visx/responsive";
+import { EntryLog } from "./entryLog";
 
 export const GraphWorkout = () => {
   const [graphWorkout, setGraphWorkout] = useState(false);
@@ -29,12 +30,15 @@ export const GraphWorkout = () => {
     getWeights
       .filter((entry) => entry.userId == user.id)
       .map((weight) => ({
-        x: new Date(weight.date).toLocaleDateString(),
+        x: new Date(weight.date).toUTCString(),
         y: weight.weight,
       }));
 
   const maxValue =
     chartData && Math.max(...chartData.map((xy) => Number(xy.y)));
+  const minValue =
+    chartData && Math.min(...chartData.map((xy) => Number(xy.y)));
+
 
 
   const accessors = {
@@ -46,7 +50,7 @@ export const GraphWorkout = () => {
     (workout) => workout.id == graphWorkout
   );
   return (
-    <>
+    <div>
       <h1 className="text-2xl">Workout Weight Progression</h1>
       {workouts && (
         <div className="dropdown dropdown-bottom ">
@@ -60,7 +64,7 @@ export const GraphWorkout = () => {
           </div>
           <ul
             tabIndex={0}
-            className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow overflow-y-scroll"
+            className="dropdown-content menu bg-base-100 rounded-box w-52 p-2 shadow overflow-y-scroll z-10"
           >
             {workouts.map((workout, index) => (
               <li key={index}>
@@ -83,7 +87,7 @@ export const GraphWorkout = () => {
                 width={width}
                 height={height}
                 xScale={{ type: "band" }}
-                yScale={{ type: "linear", domain: [0, maxValue] }}
+                yScale={{ type: "linear", domain: [minValue, maxValue] }}
               >
                 {/* Y-Axis */}
                 <AnimatedAxis orientation="left" />
@@ -139,7 +143,6 @@ export const GraphWorkout = () => {
                         {tooltipData.nearestDatum.key}
                       </div>
                       {accessors.xAccessor(tooltipData.nearestDatum.datum)}
-                      {", "}
                       {accessors.yAccessor(tooltipData.nearestDatum.datum)}
                     </div>
                   )}
@@ -147,8 +150,9 @@ export const GraphWorkout = () => {
               </XYChart>
             )}
           </ParentSize>
-        </div>
+          </div>
       )}
-    </>
+      {workouts && <EntryLog selected={selectedWorkout} />}
+    </div>
   );
 };

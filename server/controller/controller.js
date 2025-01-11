@@ -81,7 +81,7 @@ exports.addWeight = async (req, res) => {
       ? await db.addWeightEntry(userId, workoutId, weight)
       : await db.updateWeightEntry(checkDate.id, userId, workoutId, weight);
 
-    console.log(workouts);
+    // console.log(workouts);
     res.send(workouts);
   } catch (error) {
     console.error(error);

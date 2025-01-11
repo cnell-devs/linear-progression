@@ -11,8 +11,10 @@ export const Profile = () => {
   return (
     <>
       <Nav />
-      <GraphWorkout />
-      <PastWeek />
+      <div className="flex flex-col gap-8">
+        <PastWeek />
+        <GraphWorkout />
+      </div>
     </>
   );
 };

@@ -57,18 +57,22 @@ export const Nav = ({ workouts, split, setSplit }) => {
                 </li>
               )}
               <li>
-                <Link to="/about">About</Link>
-              </li>
-              <li>
                 <Link to="/">Workouts</Link>
               </li>
               <li>
-                {user ? (
-                  <Link to="/logout">Log Out</Link>
-                ) : (
-                  <Link to="/login">Log In</Link>
-                )}
+                <Link to="/about">About</Link>
               </li>
+
+              <div className="flex justify-between">
+                {user ? <li className="p-2">{user.username}</li> : ""}
+                <li>
+                  {user ? (
+                    <Link to="/logout">Log Out</Link>
+                  ) : (
+                    <Link to="/login">Log In</Link>
+                  )}
+                </li>
+              </div>
             </ul>
           </div>
         }
