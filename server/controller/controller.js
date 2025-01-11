@@ -26,6 +26,7 @@ exports.signUpPost = [
 ];
 
 exports.logInPost = (req, res) => {
+
   passport.authenticate("local", { session: false }, (err, user, info) => {
     if (err || !user) {
       return res.status(400).json({
@@ -35,6 +36,8 @@ exports.logInPost = (req, res) => {
     }
     req.login(user, { session: false }, (err) => {
       if (err) {
+        console.log(err);
+
         res.send(err);
       }
       // generate a signed json web token with the contents of user object and return it in the response

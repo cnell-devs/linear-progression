@@ -18,6 +18,8 @@ export const AuthProvider = ({ children }) => {
     });
 
     if (!response.ok) {
+      console.log(response);
+      
       throw new Error("Login failed");
     }
 

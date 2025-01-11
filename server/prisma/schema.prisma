@@ -1,16 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Users {
@@ -24,35 +19,33 @@ model Users {
 }
 
 model Workout {
-  id      Int           @id @default(autoincrement())
-  name    String
-  sets    Int
-  reps    String
-  amrap   Boolean       @default(false)
-  type    split
-  weights WeightEntry[] // Reverse relation to track all weight entries for a workout
-
-  supersettedId Int?     @unique
-  supersetted   Workout? @relation("Superset", fields: [supersettedId], references: [id])
-  superset      Workout? @relation("Superset")
-  ss Boolean @default(false)
-
-  primary     Workout? @relation("Alternate")
-  alternateId Int?     @unique
-  alternate   Workout? @relation("Alternate", fields: [alternateId], references: [id])
-  alt         Boolean @default(false)
+  id            Int           @id @default(autoincrement())
+  name          String
+  sets          Int
+  reps          String
+  amrap         Boolean       @default(false)
+  type          split
+  supersettedId Int?          @unique
+  alternateId   Int?          @unique
+  alt           Boolean       @default(false)
+  ss            Boolean       @default(false)
+  weights       WeightEntry[]
+  alternate     Workout?      @relation("Alternate", fields: [alternateId], references: [id])
+  primary       Workout?      @relation("Alternate")
+  supersetted   Workout?      @relation("Superset", fields: [supersettedId], references: [id])
+  superset      Workout?      @relation("Superset")
 
   @@map("workout")
 }
 
 model WeightEntry {
   id        Int      @id @default(autoincrement())
-  user      Users    @relation(fields: [userId], references: [id])
   userId    String
-  workout   Workout  @relation(fields: [workoutId], references: [id])
   workoutId Int
   weight    Decimal
   date      DateTime @default(now()) @db.Date
+  user      Users    @relation(fields: [userId], references: [id])
+  workout   Workout  @relation(fields: [workoutId], references: [id])
 
   @@map("weightentry")
 }
