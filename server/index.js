@@ -29,3 +29,5 @@ app.use("/weight-entry", weightEntry);
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
+
+module.exports = app
