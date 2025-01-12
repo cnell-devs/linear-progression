@@ -1,10 +1,44 @@
 /* eslint-disable react/prop-types */
 import { createContext, useContext, useState, useEffect } from "react";
 
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState();
+
+
+  const signup = async (e, username, password, navigate) => {
+    e.preventDefault();
+    console.log("submitted");
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+
+      const { token } = await response.json();
+
+      // Save the JWT to localStorage
+      localStorage.setItem("authToken", token);
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Error logging in:", error);
+      alert("Login failed. Please check your credentials.");
+    }
+  };
 
   const login = async (credentials) => {
     const { username, password } = credentials;
@@ -64,7 +98,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, signup }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,46 +1,21 @@
 import { useState } from "react";
 import { Nav } from "../nav";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/authContext";
 
 export const SignUp = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   let navigate = useNavigate();
+  
+const {signup} = useAuth()
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-console.log("submitted");
-
-    try {
-      const response = await fetch("/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
-
-      const { token } = await response.json();
-
-      // Save the JWT to localStorage
-      localStorage.setItem("authToken", token);
-
-      navigate("/login");
-    } catch (error) {
-      console.error("Error logging in:", error);
-      alert("Login failed. Please check your credentials.");
-    }
-  };
   return (
     <>
       <div className="flex h-screen flex-col">
         <Nav />
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => signup(e, username, password, navigate)}
           // className="mx-auto flex w-2/5 flex-1 flex-col content-center justify-center gap-2 "
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-2 w-2/5"
         >
