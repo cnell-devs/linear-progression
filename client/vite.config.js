@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        target: "https://linear-progression-backend.vercel.app",
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
