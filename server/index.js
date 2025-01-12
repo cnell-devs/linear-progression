@@ -15,7 +15,11 @@ app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use("/", home);
+// app.use("/", home);
+home.get("/", (req, res) => {
+  res.send("GET recieved at home endpoint");
+});
+
 app.use(
   "/workouts",
   /* passport.authenticate("jwt", { session: false }) ,*/
