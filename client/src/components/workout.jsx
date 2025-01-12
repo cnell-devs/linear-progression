@@ -33,17 +33,20 @@ export const Workout = ({ workout }) => {
   const saveWeight = async () => {
     if (!saved) {
       try {
-        const response = await fetch("/api/weight-entry", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            workoutId: workout.id,
-            weight: weight,
-          }),
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}}/weight-entry`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: user.id,
+              workoutId: workout.id,
+              weight: weight,
+            }),
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Post failed");

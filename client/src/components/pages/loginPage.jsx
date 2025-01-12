@@ -14,7 +14,8 @@ export const Login = () => {
     e.preventDefault();
     try {
       const res = await login({ username, password });
-      console.log(res);
+if (!res) throw new Error();
+
       navigate("/");
     } catch (err) {
       setLoginError(err.message)
