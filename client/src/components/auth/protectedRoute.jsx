@@ -8,7 +8,7 @@ export const ProtectedRoute = ({ children }) => {
 
 
 
-    if (!user && !localStorage.get("authToken")) {
+    if (!user && !localStorage.getItem("authToken")) {
       return <Navigate to="/login" replace />; // Redirect to login if not authenticated
     }
 
