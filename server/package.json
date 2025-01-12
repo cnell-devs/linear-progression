@@ -4,7 +4,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "generate": "prisma generate",
+    "build": "echo 'No additional build steps required'"
+
   },
   "keywords": [],
   "author": "",
