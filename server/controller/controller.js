@@ -5,6 +5,26 @@ const { validationResult } = require("express-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 
+
+const emailLink = async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.params.id });
+    if (!user) return res.status(400).send({ message: "Invalid Link" });
+
+    const token = await Token.findOne({
+      userId: user._id,
+      token: req.params.token,
+    });
+    if (!token) return res.status(400).send({ message: "inValid Link" });
+    await User.updateOne({ _id: user._id }, { verified: true });
+    await token.remove();
+
+    res.status(200).send({ message: "Email Verified successfully" });
+  } catch (error) {
+    res.status(500).send({ message: "Internally Server Error" });
+  }
+};
+
 exports.signUpPost = [
   validateSignUp,
   async (req, res) => {
@@ -13,17 +33,31 @@ exports.signUpPost = [
       res.send(errors.array().map((error) => "msg: " + error.msg));
       return;
     }
+    const user = await db.getUser(req.body.username)
+    console.log(user);
 
-    req.body.password = await pw.encryptPW(req.body.password);
 
     try {
+      if (user) throw new Error("User already created")
+
+      req.body.password = await pw.encryptPW(req.body.password);
       const result = await db.addUser(req.body);
+
+      // create Token and save to db
+      // send verification email
+
+
+
       res.send(result);
     } catch (error) {
+      console.log(error);
+
       return error;
     }
   },
 ];
+
+
 
 exports.logInPost = (req, res) => {
 

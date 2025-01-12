@@ -9,11 +9,14 @@ datasource db {
 }
 
 model Users {
-  id       String        @id @default(uuid())
-  admin    Boolean       @default(false)
-  username String        @unique
+  id       String  @id @default(uuid())
+  admin    Boolean @default(false)
+  username String  @unique
   password String
-  weights  WeightEntry[]
+  verified Boolean @default(false)
+  tokens   Token[]
+
+  weights WeightEntry[]
 
   @@map("users")
 }
@@ -48,6 +51,17 @@ model WeightEntry {
   workout   Workout  @relation(fields: [workoutId], references: [id])
 
   @@map("weightentry")
+}
+
+model Token {
+  id        Int      @id @default(autoincrement()) // Auto-incrementing unique ID
+  userId    String   @unique // Unique reference to the user
+  token     String // Token value
+  createdAt DateTime @default(now()) // Token creation timestamp
+  expiresAt DateTime // Expiration handled via a calculated value in the backend
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tokens") // Map to "tokens" table in the database
 }
 
 enum split {
