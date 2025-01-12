@@ -59,7 +59,6 @@ export const Workout = ({ workout }) => {
       setSaved(false);
     }
   };
-  console.log(saved);
 
   return (
     <>

@@ -28,7 +28,6 @@ export const useWorkout = (params) => {
       } else {
         data = data.filter((workout) => !workout.alternateId);
       }
-      console.log(data);
 
       if (user) {
         data.forEach((workout) => {

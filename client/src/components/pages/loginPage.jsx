@@ -12,33 +12,9 @@ export const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     await login({ username, password });
-    /*
-    try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
-
-      const { token } = await response.json();
-
-      // Save the JWT to localStorage
-      localStorage.setItem("authToken", token);
-
-      } catch (error) {
-        console.error("Error logging in:", error);
-        alert("Login failed. Please check your credentials.");
-        } */
     navigate("/");
   };
 
-  console.log(user);
   useEffect(() => {(user ? navigate("/") : null)}, [navigate, user]);
 
   return (
@@ -84,7 +60,7 @@ export const Login = () => {
               />
             </svg>
             <input
-              type="text"
+              type="password"
               className="grow"
               placeholder="Password"
               value={password}
