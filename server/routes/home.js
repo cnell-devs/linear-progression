@@ -3,7 +3,7 @@ const { Router } = require("express");
 const home = Router();
 
 home.get("/", (req, res) => {
-  res.send("GET recieved at home endpoint");
+  res.send("Server is running");
 });
 
 module.exports = { home };

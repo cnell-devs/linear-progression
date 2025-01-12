@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 
-
+app.use('/', home)
 app.use(
   "/workouts",
   /* passport.authenticate("jwt", { session: false }) ,*/
