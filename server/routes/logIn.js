@@ -1,7 +1,5 @@
 const { Router } = require("express");
-const jwt = require("jsonwebtoken");
-const passport = require("passport");
-const { logInPost } = require("../controller/controller");
+const { logInPost } = require("../api/login");
 
 const logIn = Router();
 

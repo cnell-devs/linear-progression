@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { getWorkouts } = require("../controller/controller");
+const { getWorkouts } = require("../api/workouts");
 
 const workouts = Router();
 

@@ -1,7 +1,7 @@
 const { Router } = require("express");
-const jwt = require("jsonwebtoken");
-const passport = require("passport");
 const jwtDecode = require("jwt-decode");
+
+const {validateToken} = require('../api/validate')
 
 const validate = Router();
 
@@ -17,15 +17,7 @@ const getUserIdFromToken = (token = localStorage.getItem("authToken")) => {
 
 validate.get(
   "/",
-  passport.authenticate("jwt", { session: false }),
-  (req, res) => {
-
-    // Set custom headers
-    res.set("Content-Type", "application/json"); 
-
-    const { user } = req;
-    res.send(({ user }));
-  }
+validateToken
 );
 
 module.exports = { validate };
