@@ -17,24 +17,12 @@ app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const getWorkouts = async (req, res) => {
-  const alternate = req.query.alt === "true";
-  try {
-    const workouts = await db.getWorkouts(req.query.split);
 
-    // console.log(workouts);
 
-    res.send(workouts);
-  } catch (error) {
-    console.error(error);
-    return error;
-  }
-};
-
-app.get(
+app.use(
   "/workouts",
   /* passport.authenticate("jwt", { session: false }) ,*/
-  getWorkouts
+  workouts
 );
 app.use("/signup", signUp);
 app.use("/login", logIn);
