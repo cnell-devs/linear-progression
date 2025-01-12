@@ -2,7 +2,13 @@ const db = require("../models/queries");
 const { validateSignUp } = require("../utils/input-validation");
 const pw = require("../utils/pw-encrypt");
 const { validationResult } = require("express-validator");
+const express = require("express");
+const app = express();
+const passport = require("./config/passport.js");
 
+app.use(passport.initialize());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 exports.signUpPost = [
   validateSignUp,
   async (req, res) => {
@@ -22,3 +28,7 @@ exports.signUpPost = [
     }
   },
 ];
+
+module.exports = (req, res) => {
+  app(req, res);
+};

@@ -1,5 +1,12 @@
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const express = require("express");
+const app = express();
+const passport = require("./config/passport.js");
+
+app.use(passport.initialize());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 exports.logInPost = (req, res) => {
   passport.authenticate("local", { session: false }, (err, user, info) => {
@@ -21,4 +28,8 @@ exports.logInPost = (req, res) => {
       return res.json({ user, token });
     });
   })(req, res);
+};
+
+module.exports = (req, res) => {
+  app(req, res);
 };

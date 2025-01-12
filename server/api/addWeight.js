@@ -1,6 +1,13 @@
 const db = require("../models/queries");
+const express = require("express");
+const app = express();
+const passport = require("./config/passport.js");
 
-exports.addWeight = async (req, res) => {
+app.use(passport.initialize());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+const addWeight = async (req, res) => {
   const { userId } = req.body;
   const { workoutId } = req.body;
   const { weight } = req.body;
@@ -24,4 +31,10 @@ exports.addWeight = async (req, res) => {
     console.error(error);
     return error;
   }
+};
+
+app.post('/')
+
+module.exports = (req, res) => {
+  app(req, res);
 };
