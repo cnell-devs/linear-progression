@@ -5,9 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node --watch index.js",
-    "generate": "prisma generate",
-    "build": "vercel-build"
-
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
