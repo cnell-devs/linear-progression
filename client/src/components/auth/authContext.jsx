@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
         logout();
       }
     }
-  };
+  }; 
 
   useEffect(() => {
     checkAuth();
