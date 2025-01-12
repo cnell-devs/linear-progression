@@ -6,14 +6,10 @@ export const ProtectedRoute = ({ children }) => {
   const { user } = useAuth(); // Access authentication state
 
   setTimeout(() => {
-
-  }, 1000);
-  
     if (!user) {
       return <Navigate to="/login" replace />; // Redirect to login if not authenticated
     }
 
-  return children;
+    return children;
+  }, 1000);
 };
-
-
