@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // app.use("/", home);
-home.get("/", (req, res) => {
+app.get("/", (req, res) => {
   res.send("GET recieved at home endpoint");
 });
 
