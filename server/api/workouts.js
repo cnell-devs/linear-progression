@@ -14,7 +14,7 @@ const getWorkouts = async (req, res) => {
 
     // console.log(workouts);
 
-    res.send(workouts);
+    res.json(workouts);
   } catch (error) {
     console.error(error);
     return error;
