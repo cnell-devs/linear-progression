@@ -34,7 +34,7 @@ export const Workout = ({ workout }) => {
     if (!saved) {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}}/weight-entry`,
+          `${import.meta.env.VITE_API_URL}/weight-entry`,
           {
             method: "POST",
             headers: {
