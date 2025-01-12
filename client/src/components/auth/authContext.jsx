@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(false);
+  const [user, setUser] = useState();
 
   const login = async (credentials) => {
     const { username, password } = credentials;
