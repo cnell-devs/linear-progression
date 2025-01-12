@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node --watch index.js",
     "generate": "prisma generate",
-    "build": "echo 'No additional build steps required'"
+    "build": "vercel-build"
 
   },
   "keywords": [],
