@@ -7,10 +7,11 @@ export const ProtectedRoute = ({ children }) => {
 
   setTimeout(() => {
 
+  }, 1000);
+  
     if (!user) {
       return <Navigate to="/login" replace />; // Redirect to login if not authenticated
     }
-  }, 1000);
 
   return children;
 };
