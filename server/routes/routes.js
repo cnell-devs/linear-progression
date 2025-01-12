@@ -1,7 +1,7 @@
 const { home } = require("./home");
 const { logIn } = require("./logIn");
 const { signUp } = require("./signUp");
-const { logOut } = require("./logout");
+const { logOut } = require("./logOut");
 const { workouts } = require("./workouts");
 const { validate } = require("./validate-token");
 const { weightEntry } = require("./weight-entry");
