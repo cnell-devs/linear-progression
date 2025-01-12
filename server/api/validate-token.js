@@ -1,9 +1,24 @@
 const { Router } = require("express");
 const jwtDecode = require("jwt-decode");
+const passport = require('passport')
 
-const {validateToken} = require('../api/validate')
 
 const validate = Router();
+
+const validateToken = [
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    // Set custom headers
+    res.set("Content-Type", "application/json");
+
+    const { user } = req;
+    res.send({ user });
+  },
+];
+
+module.exports = (req, res) => {
+  app(req, res);
+};
 
 const getUserIdFromToken = (token = localStorage.getItem("authToken")) => {
   try {

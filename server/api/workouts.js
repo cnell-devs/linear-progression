@@ -1,28 +1,8 @@
-const db = require("../models/queries");
-const express = require("express");
-const app = express();
-const passport = require("./config/passport.js");
+const { Router } = require("express");
+const { getWorkouts } = require("../controller/controller");
 
-app.use(passport.initialize());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+const workouts = Router();
 
-const getWorkouts = async (req, res) => {
-  const alternate = req.query.alt === "true";
-  try {
-    const workouts = await db.getWorkouts(req.query.split);
+workouts.get("/", getWorkouts);
 
-    // console.log(workouts);
-
-    res.json(workouts);
-  } catch (error) {
-    console.error(error);
-    return error;
-  }
-};
-
-app.get("/workouts", getWorkouts);
-
-module.exports = (req, res) => {
-  app(req, res);
-};
+module.exports = { workouts };

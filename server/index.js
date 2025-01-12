@@ -6,7 +6,7 @@ const {
   workouts,
   validate,
   weightEntry,
-} = require("./routes/routes");
+} = require("./api/routes.js");
 
 
 const express = require("express");

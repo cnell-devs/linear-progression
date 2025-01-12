@@ -1,35 +1,10 @@
-const passport = require("passport");
-const jwt = require("jsonwebtoken");
-const express = require("express");
-const app = express();
-const passport = require("./config/passport.js");
+const { Router } = require("express");
+const { logInPost } = require("../controller/controller");
 
-app.use(passport.initialize());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+const logIn = Router();
 
-exports.logInPost = (req, res) => {
-  passport.authenticate("local", { session: false }, (err, user, info) => {
-    if (err || !user) {
-      return res.status(400).json({
-        message: "Something is not right",
-        user: user,
-      });
-    }
-    req.login(user, { session: false }, (err) => {
-      if (err) {
-        console.log(err);
+logIn.get("/", (req, res) => res.send({ message: "reached" }));
 
-        res.send(err);
-      }
-      // generate a signed json web token with the contents of user object and return it in the response
-      const token = jwt.sign(user, "swole");
+logIn.post("/", logInPost);
 
-      return res.json({ user, token });
-    });
-  })(req, res);
-};
-
-module.exports = (req, res) => {
-  app(req, res);
-};
+module.exports = { logIn };

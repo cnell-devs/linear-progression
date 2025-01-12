@@ -1,6 +1,6 @@
 const { Router } = require("express");
-const { addWeight } = require("../api/addWeight");
-const { updateWeight } = require("../api/updateWeight");
+const { addWeight } = require("../controller/controller");
+const { updateWeight } = require("../controller/controller");
 
 const weightEntry = Router();
 
