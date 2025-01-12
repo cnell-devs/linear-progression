@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
       throw new Error("Login failed");
     }
-
+//dev
     const { token, user } = await response.json();
 
     // Save the JWT to localStorage
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
         logout();
       }
     }
-  }; 
+  };
 
   useEffect(() => {
     checkAuth();
