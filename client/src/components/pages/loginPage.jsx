@@ -6,16 +6,25 @@ import { useAuth } from "../auth/authContext";
 export const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
   const { login, user } = useAuth();
   let navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login({ username, password });
-    navigate("/");
+    try {
+      const res = await login({ username, password });
+      console.log(res);
+      navigate("/");
+    } catch (err) {
+      setLoginError(err.message)
+    }
+
   };
 
-  useEffect(() => {(user ? navigate("/") : null)}, [navigate, user]);
+  useEffect(() => {
+    user ? navigate("/") : null;
+  }, [navigate, user]);
 
   return (
     <>
@@ -73,6 +82,7 @@ export const Login = () => {
           >
             Submit
           </button>
+          <div className="text-center text-red-600">{loginError}</div>
           <div className="hover:-translate-y- mt-8 h-10 w-fit self-center text-center duration-200 hover:-translate-y-2 dark:hover:text-white">
             <Link to="/signup" className="">
               Create an Account

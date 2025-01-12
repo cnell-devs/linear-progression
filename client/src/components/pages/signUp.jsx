@@ -29,7 +29,7 @@ console.log("submitted");
       // Save the JWT to localStorage
       localStorage.setItem("authToken", token);
 
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       console.error("Error logging in:", error);
       alert("Login failed. Please check your credentials.");

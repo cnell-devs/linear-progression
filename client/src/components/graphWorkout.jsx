@@ -30,7 +30,7 @@ export const GraphWorkout = () => {
     getWeights
       .filter((entry) => entry.userId == user.id)
       .map((weight) => ({
-        x: new Date(weight.date).toUTCString(),
+        x: new Date(weight.date).toLocaleDateString(),
         y: weight.weight,
       }));
 
@@ -122,7 +122,7 @@ export const GraphWorkout = () => {
 
                 {/* Line Series */}
                 <AnimatedLineSeries
-                  dataKey="Line 1"
+                  dataKey=""
                   data={chartData}
                   {...accessors}
                 />
@@ -143,6 +143,7 @@ export const GraphWorkout = () => {
                         {tooltipData.nearestDatum.key}
                       </div>
                       {accessors.xAccessor(tooltipData.nearestDatum.datum)}
+                        &nbsp;
                       {accessors.yAccessor(tooltipData.nearestDatum.datum)}
                     </div>
                   )}
