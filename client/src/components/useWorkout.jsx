@@ -4,6 +4,7 @@ import { useAuth } from "./auth/authContext";
 export const useWorkout = (params) => {
   const [workouts, setWorkouts] = useState(null);
   const { user } = useAuth();
+
   useEffect(() => {
     const url =
       params === "all"
@@ -14,12 +15,6 @@ export const useWorkout = (params) => {
 
     const fetchWorkouts = async () => {
       const response = await fetch(url);
-      //
-      //    const response = await fetch(
-      //   `api/workouts?split=${searchParams.get("split")}&alt=${searchParams.get(
-      //     "alt"
-      //   )}`
-      // );
 
       let data = await response.json();
       if (params == "all") {

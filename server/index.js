@@ -39,6 +39,9 @@ app.use("/logout", logOut);
 app.use("/validate-token", validate);
 app.use("/weight-entry", weightEntry);
 
+console.log(`Running in ${process.env.NODE_ENV} mode`);
+console.log(`API URL: ${API_URL}`);
+
 const PORT = 3000;
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
 
