@@ -7,8 +7,10 @@ export const useWorkout = (params) => {
   useEffect(() => {
     const url =
       params === "all"
-        ? "api/workouts"
-        : `api/workouts?split=${params.get("split")}&alt=${params.get("alt")}`;
+        ? `${import.meta.env.VITE_API_URL}/workouts`
+        : `${import.meta.env.VITE_API_URL}/workouts?split=${params.get(
+            "split"
+          )}&alt=${params.get("alt")}`;
 
     const fetchWorkouts = async () => {
       const response = await fetch(url);

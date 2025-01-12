@@ -6,10 +6,9 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(false);
 
-
   const login = async (credentials) => {
     const { username, password } = credentials;
-    const response = await fetch("/api/login", {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -19,7 +18,7 @@ export const AuthProvider = ({ children }) => {
 
     if (!response.ok) {
       console.log(response);
-      
+
       throw new Error("Login failed");
     }
 
@@ -33,28 +32,27 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-
     localStorage.removeItem("authToken");
     setUser(null);
   };
 
   const checkAuth = async () => {
-
     const token = localStorage.getItem("authToken");
     if (token) {
       // Validate token by sending it to the backend
 
-      const response = await fetch("/api/validate-token", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/validate-token`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (response.ok) {
         // console.log(response);
         const { user } = await response.json();
 
-
         setUser(user);
       } else {
-
         logout();
       }
     }
