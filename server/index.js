@@ -8,10 +8,19 @@ const {
   weightEntry,
 } = require("./routes/routes.js");
 
-
+const cors = require("cors");
 const express = require("express");
 const app = express();
 const passport = require("./config/passport.js");
+
+app.use(
+  cors({
+    origin: "https://linear-progression.vercel.app", // Replace with your frontend URL
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
+    credentials: true, // Include cookies if needed
+  })
+);
+
 
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));
