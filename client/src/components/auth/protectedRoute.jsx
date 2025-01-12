@@ -5,12 +5,15 @@ import { useAuth } from "./authContext"; // Assuming AuthContext is already set 
 export const ProtectedRoute = ({ children }) => {
   const { user } = useAuth(); // Access authentication state
 
-  setTimeout(() => {
+    if (user === undefined ) {
+      return <div>Loading...</div>; // Replace with a spinner or placeholder
+    }
+
 
     if (!user) {
       return <Navigate to="/login" replace />; // Redirect to login if not authenticated
     }
-  }, 1000);
+
 
   return children;
 };
