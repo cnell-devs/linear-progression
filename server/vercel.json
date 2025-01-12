@@ -1,9 +1,5 @@
 {
-  "projects": [
-    {
-      "src": "client",
-      "use": "@vercel/static"
-    },
+  "builds": [
     {
       "src": "server/api",
       "use": "@vercel/node"
