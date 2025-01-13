@@ -45,6 +45,9 @@ exports.signUpPost = [
 
       // create Token and save to db
       // send verification email
+      //add email to signup form and test
+      const token = jwt.sign(user, "verify");
+
 
 
 
