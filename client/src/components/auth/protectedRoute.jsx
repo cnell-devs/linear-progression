@@ -2,6 +2,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./authContext"; // Assuming AuthContext is already set up
 
+
 export const ProtectedRoute = ({ children }) => {
   const { user } = useAuth(); // Access authentication state
 
@@ -17,5 +18,3 @@ export const ProtectedRoute = ({ children }) => {
 
   return children;
 };
-
-

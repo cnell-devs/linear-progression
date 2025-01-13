@@ -45,7 +45,7 @@ model WeightEntry {
   id        Int      @id @default(autoincrement())
   userId    String
   workoutId Int
-  weight    Decimal
+  weight    Int
   date      DateTime @default(now()) @db.Date
   user      Users    @relation(fields: [userId], references: [id])
   workout   Workout  @relation(fields: [workoutId], references: [id])

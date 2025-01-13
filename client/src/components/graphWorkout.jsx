@@ -1,6 +1,7 @@
+/* eslint-disable react/prop-types */
 import { useState } from "react";
 import { useAuth } from "./auth/authContext";
-import { useWorkout } from "./useWorkout";
+
 
 import {
   AnimatedAxis, // any of these can be non-animated equivalents
@@ -12,15 +13,16 @@ import {
 import { ParentSize } from "@visx/responsive";
 import { EntryLog } from "./entryLog";
 
-export const GraphWorkout = () => {
+
+export const GraphWorkout = ({workouts}) => {
   const [graphWorkout, setGraphWorkout] = useState(false);
   const { user } = useAuth();
 
-  const workouts = useWorkout("all");
 
 
   const getWeights =
     workouts &&
+
     workouts.filter((workout) => workout.id == graphWorkout)[0]?.weights;
 
 
@@ -45,6 +47,7 @@ export const GraphWorkout = () => {
     xAccessor: (d) => d.x,
     yAccessor: (d) => d.y,
   };
+
 
   const selectedWorkout = workouts?.find(
     (workout) => workout.id == graphWorkout

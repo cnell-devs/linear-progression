@@ -1,15 +1,15 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth/authContext";
-import { useWorkout } from "./useWorkout";
-import { useMobile } from "./useMobile";
 
-export const PastWeek = () => {
+import { useMobile } from "./useMobile";
+export const PastWeek = ({workouts}) => {
     const { user } = useAuth();
     const mobile = useMobile()
 
   const [week, setWeek] = useState(false);
 
-  const workouts = useWorkout("all");
+
 
 useEffect(() => {
   // Define the days of the week
@@ -37,7 +37,7 @@ useEffect(() => {
   );
 
   // Create an object to track entries for each day of the week
-  const entriesByDay = daysOfWeek.reduce((acc, day, index) => {
+  const entriesByDay = daysOfWeek?.reduce((acc, day, index) => {
     const dayDate = new Date(startOfWeek); // Clone the startOfWeek date
     dayDate.setUTCDate(startOfWeek.getUTCDate() + index); // Increment to the correct day in UTC
 
@@ -49,7 +49,7 @@ useEffect(() => {
         entryDate.setUTCHours(0, 0, 0, 0); // Reset to midnight UTC
 
         return (
-          weight.userId === user.id && // Match user ID
+          weight?.userId === user?.id && // Match user ID
           entryDate.getUTCFullYear() === dayDate.getUTCFullYear() &&
           entryDate.getUTCMonth() === dayDate.getUTCMonth() &&
           entryDate.getUTCDate() === dayDate.getUTCDate()
@@ -65,7 +65,7 @@ useEffect(() => {
   }, {});
 
   setWeek(entriesByDay);
-}, [workouts, user.id]);
+}, [workouts, user?.id]);
 
 
   return (
