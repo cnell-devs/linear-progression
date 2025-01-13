@@ -1,15 +1,17 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth/authContext";
-import { useWorkout } from "./useWorkout";
+
 import { useMobile } from "./useMobile";
 
-export const PastWeek = () => {
+// eslint-disable-next-line react/prop-types
+export const PastWeek = ({workouts}) => {
     const { user } = useAuth();
     const mobile = useMobile()
 
   const [week, setWeek] = useState(false);
 
-  const workouts = useWorkout("all");
+
 
 useEffect(() => {
   // Define the days of the week
@@ -65,7 +67,7 @@ useEffect(() => {
   }, {});
 
   setWeek(entriesByDay);
-}, [workouts, user.id]);
+}, [workouts, user?.id]);
 
 
   return (

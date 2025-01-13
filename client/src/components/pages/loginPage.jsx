@@ -27,8 +27,13 @@ if (!res) throw new Error();
     user ? navigate("/") : null;
   }, [navigate, user]);
 
+  console.log(user);
+
+  if (user == undefined ) return <div>Loading...</div>
+
+
   return (
-    <>
+   !user && <>
       <div className="flex h-screen flex-col">
         <Nav />
 
