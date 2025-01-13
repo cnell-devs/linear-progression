@@ -29,7 +29,7 @@ if (!res) throw new Error();
 
   console.log(user);
 
-  if (user == undefined ) return <div>Loading...</div>
+  if (user === undefined ) return <div>Loading...</div>
 
 
   return (
