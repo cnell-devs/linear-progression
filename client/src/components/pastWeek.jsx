@@ -51,7 +51,7 @@ useEffect(() => {
         entryDate.setUTCHours(0, 0, 0, 0); // Reset to midnight UTC
 
         return (
-          weight.userId === user.id && // Match user ID
+          weight?.userId === user?.id && // Match user ID
           entryDate.getUTCFullYear() === dayDate.getUTCFullYear() &&
           entryDate.getUTCMonth() === dayDate.getUTCMonth() &&
           entryDate.getUTCDate() === dayDate.getUTCDate()
