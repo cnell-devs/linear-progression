@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./auth/authContext";
 
 import { useMobile } from "./useMobile";
-
-// eslint-disable-next-line react/prop-types
 export const PastWeek = ({workouts}) => {
     const { user } = useAuth();
     const mobile = useMobile()
