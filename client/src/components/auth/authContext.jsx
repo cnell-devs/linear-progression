@@ -71,7 +71,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const checkAuth = async () => {
+    console.log("checkAuth");
+
     const token = localStorage.getItem("authToken");
+
     if (token) {
       // Validate token by sending it to the backend
 
@@ -81,14 +84,17 @@ export const AuthProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      if (response.ok) {
-        // console.log(response);
-        const { user } = await response.json();
 
+      console.log(response);
+
+      if (response.ok) {
+        const { user } = await response.json();
         setUser(user);
       } else {
         logout();
       }
+    } else {
+      setUser(false)
     }
   };
 

@@ -27,6 +27,7 @@ console.log("Using database URL:", databaseUrl);
 
 // Now set the database URL for Prisma
 process.env.DATABASE_URL = databaseUrl;
+process.env.DIRECT_URL = process.env.DIRECT_URL_PROD;
 
 const allowedOrigins = [
   "http://localhost:5173", // Local development
@@ -48,13 +49,11 @@ app.use(
   })
 );
 
-
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-
-app.use('/', home)
+app.use("/", home);
 app.use(
   "/workouts",
   /* passport.authenticate("jwt", { session: false }) ,*/

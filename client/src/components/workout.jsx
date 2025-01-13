@@ -5,6 +5,7 @@ import { useAuth } from "./auth/authContext";
 export const Workout = ({ workout }) => {
   const { user } = useAuth();
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   if (workout.weights.length) {
     var lastWeight =
@@ -21,16 +22,17 @@ export const Workout = ({ workout }) => {
       ?.weight || 100
   );
 
-  const increaseTopSet = () => setWeight(weight + 5);
-  const decreaseTopSet = () => setWeight(weight ? weight - 5 : 0);
+  const increaseTopSet = () => setWeight(Number(weight) + 5);
+  const decreaseTopSet = () => setWeight(Number(weight) ? Number(weight) - 5 : 0);
 
   // console.log(user);
 
   const saveWeight = async () => {
     if (!saved) {
+      setSaving(true)
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}}/weight-entry`,
+          `${import.meta.env.VITE_API_URL}/weight-entry`,
           {
             method: "POST",
             headers: {
@@ -47,10 +49,12 @@ export const Workout = ({ workout }) => {
         if (!response.ok) {
           throw new Error("Post failed");
         } else {
+          setSaving(false)
           setSaved(true);
           console.log("SET");
         }
       } catch (error) {
+        setSaving(false)
         console.error("Save failed", error);
         alert("Save failed.");
       }
@@ -98,7 +102,19 @@ export const Workout = ({ workout }) => {
             }`}
             onClick={saveWeight}
           >
-            {!saved ? "save" : "done ✅"}
+            {!saving ? (
+              !saved ? (
+                "save"
+              ) : (
+                "done ✅"
+              )
+            ) : (
+              <div className="spinner-box">
+                <span className="material-icons animate-spin spinner text-xl">
+                  refresh
+                </span>
+              </div>
+            )}
           </button>
         </div>
       </div>
