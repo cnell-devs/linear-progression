@@ -39,7 +39,7 @@ useEffect(() => {
   );
 
   // Create an object to track entries for each day of the week
-  const entriesByDay = daysOfWeek.reduce((acc, day, index) => {
+  const entriesByDay = daysOfWeek?.reduce((acc, day, index) => {
     const dayDate = new Date(startOfWeek); // Clone the startOfWeek date
     dayDate.setUTCDate(startOfWeek.getUTCDate() + index); // Increment to the correct day in UTC
 
