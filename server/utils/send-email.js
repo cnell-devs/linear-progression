@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 
 exports.sendEmail = async (email, subject, message) => {
+  const host = "linearprogressions@gmail.com"
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -11,7 +12,7 @@ exports.sendEmail = async (email, subject, message) => {
 
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: host,
       to: email,
       subject,
       html: message,
