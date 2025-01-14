@@ -11,7 +11,7 @@ export const useRecovery = () => {
 
     try {
       const response = await fetch(
-        url || "http://localhost:3000/recovery/password-reset",
+        url || `${import.meta.env.VITE_API_URL}/recovery/password-reset`,
         {
           method: "POST",
           headers: {
@@ -45,7 +45,10 @@ export const useRecovery = () => {
 
     try {
       const response = await fetch(
-        url || `http://localhost:3000/recovery/${params.id}/${params.token}`,
+        url ||
+          `${import.meta.env.VITE_API_URL}/recovery/${params.id}/${
+            params.token
+          }`,
         {
           method: "POST",
           headers: {

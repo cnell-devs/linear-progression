@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { Nav } from "../nav";
-import { Link, useNavigate } from "react-router-dom";
+
 import { useAuth } from "../auth/authContext";
 import { useRecovery } from "../useRecovery";
 
@@ -9,7 +9,6 @@ export const ResetPassword = () => {
     const [changed, setChanged] = useState()
   const [loginError, setLoginError] = useState("");
   const { user } = useAuth();
-  //   let navigate = useNavigate();
   const { resetPassword } = useRecovery();
 
   const handleSubmit = async (e) => {
@@ -23,21 +22,6 @@ export const ResetPassword = () => {
       setLoginError(err.message);
     }
   };
-  /*
-  useEffect(() => {
-    user ? navigate("/") : null;
-  }, [navigate, user]);
-
-  console.log(user);
-
-  if (user === undefined)
-    return (
-      <div className="spinner-box">
-        <span className="material-icons animate-spin spinner text-xl">
-          refresh
-        </span>
-      </div>
-    ); */
 
 
   return (

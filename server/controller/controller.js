@@ -175,7 +175,7 @@ exports.passwordLink = [
       console.log(token);
       ;
 
-      const url = `http://localhost:3000/recovery/${user.id}/${token.token}`;
+      const url = `https://linear-progression.vercel.app/recovery/${user.id}/${token.token}`;
       const subject = "Password Reset";
       const message = `
       <p>Here is a link to reset your password</p>
@@ -201,7 +201,9 @@ exports.verifyUrl = async (req, res) => {
     const token = await db.getToken(req.params.id, req.params.token);
     if (!token) return res.status(400).send({ message: "Invalid token" });
     // res.status(200).send({ message: "Valid Url" });
-    res.redirect(`http://localhost:5173/reset-password/${req.params.id}/${req.params.token}`);
+    res.redirect(
+      `https://linear-progression.vercel.app/${req.params.id}/${req.params.token}`
+    );
   } catch (error) {
     res.status(500).send({ message: "Internal server error" });
   }
