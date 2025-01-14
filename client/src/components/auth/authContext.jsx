@@ -1,42 +1,37 @@
 /* eslint-disable react/prop-types */
 import { createContext, useContext, useState, useEffect } from "react";
 
-
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState();
 
-
-  const signup = async (e, username, password, navigate) => {
+  const signup = async (e, email, username, password, navigate, setSent) => {
     e.preventDefault();
     console.log("submitted");
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/signup`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username, password }),
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
 
       if (!response.ok) {
-        throw new Error("Login failed");
+        throw new Error("Sign Up failed");
       }
 
       const { token } = await response.json();
 
       // Save the JWT to localStorage
       localStorage.setItem("authToken", token);
-
-      navigate("/login");
+setSent(true)
+      // navigate("/login");
     } catch (error) {
-      console.error("Error logging in:", error);
-      alert("Login failed. Please check your credentials.");
+      console.error("Error Signing Up:", error);
+      alert("Sign Up failed. Please check your credentials.");
     }
   };
 
@@ -94,13 +89,13 @@ export const AuthProvider = ({ children }) => {
         logout();
       }
     } else {
-      setUser(false)
+      setUser(false);
     }
   };
 
   useEffect(() => {
     checkAuth();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -11,6 +11,11 @@ const apiUrl =
     ? process.env.API_URL_DEV
     : process.env.API_URL_PROD;
 
+const clientUrl =
+  process.env.NODE_ENV == "development"
+  ? process.env.CLIENT_URL_DEV
+  : process.env.CLIENT_URL_PROD
+
 exports.emailLink = async (req, res) => {
   try {
     const user = await db.getUserById(req.params.id);
@@ -22,7 +27,8 @@ exports.emailLink = async (req, res) => {
     await db.verifyUser(req.params.id);
     await db.removeToken(token);
 
-    res.status(200).send({ message: "Email Verified successfully" });
+    // res.status(200).send({ message: "Email Verified successfully" });
+    res.redirect(`${clientUrl}`)
   } catch (error) {
     res.status(500).send({ message: "Internally Server Error" });
   }
@@ -208,7 +214,7 @@ exports.verifyUrl = async (req, res) => {
 
 
     res.redirect(
-      `${apiUrl}/${req.params.id}/${req.params.token}`
+      `${clientUrl}/reset-password/${req.params.id}/${req.params.token}`
     );
   } catch (error) {
     res.status(500).send({ message: "Internal server error" });
