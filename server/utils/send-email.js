@@ -4,8 +4,8 @@ exports.sendEmail = async (email, subject, message) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+        user: host,
+        pass: "dqly xafh iqaj aduf",
     },
   });
 
@@ -23,3 +23,4 @@ exports.sendEmail = async (email, subject, message) => {
     throw error;
   }
 };
+
