@@ -7,6 +7,7 @@ const { validate } = require("./validate-token");
 const { weightEntry } = require("./weight-entry");
 const { verify } = require("./verify");
 const { password } = require("./password");
+const { deleteUserRoute } = require("./delete-user");
 
 module.exports = {
   home,
@@ -18,4 +19,5 @@ module.exports = {
   weightEntry,
   verify,
   password,
+  deleteUserRoute,
 };

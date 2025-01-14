@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 
 exports.sendEmail = async (email, subject, message) => {
+  if (email.startsWith("@")) throw new Error("Invalid Email")
   const host = "linearprogressionmail@gmail.com";
   try {
     const transporter = nodemailer.createTransport({

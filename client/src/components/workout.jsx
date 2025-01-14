@@ -10,11 +10,6 @@ export const Workout = ({ workout }) => {
   if (workout.weights.length) {
     var lastWeight =
       workout.weights.filter((entry) => entry.userId == user.id).length - 1;
-
-    // console.log(
-    //   "LASTWEIGHT",
-    //  lastWeight
-    // );
   }
 
   const [weight, setWeight] = useState(
@@ -30,7 +25,7 @@ export const Workout = ({ workout }) => {
   const decreaseTopSet = () =>
     setWeight(Number(weight) ? Number(weight) - 5 : 0);
 
-  // console.log(user);
+
 
   const saveWeight = async () => {
     if (!saved) {
@@ -56,7 +51,7 @@ export const Workout = ({ workout }) => {
         } else {
           setSaving(false);
           setSaved(true);
-          console.log("SET");
+
         }
       } catch (error) {
         setSaving(false);

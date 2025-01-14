@@ -69,7 +69,7 @@ export const GraphWorkout = ({workouts}) => {
             tabIndex={0}
             className="dropdown-content menu bg-base-100 rounded-box w-52 p-2 shadow overflow-y-scroll z-10"
           >
-            {workouts.map((workout, index) => (
+            {workouts.filter(workout => workout.weights.length > 0).map((workout, index) => (
               <li key={index}>
                 <button onClick={() => setGraphWorkout(workout.id)}>
                   {`${workout.name} ${workout.sets}x${workout.reps}`}

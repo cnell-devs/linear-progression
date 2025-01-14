@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Nav } from "../nav";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../auth/authContext";
 
 export const SignUp = () => {
@@ -8,7 +8,8 @@ export const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [sent, setSent] = useState(false);
-  let navigate = useNavigate();
+  const [errors, setErrors] = useState()
+
 
   const { signup } = useAuth();
 
@@ -19,7 +20,7 @@ export const SignUp = () => {
         {!sent ? (
           <form
             onSubmit={(e) =>
-              signup(e, email, username, password, navigate, setSent)
+              signup(e, email, username, password, setSent, setErrors)
             }
             // className="mx-auto flex w-2/5 flex-1 flex-col content-center justify-center gap-2 "
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-2 w-2/5"
@@ -86,6 +87,9 @@ export const SignUp = () => {
             >
               Submit
             </button>
+            {errors && errors.map((error,i) =>
+              <div className="text-center text-red-600" key={i}>{error}</div>
+            )}
             <div className="hover:-translate-y- mt-8 h-10 w-fit self-center text-center duration-200 hover:-translate-y-2 dark:hover:text-white">
               <Link to="/login">Already have an account?</Link>
             </div>

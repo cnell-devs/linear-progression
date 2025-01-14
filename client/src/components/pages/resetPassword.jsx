@@ -15,7 +15,7 @@ export const ResetPassword = () => {
     e.preventDefault();
     try {
       const result = resetPassword(password);
-      console.log(result);
+
         setChanged(result);
 
     } catch (err) {
@@ -33,7 +33,6 @@ export const ResetPassword = () => {
           {!changed ? (
             <form
               onSubmit={handleSubmit}
-              //   className="mx-auto flex w-2/5 flex-1 flex-col content-center justify-center gap-2"
               className="absolute left-1/2 top-1/2 flex w-2/5 -translate-x-1/2 -translate-y-1/2 flex-col gap-2"
             >
               <h1 className="mb-5 text-center font-bold">

@@ -13,8 +13,8 @@ const apiUrl =
 
 const clientUrl =
   process.env.NODE_ENV == "development"
-  ? process.env.CLIENT_URL_DEV
-  : process.env.CLIENT_URL_PROD
+    ? process.env.CLIENT_URL_DEV
+    : process.env.CLIENT_URL_PROD;
 
 exports.emailLink = async (req, res) => {
   try {
@@ -28,7 +28,7 @@ exports.emailLink = async (req, res) => {
     await db.removeToken(token);
 
     // res.status(200).send({ message: "Email Verified successfully" });
-    res.redirect(`${clientUrl}`)
+    res.redirect(`${clientUrl}`);
   } catch (error) {
     res.status(500).send({ message: "Internally Server Error" });
   }
@@ -39,7 +39,7 @@ exports.signUpPost = [
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.send(errors.array().map((error) => "msg: " + error.msg));
+      res.status(400).send(errors.array());
       return;
     }
 
@@ -82,7 +82,7 @@ exports.signUpPost = [
   },
 ];
 
-exports.logInPost = (req, res) => {
+exports.logInPost = async (req, res) => {
   passport.authenticate("local", { session: false }, (err, user, info) => {
     if (err || !user) {
       return res.status(400).json({
@@ -90,18 +90,29 @@ exports.logInPost = (req, res) => {
         user: user,
       });
     }
-    req.login(user, { session: false }, (err) => {
+    req.login(user, { session: false }, async (err) => {
       if (err) {
         console.log(err);
 
         res.send(err);
       }
+      await db.updateLastLogin(user.id);
       // generate a signed json web token with the contents of user object and return it in the response
       const token = jwt.sign(user, "swole");
-
       return res.json({ user, token });
     });
   })(req, res);
+};
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const deletedUser = await db.deleteUser(req.params.id);
+    console.log(deletedUser);
+    res.status(200).send({ message: "User deleted" });
+  } catch (error) {
+    console.error(error);
+    return error;
+  }
 };
 
 exports.logout = (req, res, next) => {
@@ -168,15 +179,13 @@ exports.passwordLink = [
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.send(errors.array().map((error) => "msg: " + error.msg));
+        res.status(400).send(errors.array().map((error) => error.msg));
         return;
       }
 
       let user = await db.getUser(req.body.email);
       if (!user)
-        return res
-          .status(409)
-          .send({ message: "user with email does not exist" });
+        return res.status(409).send(["User with email doesn't exist."]);
 
       let token = await db.getToken(user.id);
 
@@ -184,13 +193,11 @@ exports.passwordLink = [
         token = await db.addToken(user, jwt.sign(user, "verify"));
       }
       console.log(token);
-      ;
-
       const url = `${apiUrl}/recovery/${user.id}/${token.token}`;
       const subject = "Password Reset";
       const message = `
       <p>Here is a link to reset your password</p>
-      <p>Click thi link <a href="${url}">here</a> to reset your password</p>
+      <p>Click this link <a href="${url}">here</a> to reset your password</p>
     `;
 
       await sendEmail(user.email, subject, message);
@@ -211,7 +218,6 @@ exports.verifyUrl = async (req, res) => {
 
     const token = await db.getToken(req.params.id, req.params.token);
     if (!token) return res.status(400).send({ message: "Invalid token" });
-
 
     res.redirect(
       `${clientUrl}/reset-password/${req.params.id}/${req.params.token}`
@@ -242,9 +248,9 @@ exports.resetPassword = async (req, res) => {
     if (!token) return res.status(400).send({ message: "Invalid Link" });
 
     user.password = await pw.encryptPW(req.body.password);
-    await db.changePassword(user.id, user.password)
+    await db.changePassword(user.id, user.password);
 
-if (!user.verified) await db.verifyUser(user.id);
+    if (!user.verified) await db.verifyUser(user.id);
     await db.removeToken(token);
 
     res.status(200).send({ message: "password successfully reset" });

@@ -33,7 +33,7 @@ export const useWorkout = (params) => {
         data.forEach((workout) => {
           workout.weights = workout?.weights.filter(
             (entry) => entry.userId == user.id
-          )/* .forEach(entry => entry.weight = parseFloat(entry.weight)); */
+          )
         });
       }
       setWorkouts(data);
@@ -41,6 +41,6 @@ export const useWorkout = (params) => {
 
     fetchWorkouts();
   }, [params, user]);
-  // console.log(workouts);
+
   return workouts;
 };

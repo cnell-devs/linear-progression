@@ -26,8 +26,6 @@ export const Login = () => {
     user ? navigate("/") : null;
   }, [navigate, user]);
 
-  console.log(user);
-
   if (user === undefined)
     return (
       <div className="spinner-box">
@@ -45,7 +43,6 @@ export const Login = () => {
 
           <form
             onSubmit={handleSubmit}
-            //   className="mx-auto flex w-2/5 flex-1 flex-col content-center justify-center gap-2"
             className="absolute left-1/2 top-1/2 flex w-2/5 -translate-x-1/2 -translate-y-1/2 flex-col gap-2"
           >
             <h1 className="mb-5 text-center font-bold">
@@ -96,15 +93,17 @@ export const Login = () => {
               Submit
             </button>
             <div className="text-center text-red-600">{loginError}</div>
-            <div className="hover:-translate-y- mt-8 h-10 w-fit self-center text-center duration-200 hover:-translate-y-2 dark:hover:text-white">
-              <Link to="/signup" className="">
-                Create an Account
-              </Link>
-            </div>
-            <div className="hover:-translate-y- h-10 w-fit self-center text-center duration-200 hover:-translate-y-2 dark:hover:text-white">
-              <Link to="/forgot-password" className="">
-                Forgot My Password
-              </Link>
+            <div className="flex mt-8 justify-center gap-14">
+              <div className="hover:-translate-y- h-10 w-fit self-center text-center duration-200 hover:-translate-y-2 dark:hover:text-white">
+                <Link to="/signup" className="">
+                  Create an Account
+                </Link>
+              </div>
+              <div className="hover:-translate-y- h-10 w-fit self-center text-center duration-200 hover:-translate-y-2 dark:hover:text-white">
+                <Link to="/forgot-password" className="">
+                  Forgot My Password
+                </Link>
+              </div>
             </div>
           </form>
         </div>

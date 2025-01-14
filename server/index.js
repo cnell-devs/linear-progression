@@ -7,7 +7,8 @@ const {
   validate,
   weightEntry,
   password,
-  verify
+  verify,
+  deleteUserRoute,
 } = require("./routes/routes.js");
 
 require("dotenv").config();
@@ -16,11 +17,15 @@ const express = require("express");
 const app = express();
 const passport = require("./config/passport.js");
 
-
 if (process.env.NODE_ENV === "development") {
   // Default to development if NODE_ENV is not set
+  process.env.API_URL = process.env.API_URL_DEV;
   process.env.DATABASE_URL = process.env.DATABASE_URL_DEV;
-
+} else if (process.env.NODE_ENV === "production") {
+  // Default to development if NODE_ENV is not set
+  process.env.API_URL = process.env.API_URL_PROD;
+  process.env.DATABASE_URL = process.env.DATABASE_URL_PROD;
+  process.env.DIRECT_URL = process.env.DIRECT_URL;
 }
 
 const allowedOrigins = [
@@ -60,6 +65,7 @@ app.use("/validate-token", validate);
 app.use("/weight-entry", weightEntry);
 app.use("/recovery", password);
 app.use("/verify", verify);
+app.use("/delete", deleteUserRoute);
 
 console.log(`Running in ${process.env.NODE_ENV} mode`);
 console.log(`API URL: ${process.env.API_URL}`);

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  url       = env("DATABASE_URL_DEV")
   directUrl = env("DIRECT_URL")
 }
 
@@ -15,8 +15,10 @@ model Users {
   email    String? @unique
   password String
   verified Boolean @default(false)
-  tokens   Token[]
 
+  lastLogin DateTime @default(now()) @db.Date
+
+  tokens  Token[]
   weights WeightEntry[]
 
   @@map("users")
@@ -48,7 +50,7 @@ model WeightEntry {
   workoutId Int
   weight    Int
   date      DateTime @default(now()) @db.Date
-  user      Users    @relation(fields: [userId], references: [id])
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
   workout   Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
 
   @@map("weightentry")

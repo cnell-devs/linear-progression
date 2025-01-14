@@ -6,7 +6,7 @@ import { useRecovery } from "../useRecovery";
 
 export const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [loginError, setLoginError] = useState("");
+  const [errors, setErrors] = useState();
   const { user } = useAuth();
   const [sent, setSent] = useState();
 
@@ -15,14 +15,16 @@ export const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const result = sendEmail(email);
-      console.log(result);
-        setSent(result);
+      const result = await sendEmail(email, setSent, setErrors);
+
 
     } catch (err) {
-      setLoginError(err.message);
+    //   setErrors(err.message);
     }
   };
+
+    console.log(errors);
+
 
   return (
     !user && (
@@ -62,10 +64,18 @@ export const ForgotPassword = () => {
               >
                 Submit
               </button>
-              <div className="text-center text-red-600">{loginError}</div>
+              {
+                errors?.map((error, i) => (
+                  <div className="text-center text-red-600" key={i}>
+                    {error}
+                  </div>
+                ))}
             </form>
           ) : (
-            < div className="absolute left-1/2 top-1/2 text-center w-2/5 -translate-x-1/2 -translate-y-1/2 text-3xl" >Recovery email sent <br />Check your registered email</div>
+            <div className="absolute left-1/2 top-1/2 text-center w-2/5 -translate-x-1/2 -translate-y-1/2 text-3xl">
+              Recovery email sent <br />
+              Check your registered email
+            </div>
           )}
         </div>
       </>

@@ -6,9 +6,8 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState();
 
-  const signup = async (e, email, username, password, navigate, setSent) => {
+  const signup = async (e, email, username, password, setSent, setErrors) => {
     e.preventDefault();
-    console.log("submitted");
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/signup`, {
@@ -20,18 +19,19 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Sign Up failed");
+        // console.log( await response.json());
+        setErrors(await response.json());
+        return;
       }
 
       const { token } = await response.json();
 
       // Save the JWT to localStorage
       localStorage.setItem("authToken", token);
-setSent(true)
-      // navigate("/login");
+      setSent(true);
     } catch (error) {
-      console.error("Error Signing Up:", error);
-      alert("Sign Up failed. Please check your credentials.");
+      // console.error("Error Signing Up:", error);
+      // alert("Sign Up failed. Please check your credentials.");
     }
   };
 
@@ -46,8 +46,6 @@ setSent(true)
     });
 
     if (!response.ok) {
-      console.log(response);
-
       throw new Error("Login failed");
     }
 
@@ -66,8 +64,6 @@ setSent(true)
   };
 
   const checkAuth = async () => {
-    console.log("checkAuth");
-
     const token = localStorage.getItem("authToken");
 
     if (token) {

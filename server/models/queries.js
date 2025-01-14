@@ -49,6 +49,21 @@ exports.getUserById = async (userId) => {
   }
 };
 
+exports.updateLastLogin = async (userId) => {
+  try {
+    const user = await prisma.users.update({
+      where: { id: userId },
+      data: {
+        lastLogin: new Date(),
+      },
+    });
+
+    return user;
+  } catch (error) {
+    return error;
+  }
+};
+
 exports.verifyUser = async (userId) => {
   try {
     const user = await prisma.users.update({
@@ -56,6 +71,17 @@ exports.verifyUser = async (userId) => {
       data: {
         verified: true,
       },
+    });
+    return user;
+  } catch (error) {
+    return error;
+  }
+
+};
+exports.deleteUser = async (userId) => {
+  try {
+    const user = await prisma.users.delete({
+      where: { id: userId },
     });
     return user;
   } catch (error) {
@@ -80,12 +106,14 @@ exports.changePassword = async (userId, password) => {
 exports.getToken = async (userId, tokenid = false) => {
   try {
     const token = await prisma.token.findUnique({
-      where: tokenid ? {
-        userId: userId,
-        token: tokenid.id
-      } : {
-        userId: userId
-      },
+      where: tokenid
+        ? {
+            userId: userId,
+            token: tokenid.id,
+          }
+        : {
+            userId: userId,
+          },
     });
 
     return token;
@@ -103,7 +131,7 @@ exports.addToken = async (user, token) => {
       data: {
         userId: user.id,
         token: token,
-        expiresAt: oneHourFromNow
+        expiresAt: oneHourFromNow,
       },
     });
     return veriToken;

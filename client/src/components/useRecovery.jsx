@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 
 export const useRecovery = () => {
-  const sendEmail = async (email) => {
+  const sendEmail = async (email, setSent, setErrors) => {
     const url = false;
     // params === "all"
     //   ? `${import.meta.env.VITE_API_URL}/workouts`
@@ -22,26 +22,22 @@ export const useRecovery = () => {
       );
 
       if (!response.ok) {
-        console.log(await response);
-        throw new Error("Login failed");
-      }
-      console.log(await response);
 
-      return true;
+
+        setErrors(await response.json());
+        setSent(false);
+        return;
+      } else {
+        setSent(true);
+      }
     } catch (error) {
-      console.log(error);
-      return false;
+      console.error(error);
     }
   };
 
-  const params = useParams()
+  const params = useParams();
   const resetPassword = async (password) => {
     const url = false;
-    // params === "all"
-    //   ? `${import.meta.env.VITE_API_URL}/workouts`
-    //   : `${import.meta.env.VITE_API_URL}/workouts?split=${params.get(
-    //       "split"
-    //     )}&alt=${params.get("alt")}`;
 
     try {
       const response = await fetch(
@@ -59,18 +55,15 @@ export const useRecovery = () => {
       );
 
       if (!response.ok) {
-        console.log(await response);
         throw new Error("Login failed");
       }
-      console.log(await response);
 
       return true;
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return false;
     }
   };
 
-  // console.log(workouts);
   return { sendEmail, resetPassword };
 };
