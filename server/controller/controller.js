@@ -38,11 +38,9 @@ exports.signUpPost = [
     try {
       if (await db.getUser(req.body.email)) {
         throw new Error("Email has already been used");
-
       }
       if (await db.getUser(req.body.username)) {
         throw new Error("Username has already been used");
-
       }
 
       req.body.password = await pw.encryptPW(req.body.password);
@@ -139,8 +137,6 @@ exports.addWeight = async (req, res) => {
   const { workoutId } = req.body;
   const { weight } = req.body;
   let { date } = req.body;
-
-
 
   console.log("date", date);
 
