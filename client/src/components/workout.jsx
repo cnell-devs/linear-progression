@@ -9,23 +9,17 @@ export const Workout = ({ workout }) => {
 
   if (workout.weights.length) {
     var lastWeight =
-      workout.weights.filter((entry) => entry.userId == user.id).length - 1;
+      workout.weights.filter((entry) => entry.userId == user?.id).length - 1;
   }
 
   const [weight, setWeight] = useState(
-
-    workout.weights.filter((entry) => entry.userId == user.id)[lastWeight]
-      ?.weight
-   || 100
+    workout.weights.filter((entry) => entry.userId == user?.id)[lastWeight]
+      ?.weight || 100
   );
-
-
 
   const increaseTopSet = () => setWeight(Number(weight) + 5);
   const decreaseTopSet = () =>
     setWeight(Number(weight) ? Number(weight) - 5 : 0);
-
-
 
   const saveWeight = async () => {
     if (!saved) {
@@ -51,7 +45,6 @@ export const Workout = ({ workout }) => {
         } else {
           setSaving(false);
           setSaved(true);
-
         }
       } catch (error) {
         setSaving(false);
@@ -77,46 +70,48 @@ export const Workout = ({ workout }) => {
             {workout.sets}x{workout.reps}
             {workout.amrap && " - Last Set AMRAP"}
           </div>
-          <div>Top Set: {weight}</div>
+          {user && <div>Top Set: {weight}</div>}
         </div>
-        {user && <div className="grid grid-cols-2 grid-rows-2">
-          {!saved && (
-            <>
-              <button
-                onClick={increaseTopSet}
-                className="material-icons btn bg-transparent border-none shadow-none text-3xl font-normal"
-              >
-                add
-              </button>
-              <button
-                onClick={decreaseTopSet}
-                className="material-icons btn bg-transparent border-none shadow-none text-3xl font-normal"
-              >
-                remove
-              </button>
-            </>
-          )}
-          <button
-            className={`btn col-span-2 ${
-              saved ? "row-span-2 bg-green-300" : ""
-            }`}
-            onClick={saveWeight}
-          >
-            {!saving ? (
-              !saved ? (
-                "save"
-              ) : (
-                "done ✅"
-              )
-            ) : (
-              <div className="spinner-box">
-                <span className="material-icons animate-spin spinner text-xl">
-                  refresh
-                </span>
-              </div>
+        {user && (
+          <div className="grid grid-cols-2 grid-rows-2">
+            {!saved && (
+              <>
+                <button
+                  onClick={increaseTopSet}
+                  className="material-icons btn bg-transparent border-none shadow-none text-3xl font-normal"
+                >
+                  add
+                </button>
+                <button
+                  onClick={decreaseTopSet}
+                  className="material-icons btn bg-transparent border-none shadow-none text-3xl font-normal"
+                >
+                  remove
+                </button>
+              </>
             )}
-          </button>
-        </div>}
+            <button
+              className={`btn col-span-2 ${
+                saved ? "row-span-2 bg-green-300" : ""
+              }`}
+              onClick={saveWeight}
+            >
+              {!saving ? (
+                !saved ? (
+                  "save"
+                ) : (
+                  "done ✅"
+                )
+              ) : (
+                <div className="spinner-box">
+                  <span className="material-icons animate-spin spinner text-xl">
+                    refresh
+                  </span>
+                </div>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
