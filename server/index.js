@@ -33,17 +33,18 @@ const allowedOrigins = [
   "https://linear-progression.vercel.app", // Vercel production URL
 ];
 
+app.options("*", cors());
+
 app.use(
   cors({
-    // origin: (origin, callback) => {
-    //   // Allow requests with no origin (like Postman) or from allowed origins
-    //   if (!origin || allowedOrigins.includes(origin)) {
-    //     callback(null, true);
-    //   } else {
-    //     callback(new Error("Not allowed by CORS"));
-    //   }
-    // }, // Replace with your frontend URL
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like Postman) or from allowed origins
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    }, // Replace with your frontend URL
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
     credentials: true, // Include cookies if needed
   })
