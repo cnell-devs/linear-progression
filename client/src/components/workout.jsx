@@ -23,6 +23,8 @@ export const Workout = ({ workout }) => {
           ?.weight
       : 100
   );
+  console.log(workout.weights);
+
 
   const increaseTopSet = () => setWeight(Number(weight) + 5);
   const decreaseTopSet = () =>
