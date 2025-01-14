@@ -5,6 +5,8 @@ const { logOut } = require("./logOut");
 const { workouts } = require("./workouts");
 const { validate } = require("./validate-token");
 const { weightEntry } = require("./weight-entry");
+const { verify } = require("./verify");
+const { password } = require("./password");
 
 module.exports = {
   home,
@@ -14,4 +16,6 @@ module.exports = {
   logOut,
   validate,
   weightEntry,
+  verify,
+  password,
 };

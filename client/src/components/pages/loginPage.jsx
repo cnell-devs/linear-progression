@@ -51,7 +51,6 @@ export const Login = () => {
             <h1 className="mb-5 text-center font-bold">
               Sign into your account
             </h1>
-
             <label className="input input-bordered flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -100,6 +99,11 @@ export const Login = () => {
             <div className="hover:-translate-y- mt-8 h-10 w-fit self-center text-center duration-200 hover:-translate-y-2 dark:hover:text-white">
               <Link to="/signup" className="">
                 Create an Account
+              </Link>
+            </div>
+            <div className="hover:-translate-y- h-10 w-fit self-center text-center duration-200 hover:-translate-y-2 dark:hover:text-white">
+              <Link to="/forgot-password" className="">
+                Forgot My Password
               </Link>
             </div>
           </form>

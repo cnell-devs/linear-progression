@@ -6,6 +6,8 @@ const {
   workouts,
   validate,
   weightEntry,
+  password,
+  verify
 } = require("./routes/routes.js");
 
 require("dotenv").config();
@@ -64,6 +66,8 @@ app.use("/login", logIn);
 app.use("/logout", logOut);
 app.use("/validate-token", validate);
 app.use("/weight-entry", weightEntry);
+app.use("/recovery", password);
+app.use("/verify", verify);
 
 console.log(`Running in ${process.env.NODE_ENV} mode`);
 console.log(`API URL: ${process.env.API_URL}`);

@@ -59,7 +59,7 @@ model Token {
   userId    String   @unique // Unique reference to the user
   token     String // Token value
   createdAt DateTime @default(now()) // Token creation timestamp
-  expiresAt DateTime // Expiration handled via a calculated value in the backend
+  expiresAt DateTime @default(dbgenerated("now() + interval '1 hour'"))
   user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("tokens") // Map to "tokens" table in the database

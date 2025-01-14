@@ -1,15 +1,18 @@
 /* eslint-disable react/prop-types */
 
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "./auth/authContext";
 export const Nav = ({ workouts, split, setSplit }) => {
+  const { pathname } = useLocation()
   const [searchParams] = useSearchParams();
-  const back = searchParams.get("split");
+
+  const back = searchParams.get("split") || pathname == '/forgot-password'
+
   const { user } = useAuth();
 
   const type = workouts
     ? workouts[0].type.charAt(0).toUpperCase() + workouts[0].type.slice(1)
-    : "Linear Progression";
+    : pathname == "/forgot-password" ? "Forgot Password" : "Linear Progression";
 
   return (
     <>
@@ -39,7 +42,7 @@ export const Nav = ({ workouts, split, setSplit }) => {
         </div>
 
         {
-          /* localStorage.getItem("authToken") &&  */ <div className="dropdown dropdown-end flex-none">
+         <div className="dropdown dropdown-end flex-none">
             <div
               role="button"
               className="btn material-icons shadow-none border-none bg-transparent text-2xl"

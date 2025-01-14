@@ -1,23 +1,21 @@
 const db = require("../models/queries");
-const { validateSignUp } = require("../utils/input-validation");
+const { validateSignUp, validateEmail } = require("../utils/input-validation");
 const pw = require("../utils/pw-encrypt");
 const { validationResult } = require("express-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const { sendEmail } = require("../utils/send-email");
 
-
-const emailLink = async (req, res) => {
+exports.emailLink = async (req, res) => {
   try {
-    const user = await User.findOne({ _id: req.params.id });
+    const user = await db.getUserById(req.params.id);
     if (!user) return res.status(400).send({ message: "Invalid Link" });
 
-    const token = await Token.findOne({
-      userId: user._id,
-      token: req.params.token,
-    });
-    if (!token) return res.status(400).send({ message: "inValid Link" });
-    await User.updateOne({ _id: user._id }, { verified: true });
-    await token.remove();
+    const token = await db.getToken(req.params.id, req.params.token);
+    if (!token) return res.status(400).send({ message: "invalid Link" });
+
+    await db.verifyUser(req.params.id);
+    await db.removeToken(token);
 
     res.status(200).send({ message: "Email Verified successfully" });
   } catch (error) {
@@ -33,25 +31,38 @@ exports.signUpPost = [
       res.send(errors.array().map((error) => "msg: " + error.msg));
       return;
     }
-    const user = await db.getUser(req.body.username)
-    console.log(user);
-
 
     try {
-      if (user) throw new Error("User already created")
+      if (await db.getUser(req.body.username))
+        throw new Error("User already created");
 
       req.body.password = await pw.encryptPW(req.body.password);
-      const result = await db.addUser(req.body);
+      const user = await db.addUser(req.body);
+
+      console.log(user);
 
       // create Token and save to db
       // send verification email
       //add email to signup form and test
       const token = jwt.sign(user, "verify");
 
+      console.log("token", token);
 
+      const addToken = await db.addToken(user, token);
+      console.log(addToken);
 
+      const url = `http://localhost:3000/verify/${user.id}/${token}`;
 
-      res.send(result);
+      const subject = " Please Verify Email";
+      const message = `
+      <h3>Hello ${user.username}</h3>
+      <p>Thanks yor for registering for our services.</p>
+      <p>Click this link <a href="${url}">here</a> to verify your email</p>
+    `;
+      await sendEmail(user.email, subject, message);
+      res.status(201).send({ message: "An Email sent to your account please" });
+
+      // res.send(addToken);
     } catch (error) {
       console.log(error);
 
@@ -60,10 +71,7 @@ exports.signUpPost = [
   },
 ];
 
-
-
 exports.logInPost = (req, res) => {
-
   passport.authenticate("local", { session: false }, (err, user, info) => {
     if (err || !user) {
       return res.status(400).json({
@@ -136,11 +144,97 @@ exports.updateWeight = async (req, res) => {
   try {
     const workouts = await db.updateWeightEntry(userId, workoutId, weight);
 
-    // console.log(workouts);
-
     res.send(workouts);
   } catch (error) {
     console.error(error);
     return error;
+  }
+};
+
+exports.passwordLink = [
+  validateEmail,
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.send(errors.array().map((error) => "msg: " + error.msg));
+        return;
+      }
+
+      let user = await db.getUser(req.body.email);
+      if (!user)
+        return res
+          .status(409)
+          .send({ message: "user with email does not exist" });
+
+      let token = await db.getToken(user.id);
+
+      if (!token) {
+        token = await db.addToken(user, jwt.sign(user, "verify"));
+      }
+      console.log(token);
+      ;
+
+      const url = `http://localhost:3000/recovery/${user.id}/${token.token}`;
+      const subject = "Password Reset";
+      const message = `
+      <p>Here is a link to reset your password</p>
+      <p>Click thi link <a href="${url}">here</a> to reset your password</p>
+    `;
+
+      await sendEmail(user.email, subject, message);
+
+      res
+        .status(200)
+        .send({ message: "password reset link is sent to your email account" });
+    } catch (error) {
+      res.status(500).send({ message: "Internal server error" });
+    }
+  },
+];
+
+exports.verifyUrl = async (req, res) => {
+  try {
+    const user = await db.getUserById(req.params.id);
+    if (!user) return res.status(400).send({ message: "Invalid user" });
+
+    const token = await db.getToken(req.params.id, req.params.token);
+    if (!token) return res.status(400).send({ message: "Invalid token" });
+    // res.status(200).send({ message: "Valid Url" });
+    res.redirect(`http://localhost:5173/reset-password/${req.params.id}/${req.params.token}`);
+  } catch (error) {
+    res.status(500).send({ message: "Internal server error" });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    // const validate = (data) => {
+    //   const passwordSchema = Joi.object({
+    //     password: passwordComplexity().required().label("password"),
+    //   });
+    //   return passwordSchema.validate(data);
+    // };
+    // const { error } = validate(req.body);
+    // if (error)
+    //   return res.status(400).send({
+    //     message: error.details[0].message,
+    //   });
+
+    const user = await db.getUserById(req.params.id);
+    if (!user) return res.status(400).send({ message: "Invalid link" });
+
+    const token = await db.getToken(req.params.id, req.params.token);
+    if (!token) return res.status(400).send({ message: "Invalid Link" });
+
+    user.password = await pw.encryptPW(req.body.password);
+    await db.changePassword(user.id, user.password)
+
+if (!user.verified) await db.verifyUser(user.id);
+    await db.removeToken(token);
+
+    res.status(200).send({ message: "password successfully reset" });
+  } catch (error) {
+    res.status(500).send({ message: "Internal server error" });
   }
 };

@@ -12,6 +12,8 @@ import { Exercises } from "../components/pages/exercises";
 import { Profile } from "../components/pages/profile";
 import { ProtectedRoute } from "../components/auth/protectedRoute";
 import { About } from "../components/pages/about";
+import { ForgotPassword } from "../components/pages/forgotPassword";
+import { ResetPassword } from "../components/pages/resetPassword";
 
 // import { ErrorPage } from "../components/pages/ErrorPage";
 
@@ -32,6 +34,8 @@ export const router = createBrowserRouter(
       <Route path="/logout" element={<Logout />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/about" element={<About />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
       <Route
         path="/exercises"
         element={

@@ -7,23 +7,124 @@ exports.addUser = async (user) => {
       data: {
         username: user.username,
         password: user.password,
+        email: user.email,
       },
     });
+    return prismaUser;
   } catch (error) {
     return error;
   }
-  return prismaUser;
 };
 
 exports.getUser = async (username) => {
+  console.log(username);
+
+  const email = username.includes("@");
+  console.log(email);
+
   try {
     const user = await prisma.users.findUnique({
-      where: {
-        username: username,
-      },
+      where: email
+        ? {
+            email: username,
+          }
+        : { username: username },
     });
 
     return user;
+  } catch (error) {
+    return error;
+  }
+};
+
+exports.getUserById = async (userId) => {
+  try {
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+    });
+
+    return user;
+  } catch (error) {
+    return error;
+  }
+};
+
+exports.verifyUser = async (userId) => {
+  try {
+    const user = await prisma.users.update({
+      where: { id: userId },
+      data: {
+        verified: true,
+      },
+    });
+    return user;
+  } catch (error) {
+    return error;
+  }
+};
+
+exports.changePassword = async (userId, password) => {
+  try {
+    const user = await prisma.users.update({
+      where: { id: userId },
+      data: {
+        password: password,
+      },
+    });
+    return user;
+  } catch (error) {
+    return error;
+  }
+};
+
+exports.getToken = async (userId, tokenid = false) => {
+  try {
+    const token = await prisma.token.findUnique({
+      where: tokenid ? {
+        userId: userId,
+        token: tokenid.id
+      } : {
+        userId: userId
+      },
+    });
+
+    return token;
+  } catch (error) {
+    return error;
+  }
+};
+
+exports.addToken = async (user, token) => {
+  const oneHourFromNow = new Date();
+  oneHourFromNow.setHours(oneHourFromNow.getHours() + 1); // Add 1 hour to the current time
+
+  try {
+    const veriToken = await prisma.token.create({
+      data: {
+        userId: user.id,
+        token: token,
+        expiresAt: oneHourFromNow
+      },
+    });
+    return veriToken;
+  } catch (error) {
+    return error;
+  }
+};
+
+exports.removeToken = async (token) => {
+  console.log("deleting", token.id);
+
+  try {
+    const veriToken = await prisma.token.delete({
+      where: {
+        id: token.id,
+      },
+    });
+
+    console.log(veriToken);
+
+    return veriToken;
   } catch (error) {
     return error;
   }
@@ -76,7 +177,7 @@ exports.addWeightEntry = async (userId, workoutId, weight) => {
     });
 
     console.log("New weight entry created:", newEntry);
-    return newEntry
+    return newEntry;
   } catch (error) {
     console.error("Error creating weight entry:", error.message);
   }
@@ -85,12 +186,11 @@ exports.addWeightEntry = async (userId, workoutId, weight) => {
 exports.updateWeightEntry = async (id, userId, workoutId, newWeight) => {
   try {
     const updatedEntry = await prisma.weightEntry.update({
-      where:
-      {
-          id,
-          userId,
-          workoutId,
-        },
+      where: {
+        id,
+        userId,
+        workoutId,
+      },
 
       data: {
         weight: newWeight, // Update the weight
@@ -99,7 +199,7 @@ exports.updateWeightEntry = async (id, userId, workoutId, newWeight) => {
     });
 
     console.log("Weight updated:", updatedEntry);
-    return updatedEntry
+    return updatedEntry;
   } catch (error) {
     console.error("Error updating weight:", error.message);
   }
