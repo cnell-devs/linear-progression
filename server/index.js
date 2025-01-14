@@ -16,20 +16,12 @@ const express = require("express");
 const app = express();
 const passport = require("./config/passport.js");
 
-let databaseUrl;
 
-if (process.env.NODE_ENV === "production") {
-  databaseUrl = process.env.DATABASE_URL_PROD;
-} else {
+if (process.env.NODE_ENV === "development") {
   // Default to development if NODE_ENV is not set
-  databaseUrl = process.env.DATABASE_URL_DEV;
+  process.env.DATABASE_URL = process.env.DATABASE_URL_DEV;
+
 }
-
-console.log("Using database URL:", databaseUrl);
-
-// Now set the database URL for Prisma
-process.env.DATABASE_URL = databaseUrl;
-
 
 const allowedOrigins = [
   "http://localhost:5173", // Local development
