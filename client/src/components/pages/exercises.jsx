@@ -7,7 +7,7 @@ export function Exercises() {
   //   const [workouts, setWorkouts] = useState(null);
 
   const [searchParams] = useSearchParams();
-  const workouts = useWorkout(searchParams);
+  const {workouts} = useWorkout(searchParams);
 
   const showDivider = (index) => !(workouts && index == workouts.length - 1);
 

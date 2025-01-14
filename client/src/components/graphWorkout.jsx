@@ -1,8 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
 import { useAuth } from "./auth/authContext";
-
-
 import {
   AnimatedAxis, // any of these can be non-animated equivalents
   AnimatedGrid,
@@ -12,42 +10,38 @@ import {
 } from "@visx/xychart";
 import { ParentSize } from "@visx/responsive";
 import { EntryLog } from "./entryLog";
+import { AddEntryModal } from "./addEntryModal";
 
-
-export const GraphWorkout = ({workouts}) => {
+export const GraphWorkout = ({ workouts, fetchData }) => {
   const [graphWorkout, setGraphWorkout] = useState(false);
+  // const [edit, setEdit] = useState()
   const { user } = useAuth();
-
-
 
   const getWeights =
     workouts &&
-
     workouts.filter((workout) => workout.id == graphWorkout)[0]?.weights;
-
-
 
   const chartData =
     getWeights &&
     getWeights
       .filter((entry) => entry.userId == user.id)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
       .map((weight) => ({
-        x: new Date(weight.date).toLocaleDateString(),
+        x: new Date(weight.date).toLocaleDateString("en-US", {
+          timeZone: "UTC",
+        }),
         y: weight.weight,
-      }));
+      }))
 
   const maxValue =
     chartData && Math.max(...chartData.map((xy) => Number(xy.y)));
   const minValue =
     chartData && Math.min(...chartData.map((xy) => Number(xy.y)));
 
-
-
   const accessors = {
     xAccessor: (d) => d.x,
     yAccessor: (d) => d.y,
   };
-
 
   const selectedWorkout = workouts?.find(
     (workout) => workout.id == graphWorkout
@@ -56,32 +50,47 @@ export const GraphWorkout = ({workouts}) => {
     <div>
       <h1 className="text-2xl">Workout Weight Progression</h1>
       {workouts && (
-        <div className="dropdown dropdown-bottom ">
-          <div tabIndex={0} role="button" className="flex items-center m-1">
-            {selectedWorkout
-              ? `${selectedWorkout?.name} ${selectedWorkout?.sets}x${selectedWorkout?.reps} `
-              : "Select a Workout"}
-            <span className="material-icons text-sm">
-              &nbsp;expand_circle_down
-            </span>
+        <div className="flex items-center justify-between">
+          <div className="dropdown dropdown-bottom ">
+            <div tabIndex={0} role="button" className="flex items-center m-1">
+              {selectedWorkout
+                ? `${selectedWorkout?.name} ${selectedWorkout?.sets}x${selectedWorkout?.reps} `
+                : "Select a Workout"}
+              <span className="material-icons text-sm">
+                &nbsp;expand_circle_down
+              </span>
+            </div>
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu bg-base-100 rounded-box w-52 p-2 shadow overflow-y-scroll z-10"
+            >
+              {workouts.map((workout, index) => (
+                <li key={index}>
+                  <button onClick={() => setGraphWorkout(workout.id)}>
+                    {`${workout.name} ${workout.sets}x${workout.reps}`}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul
-            tabIndex={0}
-            className="dropdown-content menu bg-base-100 rounded-box w-52 p-2 shadow overflow-y-scroll z-10"
+          <button
+            className="flex items-center btn"
+            onClick={() =>
+              document.getElementById("add_entry_modal").showModal()
+            }
           >
-            {workouts.filter(workout => workout.weights.length > 0).map((workout, index) => (
-              <li key={index}>
-                <button onClick={() => setGraphWorkout(workout.id)}>
-                  {`${workout.name} ${workout.sets}x${workout.reps}`}
-                </button>
-              </li>
-            ))}
-          </ul>
+            Add An Entry
+            <span className="material-icons text-sm">&nbsp;add_circle</span>
+          </button>
         </div>
       )}
 
       {!chartData?.length ? (
-       !selectedWorkout ? "" :  <p>more data needed</p>
+        !selectedWorkout ? (
+          ""
+        ) : (
+          <p>more data needed</p>
+        )
       ) : (
         <div style={{ width: "100%", height: 400 }}>
           <ParentSize>
@@ -146,7 +155,7 @@ export const GraphWorkout = ({workouts}) => {
                         {tooltipData.nearestDatum.key}
                       </div>
                       {accessors.xAccessor(tooltipData.nearestDatum.datum)}
-                        &nbsp;
+                      &nbsp;
                       {accessors.yAccessor(tooltipData.nearestDatum.datum)}
                     </div>
                   )}
@@ -154,9 +163,10 @@ export const GraphWorkout = ({workouts}) => {
               </XYChart>
             )}
           </ParentSize>
-          </div>
+        </div>
       )}
-      {workouts && <EntryLog selected={selectedWorkout} />}
+      {workouts && <EntryLog workouts={workouts} selected={selectedWorkout} fetchData={fetchData} />}
+      <AddEntryModal selected={selectedWorkout} fetchData={fetchData} />
     </div>
   );
 };

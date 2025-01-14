@@ -6,11 +6,7 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/send-email");
 
-
-
-
-    console.log(process.env.API_URL);
-
+console.log(process.env.API_URL);
 
 exports.emailLink = async (req, res) => {
   try {
@@ -35,13 +31,19 @@ exports.signUpPost = [
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).send(errors.array());
+      res.status(400).send(errors.array().map((error) => error.msg));
       return;
     }
 
     try {
-      if (await db.getUser(req.body.username))
-        throw new Error("User already created");
+      if (await db.getUser(req.body.email)) {
+        throw new Error("Email has already been used");
+
+      }
+      if (await db.getUser(req.body.username)) {
+        throw new Error("Username has already been used");
+
+      }
 
       req.body.password = await pw.encryptPW(req.body.password);
       const user = await db.addUser(req.body);
@@ -67,11 +69,14 @@ exports.signUpPost = [
       <p>Click this link <a href="${url}">here</a> to verify your email</p>
     `;
       await sendEmail(user.email, subject, message);
+
       res.status(201).send({ message: "An Email sent to your account please" });
 
       // res.send(addToken);
     } catch (error) {
       console.log(error);
+
+      res.status(400).send([error.message]);
 
       return error;
     }
@@ -133,18 +138,23 @@ exports.addWeight = async (req, res) => {
   const { userId } = req.body;
   const { workoutId } = req.body;
   const { weight } = req.body;
+  let { date } = req.body;
+
+
+
+  console.log("date", date);
 
   try {
     const checkDate = await db.getWeightEntry(
       userId,
       workoutId,
-      new Date().toLocaleDateString()
+      new Date(date)
     );
 
     console.log("checkDate", checkDate);
 
     const workouts = !checkDate
-      ? await db.addWeightEntry(userId, workoutId, weight)
+      ? await db.addWeightEntry(userId, workoutId, weight, new Date(date))
       : await db.updateWeightEntry(checkDate.id, userId, workoutId, weight);
 
     // console.log(workouts);
@@ -163,6 +173,20 @@ exports.updateWeight = async (req, res) => {
     const workouts = await db.updateWeightEntry(userId, workoutId, weight);
 
     res.send(workouts);
+  } catch (error) {
+    console.error(error);
+    return error;
+  }
+};
+
+exports.deleteWeight = async (req, res) => {
+  const { id } = req.params;
+  console.log(id);
+
+  try {
+    const deleted = await db.deleteWeightEntry(Number(id));
+
+    res.send(deleted);
   } catch (error) {
     console.error(error);
     return error;

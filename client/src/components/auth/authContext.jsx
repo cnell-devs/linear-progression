@@ -19,8 +19,10 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (!response.ok) {
-        // console.log( await response.json());
-        setErrors(await response.json());
+        const json = await response.json()
+        console.log(json);
+
+        setErrors(json);
         return;
       }
 
@@ -32,6 +34,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       // console.error("Error Signing Up:", error);
       // alert("Sign Up failed. Please check your credentials.");
+      console.log(error);
+
+      return error
     }
   };
 
@@ -75,8 +80,6 @@ export const AuthProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      console.log(response);
 
       if (response.ok) {
         const { user } = await response.json();

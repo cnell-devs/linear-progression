@@ -1,12 +1,14 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 // import { useAuth } from "./auth/authContext";
-import { useWorkout } from "./useWorkout";
 
-export const EntryLog = ({ selected }) => {
+import { DeleteEntryModal } from "./deleteEntryModal";
+
+export const EntryLog = ({ workouts, selected, fetchData }) => {
   const [workoutLog, setWorkoutLog] = useState(false);
-  const workouts = useWorkout("all");
-  // const { user } = useAuth();
+  const [currentEntry, setCurrentEntry] = useState();
+
+  // const { workouts } = useWorkout("all");
 
   useEffect(() => {
     const log = workouts?.map((workout) => ({
@@ -16,7 +18,6 @@ export const EntryLog = ({ selected }) => {
     }));
     setWorkoutLog(log?.filter((entry) => entry?.id === selected?.id));
   }, [workouts, selected]);
-
 
   return (
     !selected?.weights?.length == 0 && (
@@ -28,19 +29,40 @@ export const EntryLog = ({ selected }) => {
                 <th></th>
                 <td>Date</td>
                 <td>Weight</td>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              {workoutLog.map((entry) =>
-                entry.entries.map((workout, z) => {
-                  return (
-                    <tr key={z}>
-                      <th></th>
-                      <td>{new Date(workout.date).toLocaleDateString()}</td>
-                      <td>{workout.weight}</td>
-                    </tr>
-                  );
-                })
+              {workoutLog?.map((entry) =>
+                entry.entries
+                  .sort((a, b) => new Date(b.date) - new Date(a.date))
+                  .map((workout, z) => {
+                    return (
+                      <tr key={z} className="">
+                        <th></th>
+                        <td>
+                          {new Date(workout.date).toLocaleDateString("en-US", {
+                            timeZone: "UTC",
+                          })}
+                        </td>
+
+                        <td>{workout.weight}</td>
+                        <td>
+                          <button
+                            className="material-icons text-red-500 font-bold w-full text-right"
+                            onClick={() => {
+                              document
+                                .getElementById("delete_entry_modal")
+                                .showModal();
+                              setCurrentEntry(workout);
+                            }}
+                          >
+                            close_small
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
               )}
             </tbody>
             <tfoot>
@@ -53,6 +75,11 @@ export const EntryLog = ({ selected }) => {
             </tfoot>
           </table>
         </div>
+        <DeleteEntryModal
+          entry={currentEntry}
+          selected={selected}
+          fetchData={fetchData}
+        />
       </>
     )
   );

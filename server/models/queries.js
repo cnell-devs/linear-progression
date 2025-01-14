@@ -178,13 +178,13 @@ exports.getWorkouts = async (split) => {
   }
 };
 
-exports.getWeightEntry = async (userId, workoutId, date) => {
+exports.getWeightEntry = async (userId, workoutId, date = new Date()) => {
   try {
     const entry = await prisma.weightEntry.findFirst({
       where: {
         userId,
         workoutId,
-        date: new Date(),
+        date: date,
       },
     });
     return entry;
@@ -193,14 +193,14 @@ exports.getWeightEntry = async (userId, workoutId, date) => {
   }
 };
 
-exports.addWeightEntry = async (userId, workoutId, weight) => {
+exports.addWeightEntry = async (userId, workoutId, weight, date= new Date()) => {
   try {
     const newEntry = await prisma.weightEntry.create({
       data: {
         userId: userId, // The ID of the user
         workoutId: workoutId, // The ID of the workout
         weight: weight, // The weight value to create
-        date: new Date(), // Optionally set the date (default: now)
+        date: date, // Optionally set the date (default: now)
       },
     });
 
@@ -230,6 +230,22 @@ exports.updateWeightEntry = async (id, userId, workoutId, newWeight) => {
     return updatedEntry;
   } catch (error) {
     console.error("Error updating weight:", error.message);
+  }
+};
+
+exports.deleteWeightEntry = async (id) => {
+  try {
+    const deleted = await prisma.weightEntry.delete({
+      where: {
+        id : id
+      },
+
+    });
+
+    console.log("Weight deleted")
+    return deleted;
+  } catch (error) {
+    console.error("Error deleted weight:", error.message);
   }
 };
 

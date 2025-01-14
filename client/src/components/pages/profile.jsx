@@ -4,11 +4,12 @@ import { useWorkout } from "../useWorkout";
 import { Nav } from "../nav";
 // import { useState } from "react";
 import { PastWeek } from "../pastWeek";
-import { DeleteModal } from "../deleteModal";
 
 export const Profile = () => {
   // const { user } = useAuth();
-  const workouts = useWorkout("all");
+  const {workouts, fetchWorkouts} = useWorkout("all");
+
+
 
   return (
     <>
@@ -16,15 +17,7 @@ export const Profile = () => {
       {workouts ? (
         <div className="flex flex-col gap-8">
           <PastWeek workouts={workouts} />
-          <GraphWorkout workouts={workouts} />
-          <button
-            className="absolute bottom-0 left-1/2 text-red-600"
-            onClick={() => document.getElementById("my_modal").showModal()}
-          >
-            delete my account
-          </button>
-
-          <DeleteModal />
+          <GraphWorkout workouts={workouts} fetchData={fetchWorkouts} />
         </div>
       ) : (
         <div className="spinner-box">
