@@ -18,12 +18,12 @@ export const Workout = ({ workout }) => {
   }
 
   const [weight, setWeight] = useState(
-    workout
-      ? workout.weights.filter((entry) => entry.userId == user.id)[lastWeight]
-          ?.weight
-      : 100
+
+    workout.weights.filter((entry) => entry.userId == user.id)[lastWeight]
+      ?.weight
+   || 100
   );
-  console.log(workout.weights);
+
 
 
   const increaseTopSet = () => setWeight(Number(weight) + 5);
