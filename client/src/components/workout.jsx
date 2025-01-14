@@ -79,7 +79,7 @@ export const Workout = ({ workout }) => {
           </div>
           <div>Top Set: {weight}</div>
         </div>
-        <div className="grid grid-cols-2 grid-rows-2">
+        {user && <div className="grid grid-cols-2 grid-rows-2">
           {!saved && (
             <>
               <button
@@ -116,7 +116,7 @@ export const Workout = ({ workout }) => {
               </div>
             )}
           </button>
-        </div>
+        </div>}
       </div>
     </>
   );
