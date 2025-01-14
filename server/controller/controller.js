@@ -6,18 +6,11 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/send-email");
 
-const apiUrl =
-  process.env.NODE_ENV == "development"
-    ? process.env.API_URL_DEV
-    : process.env.API_URL_PROD;
 
-const clientUrl =
-  process.env.NODE_ENV == "development"
-    ? process.env.CLIENT_URL_DEV
-    : process.env.CLIENT_URL_PROD;
 
-    console.log(apiUrl);
-    
+
+    console.log(process.env.API_URL);
+
 
 exports.emailLink = async (req, res) => {
   try {
@@ -31,7 +24,7 @@ exports.emailLink = async (req, res) => {
     await db.removeToken(token);
 
     // res.status(200).send({ message: "Email Verified successfully" });
-    res.redirect(`${clientUrl}`);
+    res.redirect(`${process.env.CLIENT_URL}`);
   } catch (error) {
     res.status(500).send({ message: "Internally Server Error" });
   }
@@ -65,7 +58,7 @@ exports.signUpPost = [
       const addToken = await db.addToken(user, token);
       console.log(addToken);
 
-      const url = `${apiUrl}/verify/${user.id}/${token}`;
+      const url = `${process.env.API_URL}/verify/${user.id}/${token}`;
 
       const subject = " Please Verify Email";
       const message = `
@@ -195,8 +188,8 @@ exports.passwordLink = [
       if (!token) {
         token = await db.addToken(user, jwt.sign(user, "verify"));
       }
-      console.log(apiUrl);
-      const url = `${apiUrl}/recovery/${user.id}/${token.token}`;
+      console.log(process.env.API_URL);
+      const url = `${process.env.API_URL}/recovery/${user.id}/${token.token}`;
       const subject = "Password Reset";
       const message = `
       <p>Here is a link to reset your password</p>
@@ -223,7 +216,7 @@ exports.verifyUrl = async (req, res) => {
     if (!token) return res.status(400).send({ message: "Invalid token" });
 
     res.redirect(
-      `${clientUrl}/reset-password/${req.params.id}/${req.params.token}`
+      `${process.env.CLIENT_URL}/reset-password/${req.params.id}/${req.params.token}`
     );
   } catch (error) {
     res.status(500).send({ message: "Internal server error" });
