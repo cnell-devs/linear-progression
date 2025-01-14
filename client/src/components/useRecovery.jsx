@@ -57,7 +57,6 @@ export const useRecovery = () => {
       if (!response.ok) {
         throw new Error("Login failed");
       }
-
       return true;
     } catch (error) {
       console.error(error);

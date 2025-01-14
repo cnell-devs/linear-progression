@@ -28,8 +28,6 @@ const allowedOrigins = [
   "https://linear-progression.vercel.app", // Vercel production URL
 ];
 
-app.options("*", cors());
-
 app.use(
   cors({
     origin: (origin, callback) => {

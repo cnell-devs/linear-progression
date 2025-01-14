@@ -16,6 +16,9 @@ const clientUrl =
     ? process.env.CLIENT_URL_DEV
     : process.env.CLIENT_URL_PROD;
 
+    console.log(apiUrl);
+    
+
 exports.emailLink = async (req, res) => {
   try {
     const user = await db.getUserById(req.params.id);
@@ -192,7 +195,7 @@ exports.passwordLink = [
       if (!token) {
         token = await db.addToken(user, jwt.sign(user, "verify"));
       }
-      console.log(token);
+      console.log(apiUrl);
       const url = `${apiUrl}/recovery/${user.id}/${token.token}`;
       const subject = "Password Reset";
       const message = `
