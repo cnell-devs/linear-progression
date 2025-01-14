@@ -1,27 +1,25 @@
 const nodemailer = require("nodemailer");
 
 exports.sendEmail = async (email, subject, message) => {
-  if (email.startsWith("@")) throw new Error("Invalid Email")
-  const host = "linearprogressionmail@gmail.com";
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: host,
-        pass: "dqly xafh iqaj aduf",
-      },
-    });
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 
-    transporter.sendMail({
-      from: host,
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
       to: email,
-      subject: subject,
+      subject,
       html: message,
     });
-    console.log("Email sent Successfully", email, subject, message);
+
+    console.log("Email sent successfully");
   } catch (error) {
-    console.log("Email not sent");
-    console.log(error);
-    return error;
+    console.error("Error sending email:", error);
+    throw error;
   }
 };
