@@ -29,7 +29,7 @@ console.log("Using database URL:", databaseUrl);
 
 // Now set the database URL for Prisma
 process.env.DATABASE_URL = databaseUrl;
-process.env.DIRECT_URL = process.env.DIRECT_URL_PROD;
+
 
 const allowedOrigins = [
   "http://localhost:5173", // Local development

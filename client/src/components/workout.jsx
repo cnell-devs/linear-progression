@@ -18,18 +18,21 @@ export const Workout = ({ workout }) => {
   }
 
   const [weight, setWeight] = useState(
-    workout.weights.filter((entry) => entry.userId == user.id)[lastWeight]
-      ?.weight || 100
+    workout
+      ? workout.weights.filter((entry) => entry.userId == user.id)[lastWeight]
+          ?.weight
+      : 100
   );
 
   const increaseTopSet = () => setWeight(Number(weight) + 5);
-  const decreaseTopSet = () => setWeight(Number(weight) ? Number(weight) - 5 : 0);
+  const decreaseTopSet = () =>
+    setWeight(Number(weight) ? Number(weight) - 5 : 0);
 
   // console.log(user);
 
   const saveWeight = async () => {
     if (!saved) {
-      setSaving(true)
+      setSaving(true);
       try {
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/weight-entry`,
@@ -49,12 +52,12 @@ export const Workout = ({ workout }) => {
         if (!response.ok) {
           throw new Error("Post failed");
         } else {
-          setSaving(false)
+          setSaving(false);
           setSaved(true);
           console.log("SET");
         }
       } catch (error) {
-        setSaving(false)
+        setSaving(false);
         console.error("Save failed", error);
         alert("Save failed.");
       }
