@@ -15,10 +15,10 @@ export const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const result = await sendEmail(email, setSent, setErrors);
+     await sendEmail(email, setSent, setErrors);
 
 
-    } catch (err) {
+    } catch {
     //   setErrors(err.message);
     }
   };

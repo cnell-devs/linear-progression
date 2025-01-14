@@ -21,11 +21,6 @@ if (process.env.NODE_ENV === "development") {
   // Default to development if NODE_ENV is not set
   process.env.API_URL = process.env.API_URL_DEV;
   process.env.DATABASE_URL = process.env.DATABASE_URL_DEV;
-} else if (process.env.NODE_ENV === "production") {
-  // Default to development if NODE_ENV is not set
-  process.env.API_URL = process.env.API_URL_PROD;
-  process.env.DATABASE_URL = process.env.DATABASE_URL_PROD;
-  process.env.DIRECT_URL = process.env.DIRECT_URL;
 }
 
 const allowedOrigins = [
