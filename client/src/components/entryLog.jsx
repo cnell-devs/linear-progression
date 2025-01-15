@@ -22,7 +22,7 @@ export const EntryLog = ({ workouts, selected, fetchData }) => {
   return (
     !selected?.weights?.length == 0 && (
       <>
-        <div className="overflow-x-auto">
+        <div className="w-full">
           <table className="table table-xs table-pin-rows table-pin-cols">
             <thead>
               <tr>

@@ -8,7 +8,6 @@ export const AddEntryModal = ({ selected, fetchData }) => {
   const [weight, setWeight] = useState(100);
   const [date, setDate] = useState(new Date());
 
-
   const saveWeight = async () => {
     try {
       const response = await fetch(
@@ -42,11 +41,13 @@ export const AddEntryModal = ({ selected, fetchData }) => {
     <>
       <dialog id="add_entry_modal" className="modal">
         {
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">{selected?.name}</h3>
+          <div className="modal-box flex flex-col gap-6">
+            <h3 className="font-extrabold text-center text-lg ">
+              {selected?.name}
+            </h3>
             {selected ? (
               <form action="">
-                <label className="py-4">
+                <label className="">
                   Enter Date: &nbsp;
                   <input
                     type="date"
@@ -57,7 +58,7 @@ export const AddEntryModal = ({ selected, fetchData }) => {
                   />
                 </label>
                 <br />
-                <label className="py-4">
+                <label className="">
                   Enter Weight: &nbsp;
                   <input
                     onChange={(e) => setWeight(e.target.value)}
@@ -65,7 +66,8 @@ export const AddEntryModal = ({ selected, fetchData }) => {
                     type="number"
                     name="add_weight"
                     id="add_weight"
-                    step="5"
+                    // step="5"
+                    pattern="[0-9]*"
                     value={weight}
                   />
                 </label>
@@ -73,17 +75,19 @@ export const AddEntryModal = ({ selected, fetchData }) => {
             ) : (
               <p className="flex justify-center font-bold">Select a Workout</p>
             )}
-            <div className="modal-action -mt-2">
+            <div className="modal-action m-0">
               <form method="dialog">
                 <div className="flex gap-2">
                   <button className="btn">Discard</button>
 
-                  <button
-                    className="btn bg-blue-500 text-white px-6"
-                    onClick={saveWeight}
-                  >
-                    save
-                  </button>
+                  {selected && (
+                    <button
+                      className="btn bg-blue-500 text-white px-6"
+                      onClick={saveWeight}
+                    >
+                      save
+                    </button>
+                  )}
                 </div>
               </form>
             </div>
