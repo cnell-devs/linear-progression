@@ -206,7 +206,7 @@ exports.passwordLink = [
       const url = `${process.env.API_URL}/recovery/${user.id}/${token.token}`;
       const subject = "Password Reset";
       const message = `
-      <p>Click this link <a href="${url}">here</a> to reset your password</p>
+      <p>Click <a href="${url}">this link</a> to reset your password</p>
     `;
 
       await sendEmail(user.email, subject, message);
