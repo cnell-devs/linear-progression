@@ -28,7 +28,7 @@ export const EntryLog = ({ workouts, selected, fetchData }) => {
               <tr>
                 <th></th>
                 <td>Date</td>
-                <td>Weight</td>
+                <td>Weight &#40;lbs&#41;</td>
                 <th></th>
               </tr>
             </thead>
@@ -69,7 +69,7 @@ export const EntryLog = ({ workouts, selected, fetchData }) => {
               <tr>
                 <th></th>
                 <td>Date</td>
-                <td>Weight</td>
+                <td>Weight &#40;lbs&#41;</td>
                 <th></th>
               </tr>
             </tfoot>

@@ -110,7 +110,7 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
                   fontSize={14}
                   textAnchor="middle"
                 >
-                  Weight
+                  Weight &#40;lbs&#41;
                 </text>
 
                 {/* X-Axis */}
@@ -165,7 +165,13 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
           </ParentSize>
         </div>
       )}
-      {workouts && <EntryLog workouts={workouts} selected={selectedWorkout} fetchData={fetchData} />}
+      {workouts && (
+        <EntryLog
+          workouts={workouts}
+          selected={selectedWorkout}
+          fetchData={fetchData}
+        />
+      )}
       <AddEntryModal selected={selectedWorkout} fetchData={fetchData} />
     </div>
   );
