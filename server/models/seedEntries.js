@@ -14,7 +14,7 @@ if (process.env.NODE_ENV === "production") {
 process.env.DATABASE_URL = databaseUrl;
 
 
-const userID = "f8c425fb-9813-4e0d-96cc-e6a0ba4c4116"; // Replace with the target user ID
+const userID = "91fae519-093d-4e51-afd0-ad8287cffdd0"; // Replace with the target user ID
 
 async function seedWeightEntries() {
   const startDate = new Date(); // Today's date
