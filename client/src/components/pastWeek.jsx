@@ -23,36 +23,42 @@ useEffect(() => {
     "Saturday",
   ];
 
-  // Get today's date and start of the week (Sunday) in UTC
+  // Helper function to get the start of the day in EST
+  const getStartOfDayEST = (date) => {
+    const offset = 300; // EST offset in minutes (UTC-5:00)
+    const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+    return new Date(utc - offset * 60000);
+  };
+
+  // Helper function to get the start of the week (Sunday) in EST
+  const getStartOfWeekEST = (date) => {
+    const startOfDay = getStartOfDayEST(date);
+    const dayOffset = startOfDay.getDay(); // Sunday is 0
+    const startOfWeek = new Date(startOfDay);
+    startOfWeek.setDate(startOfDay.getDate() - dayOffset);
+    return startOfWeek;
+  };
+
+  // Get today's date and start of the week in EST
   const today = new Date();
-  const startOfWeek = new Date(
-    Date.UTC(
-      today.getUTCFullYear(),
-      today.getUTCMonth(),
-      today.getUTCDate() - today.getUTCDay(),
-      0,
-      0,
-      0
-    )
-  );
+  const startOfWeekEST = getStartOfWeekEST(today);
 
   // Create an object to track entries for each day of the week
-  const entriesByDay = daysOfWeek?.reduce((acc, day, index) => {
-    const dayDate = new Date(startOfWeek); // Clone the startOfWeek date
-    dayDate.setUTCDate(startOfWeek.getUTCDate() + index); // Increment to the correct day in UTC
+  const entriesByDay = daysOfWeek.reduce((acc, day, index) => {
+    const dayDate = new Date(startOfWeekEST); // Clone the startOfWeek date
+    dayDate.setDate(startOfWeekEST.getDate() + index); // Increment to the correct day in EST
 
     // Check all weights for this day and user
     const hasEntry = workouts?.reduce((found, workout) => {
       const matches = workout.weights?.filter((weight) => {
-        // Parse weight date as UTC
-        const entryDate = new Date(weight.date);
-        entryDate.setUTCHours(0, 0, 0, 0); // Reset to midnight UTC
+        // Parse weight date and convert to EST
+        const entryDate = getStartOfDayEST(new Date(weight.date));
 
         return (
           weight?.userId === user?.id && // Match user ID
-          entryDate.getUTCFullYear() === dayDate.getUTCFullYear() &&
-          entryDate.getUTCMonth() === dayDate.getUTCMonth() &&
-          entryDate.getUTCDate() === dayDate.getUTCDate()
+          entryDate.getFullYear() === dayDate.getFullYear() &&
+          entryDate.getMonth() === dayDate.getMonth() &&
+          entryDate.getDate() === dayDate.getDate()
         );
       });
 
