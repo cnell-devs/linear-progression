@@ -8,7 +8,7 @@ export function About() {
   return (
     <>
       <Nav split={split} setSplit={setSplit} />
-      <div className="overflow-scroll">
+      <div className="">
         <div className=" text-center w-full mb-4">
           Crafted from this&nbsp;
           <a
@@ -20,7 +20,7 @@ export function About() {
           </a>
         </div>
         <div>
-          <div>
+          <div className="mb-4">
             <span className="text-red-600">Key Features</span> of the Program
           </div>
           <ul className="">

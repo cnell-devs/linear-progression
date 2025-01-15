@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
 
 
@@ -6,10 +6,22 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-    font-family: 'VT323';
+*,body {
+    font-family: 'Roboto', 'Tahoma';
+    font-weight:  500;
 }
+
+
 
 .spinner-box {
     @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
 }
+/* 
+button {
+  all: unset;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 100;
+} */
