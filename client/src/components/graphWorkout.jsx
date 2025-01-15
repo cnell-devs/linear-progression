@@ -28,10 +28,10 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .map((weight) => ({
         x: new Date(weight.date).toLocaleDateString("en-US", {
-          timeZone: "UTC",
+          timeZone: "America/New_York",
         }),
         y: weight.weight,
-      }))
+      }));
 
   const maxValue =
     chartData && Math.max(...chartData.map((xy) => Number(xy.y)));

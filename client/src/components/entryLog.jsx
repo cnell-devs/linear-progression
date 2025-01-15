@@ -42,7 +42,7 @@ export const EntryLog = ({ workouts, selected, fetchData }) => {
                         <th></th>
                         <td>
                           {new Date(workout.date).toLocaleDateString("en-US", {
-                            timeZone: "UTC",
+                            timeZone: "America/New_York",
                           })}
                         </td>
 

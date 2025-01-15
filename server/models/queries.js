@@ -193,14 +193,14 @@ exports.getWeightEntry = async (userId, workoutId, date = new Date()) => {
   }
 };
 
-exports.addWeightEntry = async (userId, workoutId, weight, date= new Date()) => {
+exports.addWeightEntry = async (userId, workoutId, weight, date = new Date()) => {
   try {
     const newEntry = await prisma.weightEntry.create({
       data: {
-        userId: userId, // The ID of the user
-        workoutId: workoutId, // The ID of the workout
-        weight: weight, // The weight value to create
-        date: date, // Optionally set the date (default: now)
+        userId: userId, 
+        workoutId: workoutId,
+        weight: weight,
+        date: date,
       },
     });
 
