@@ -11,3 +11,17 @@ export const formatDate = (time) => {
     .replace(" ", "")
     .split(",");
 };
+
+
+
+export const convertUtcToDateFormat = (isoString) => {
+  const date = new Date(isoString); // Parse the ISO string (UTC time)
+
+  // Get the month, day, and year in UTC
+  const month = date.getUTCMonth() + 1; // Months are 0-indexed, so add 1
+  const day = date.getUTCDate(); // Get the UTC day of the month
+  const year = date.getUTCFullYear(); // Get the UTC year
+
+  // Format as M/DD/YYYY
+  return `${month}/${day}/${year}`;
+};

@@ -11,6 +11,7 @@ import {
 import { ParentSize } from "@visx/responsive";
 import { EntryLog } from "./entryLog";
 import { AddEntryModal } from "./addEntryModal";
+import { convertUtcToDateFormat } from "../utils/date-formatter";
 
 export const GraphWorkout = ({ workouts, fetchData }) => {
   const [graphWorkout, setGraphWorkout] = useState(false);
@@ -27,9 +28,7 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
       .filter((entry) => entry.userId == user.id)
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .map((weight) => ({
-        x: new Date(weight.date).toLocaleDateString("en-US", {
-          timeZone: "America/New_York",
-        }),
+        x: convertUtcToDateFormat(new Date(weight.date).toISOString()),
         y: weight.weight,
       }));
 

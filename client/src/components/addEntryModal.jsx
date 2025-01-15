@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import { convertUtcToDateFormat } from "../utils/date-formatter";
 import { useAuth } from "./auth/authContext";
 import { useState } from "react";
 
@@ -6,7 +7,7 @@ export const AddEntryModal = ({ selected, fetchData }) => {
   const { user } = useAuth();
 
   const [weight, setWeight] = useState(100);
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(convertUtcToDateFormat(new Date().toISOString()));
 
   const saveWeight = async () => {
     try {

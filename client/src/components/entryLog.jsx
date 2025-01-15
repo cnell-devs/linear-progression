@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 // import { useAuth } from "./auth/authContext";
 
 import { DeleteEntryModal } from "./deleteEntryModal";
+import { convertUtcToDateFormat } from "../utils/date-formatter";
 
 export const EntryLog = ({ workouts, selected, fetchData }) => {
   const [workoutLog, setWorkoutLog] = useState(false);
@@ -41,9 +42,7 @@ export const EntryLog = ({ workouts, selected, fetchData }) => {
                       <tr key={z} className="">
                         <th></th>
                         <td>
-                          {new Date(workout.date).toLocaleDateString("en-US", {
-                            timeZone: "America/New_York",
-                          })}
+                          {convertUtcToDateFormat(new Date(workout.date).toISOString())}
                         </td>
 
                         <td>{workout.weight}</td>
