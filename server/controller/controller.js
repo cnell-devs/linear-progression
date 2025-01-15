@@ -113,9 +113,9 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-// exports.logout = (req, res, next) => {
-//   res.send("remove jwt on client side and redirect");
-// };
+exports.logout = (req, res, next) => {
+  res.send("remove jwt on client side and redirect");
+};
 
 exports.getWorkouts = async (req, res) => {
   const alternate = req.query.alt === "true";
