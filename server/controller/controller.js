@@ -136,21 +136,16 @@ exports.addWeight = async (req, res) => {
   const { userId } = req.body;
   const { workoutId } = req.body;
   const { weight } = req.body;
-  let { date } = req.body;
 
-  console.log("date", date);
+  const date = req.body.date ? new Date(date) : new Date();
 
   try {
-    const checkDate = await db.getWeightEntry(
-      userId,
-      workoutId,
-      new Date(date)
-    );
+    const checkDate = await db.getWeightEntry(userId, workoutId, date);
 
     console.log("checkDate", checkDate);
 
     const workouts = !checkDate
-      ? await db.addWeightEntry(userId, workoutId, weight, new Date(date))
+      ? await db.addWeightEntry(userId, workoutId, weight, date)
       : await db.updateWeightEntry(checkDate.id, userId, workoutId, weight);
 
     // console.log(workouts);
