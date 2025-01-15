@@ -14,8 +14,7 @@ import { ProtectedRoute } from "../components/auth/protectedRoute";
 import { About } from "../components/pages/about";
 import { ForgotPassword } from "../components/pages/forgotPassword";
 import { ResetPassword } from "../components/pages/resetPassword";
-
-// import { ErrorPage } from "../components/pages/ErrorPage";
+import { ErrorPage } from "../components/pages/ErrorPage";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -38,7 +37,7 @@ export const router = createBrowserRouter(
       <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
       <Route path="/exercises" element={<Exercises />} />
 
-      {/* <Route path="*" element={<Home />} /> */}
+      <Route path="*" element={<ErrorPage />} />
     </>
   )
 );

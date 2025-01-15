@@ -60,15 +60,14 @@ exports.signUpPost = [
 
       const url = `${process.env.API_URL}/verify/${user.id}/${token}`;
 
-      const subject = " Please Verify Email";
+      const subject = "Email Verification";
       const message = `
-      <h3>Hello ${user.username}</h3>
-      <p>Thanks yor for registering for our services.</p>
-      <p>Click this link <a href="${url}">here</a> to verify your email</p>
+      <h3>Welcome,  ${user.username}!</h3>
+      <p>Click <a href="${url}">here</a> to verify your email</p>
     `;
       await sendEmail(user.email, subject, message);
 
-      res.status(201).send({ message: "An Email sent to your account please" });
+      res.status(201).send({ message: "Email Sent" });
 
       // res.send(addToken);
     } catch (error) {
@@ -114,9 +113,9 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-exports.logout = (req, res, next) => {
-  res.send("remove jwt on client side and redirect");
-};
+// exports.logout = (req, res, next) => {
+//   res.send("remove jwt on client side and redirect");
+// };
 
 exports.getWorkouts = async (req, res) => {
   const alternate = req.query.alt === "true";
@@ -196,7 +195,7 @@ exports.passwordLink = [
 
       let user = await db.getUser(req.body.email);
       if (!user)
-        return res.status(409).send(["User with email doesn't exist."]);
+        return res.status(409).send(["No User Found With Given Email"]);
 
       let token = await db.getToken(user.id);
 
@@ -207,7 +206,6 @@ exports.passwordLink = [
       const url = `${process.env.API_URL}/recovery/${user.id}/${token.token}`;
       const subject = "Password Reset";
       const message = `
-      <p>Here is a link to reset your password</p>
       <p>Click this link <a href="${url}">here</a> to reset your password</p>
     `;
 
@@ -215,9 +213,9 @@ exports.passwordLink = [
 
       res
         .status(200)
-        .send({ message: "password reset link is sent to your email account" });
+        .send({ message: "Reset Link Sent to Email" });
     } catch (error) {
-      res.status(500).send({ message: "Internal server error" });
+      res.status(500).send({ message: "Internal Server Error" });
     }
   },
 ];
@@ -225,33 +223,21 @@ exports.passwordLink = [
 exports.verifyUrl = async (req, res) => {
   try {
     const user = await db.getUserById(req.params.id);
-    if (!user) return res.status(400).send({ message: "Invalid user" });
+    if (!user) return res.status(400).send({ message: "Invalid User" });
 
     const token = await db.getToken(req.params.id, req.params.token);
-    if (!token) return res.status(400).send({ message: "Invalid token" });
+    if (!token) return res.status(400).send({ message: "Invalid Token" });
 
     res.redirect(
       `${process.env.CLIENT_URL}/reset-password/${req.params.id}/${req.params.token}`
     );
   } catch (error) {
-    res.status(500).send({ message: "Internal server error" });
+    res.status(500).send({ message: "Internal Server Error" });
   }
 };
 
 exports.resetPassword = async (req, res) => {
   try {
-    // const validate = (data) => {
-    //   const passwordSchema = Joi.object({
-    //     password: passwordComplexity().required().label("password"),
-    //   });
-    //   return passwordSchema.validate(data);
-    // };
-    // const { error } = validate(req.body);
-    // if (error)
-    //   return res.status(400).send({
-    //     message: error.details[0].message,
-    //   });
-
     const user = await db.getUserById(req.params.id);
     if (!user) return res.status(400).send({ message: "Invalid link" });
 
@@ -264,8 +250,8 @@ exports.resetPassword = async (req, res) => {
     if (!user.verified) await db.verifyUser(user.id);
     await db.removeToken(token);
 
-    res.status(200).send({ message: "password successfully reset" });
+    res.status(200).send({ message: "Password Reset" });
   } catch (error) {
-    res.status(500).send({ message: "Internal server error" });
+    res.status(500).send({ message: "Internal Server Error" });
   }
 };
