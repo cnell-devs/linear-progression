@@ -178,7 +178,9 @@ exports.getWorkouts = async (split) => {
   }
 };
 
-exports.getWeightEntry = async (userId, workoutId, date = new Date()) => {
+exports.getWeightEntry = async (userId, workoutId, date) => {
+  console.log("GET", date);
+
   try {
     const entry = await prisma.weightEntry.findFirst({
       where: {
@@ -193,11 +195,13 @@ exports.getWeightEntry = async (userId, workoutId, date = new Date()) => {
   }
 };
 
-exports.addWeightEntry = async (userId, workoutId, weight, date = new Date()) => {
+exports.addWeightEntry = async (userId, workoutId, weight, date) => {
+  console.log("ADD", date);
+
   try {
     const newEntry = await prisma.weightEntry.create({
       data: {
-        userId: userId, 
+        userId: userId,
         workoutId: workoutId,
         weight: weight,
         date: date,
