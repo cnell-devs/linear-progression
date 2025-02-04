@@ -25,3 +25,4 @@ export const convertUtcToDateFormat = (isoString) => {
   // Format as M/DD/YYYY
   return `${month}/${day}/${year}`;
 };
+
