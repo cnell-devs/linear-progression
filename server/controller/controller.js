@@ -136,26 +136,26 @@ exports.addWeight = async (req, res) => {
   const { workoutId } = req.body;
   const { weight } = req.body;
   try {
-  console.log("REQUEST DATE",req.body.date);
-  console.log("REQUEST DATE",new Date(req.body.date));
+    console.log("REQUEST DATE", req.body.date);
+    console.log("REQUEST DATE", new Date(req.body.date));
 
 
-  const date = req.body.date ? new Date(req.body.date): new Date();
+    const date = req.body.date
+      ? new Date(req.body.date)
+      : convertUTCToLocalUTC(new Date());
 
-  console.log('CONTROLLER', date);
-
+    console.log("CONTROLLER", date);
 
     const checkDate = await db.getWeightEntry(userId, workoutId, date);
 
     console.log("checkDate", checkDate);
     console.log("compare", date, checkDate?.date);
 
-
     const workouts = !checkDate
       ? await db.addWeightEntry(userId, workoutId, weight, date)
       : await db.updateWeightEntry(checkDate.id, userId, workoutId, weight);
 
-    // console.log(workouts);
+    console.log(workouts);
     res.send(workouts);
   } catch (error) {
     console.error(error);
@@ -262,4 +262,35 @@ exports.resetPassword = async (req, res) => {
   } catch (error) {
     res.status(500).send({ message: "Internal Server Error" });
   }
+};
+
+const convertUTCToLocalUTC = (utcString) => {
+  // Get user's detected time zone
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  // Parse the UTC string
+  const utcDate = new Date(utcString);
+
+  // Get the local time zone offset in minutes for the detected time zone
+  const localDate = new Intl.DateTimeFormat("en-US", {
+    timeZone: userTimeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(utcDate);
+
+  // Extract parts
+  const year = localDate.find((part) => part.type === "year").value;
+  const month = localDate.find((part) => part.type === "month").value;
+  const day = localDate.find((part) => part.type === "day").value;
+  const hour = localDate.find((part) => part.type === "hour").value;
+  const minute = localDate.find((part) => part.type === "minute").value;
+  const second = localDate.find((part) => part.type === "second").value;
+
+  // Construct the new UTC-like format with local time
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}.000Z`;
 };
