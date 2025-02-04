@@ -29,6 +29,8 @@ export const useWorkout = (params) => {
     }
 
     if (user) {
+      console.log('sorting');
+
       data.forEach((workout) => {
         workout.weights = workout?.weights.filter(
           (entry) => entry.userId == user.id
