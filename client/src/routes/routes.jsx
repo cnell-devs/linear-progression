@@ -15,6 +15,7 @@ import { About } from "../components/pages/about";
 import { ForgotPassword } from "../components/pages/forgotPassword";
 import { ResetPassword } from "../components/pages/resetPassword";
 import { ErrorPage } from "../components/pages/ErrorPage";
+import { Templates } from "../components/pages/templates";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -36,6 +37,14 @@ export const router = createBrowserRouter(
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
       <Route path="/exercises" element={<Exercises />} />
+      <Route
+        path="/templates"
+        element={
+          <ProtectedRoute>
+            <Templates />
+          </ProtectedRoute>
+        }
+      />
 
       <Route path="*" element={<ErrorPage />} />
     </>

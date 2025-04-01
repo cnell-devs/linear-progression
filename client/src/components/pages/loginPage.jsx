@@ -26,7 +26,7 @@ export const Login = () => {
     user ? navigate("/") : null;
   }, [navigate, user]);
 
-  if (user === undefined)
+  if (user === undefined) {
     return (
       <div className="spinner-box">
         <span className="material-icons animate-spin spinner text-xl">
@@ -34,9 +34,11 @@ export const Login = () => {
         </span>
       </div>
     );
+  }
 
-  return (
-    !user && (
+  // If user is falsy (false, null), show the login form
+  if (!user) {
+    return (
       <>
         <div className="flex h-screen flex-col">
           <Nav />
@@ -108,6 +110,9 @@ export const Login = () => {
           </form>
         </div>
       </>
-    )
-  );
+    );
+  }
+
+  // If user is truthy, they will be redirected by the useEffect
+  return null;
 };

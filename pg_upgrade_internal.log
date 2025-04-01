@@ -1,0 +1,14 @@
+Running in verbose mode
+
+-----------------------------------------------------------------
+  pg_upgrade run on Mon Mar 31 22:29:21 2025
+-----------------------------------------------------------------
+
+check for "/opt/homebrew/opt/postgresql@15/bin/postgres" failed: incorrect version: found "postgres (PostgreSQL) 15.12 (Homebrew)", expected "postgres (PostgreSQL) 14.17 (Homebrew)"
+Running in verbose mode
+
+-----------------------------------------------------------------
+  pg_upgrade run on Mon Mar 31 22:29:50 2025
+-----------------------------------------------------------------
+
+check for "/opt/homebrew/opt/postgresql@15/bin/postgres" failed: incorrect version: found "postgres (PostgreSQL) 15.12 (Homebrew)", expected "postgres (PostgreSQL) 14.17 (Homebrew)"

@@ -6,17 +6,23 @@ export const Workout = ({ workout }) => {
   const { user } = useAuth();
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  console.log(workout.name, workout.weights);
 
-  if (workout.weights.length) {
-    var lastWeight =
-      workout.weights.filter((entry) => entry.userId == user?.id).length - 1;
+  // Ensure weights is always an array, even if undefined in workout object
+  const weights = workout.weights || [];
+
+  let lastWeight;
+  if (weights.length && user) {
+    const userWeights = weights.filter((entry) => entry.userId == user?.id);
+    lastWeight = userWeights.length > 0 ? userWeights.length - 1 : undefined;
   }
 
   const [weight, setWeight] = useState(
-    workout.weights
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .filter((entry) => entry.userId == user?.id)[lastWeight]?.weight || 100
+    user && weights.length
+      ? weights
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .filter((entry) => entry.userId == user?.id)[lastWeight]?.weight ||
+          100
+      : 100
   );
 
   const increaseTopSet = () => setWeight(Number(weight) + 5);

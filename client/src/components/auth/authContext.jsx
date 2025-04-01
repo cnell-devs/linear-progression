@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (!response.ok) {
-        const json = await response.json()
+        const json = await response.json();
         console.log(json);
 
         setErrors(json);
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
       // alert("Sign Up failed. Please check your credentials.");
       console.log(error);
 
-      return error
+      return error;
     }
   };
 
@@ -72,20 +72,27 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("authToken");
 
     if (token) {
-      // Validate token by sending it to the backend
+      try {
+        // Validate token by sending it to the backend
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/validate-token`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/validate-token`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
+        if (response.ok) {
+          const { user } = await response.json();
+          setUser(user);
+        } else {
+          // If token validation fails, clear it
+          localStorage.removeItem("authToken");
+          setUser(false);
         }
-      );
-
-      if (response.ok) {
-        const { user } = await response.json();
-        setUser(user);
-      } else {
-        logout();
+      } catch (error) {
+        console.error("Token validation error:", error);
+        localStorage.removeItem("authToken");
+        setUser(false);
       }
     } else {
       setUser(false);

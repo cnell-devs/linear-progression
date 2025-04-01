@@ -2,36 +2,30 @@
 
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "./auth/authContext";
-export const Nav = ({ workouts, split, setSplit }) => {
-  const { pathname } = useLocation()
+
+export const Nav = ({ workouts }) => {
+  const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
 
-  const back = searchParams.get("split") || pathname == '/forgot-password'
+  const back = searchParams.get("split") || pathname == "/forgot-password";
 
   const { user } = useAuth();
 
   const type = workouts
     ? workouts[0].type.charAt(0).toUpperCase() + workouts[0].type.slice(1)
-    : pathname == "/forgot-password" ? "Forgot Password" : "Linear Progression";
+    : pathname == "/forgot-password"
+    ? "Forgot Password"
+    : "Linear Progression";
 
   return (
     <>
       <div className="navbar mt-4 px-0 py-0">
         <div className="flex-1 flex">
-          {(back || split) && (
+          {back && (
             <>
-              {!split ? (
-                <Link to={`/`}>
-                  <button className="material-icons">arrow_back_ios</button>
-                </Link>
-              ) : (
-                <button
-                  onClick={() => setSplit(null)}
-                  className="material-icons"
-                >
-                  arrow_back_ios
-                </button>
-              )}
+              <Link to={`/`}>
+                <button className="material-icons">arrow_back_ios</button>
+              </Link>
               <div className="divider divider-horizontal"></div>
             </>
           )}
@@ -42,7 +36,7 @@ export const Nav = ({ workouts, split, setSplit }) => {
         </div>
 
         {
-         <div className="dropdown dropdown-end flex-none">
+          <div className="dropdown dropdown-end flex-none">
             <div
               role="button"
               className="btn material-icons shadow-none border-none bg-transparent text-2xl"
@@ -62,6 +56,11 @@ export const Nav = ({ workouts, split, setSplit }) => {
               <li>
                 <Link to="/">Workouts</Link>
               </li>
+              {user && (
+                <li>
+                  <Link to="/templates">My Templates</Link>
+                </li>
+              )}
               <li>
                 <Link to="/about">About</Link>
               </li>
