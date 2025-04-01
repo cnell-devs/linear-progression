@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const passport = require("passport");
+const { weightEntry } = require("./weight-entry");
 const {
   home,
   logInPost,
@@ -25,6 +26,9 @@ const {
 } = require("../controller/controller");
 
 const router = Router();
+
+// Mount the weight-entry router
+router.use("/weight-entry", weightEntry);
 
 router.get("/", home);
 router.post("/login", logInPost);

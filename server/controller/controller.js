@@ -498,7 +498,13 @@ exports.deleteWeight = async (req, res) => {
     res.send(deleted);
   } catch (error) {
     console.error("Error in deleteWeight:", error);
-    res.status(500).send({ error: error.message });
+    // Check for Prisma-specific errors
+    if (error.code === "P2025") {
+      return res.status(404).send({ error: "Weight entry not found" });
+    }
+    res
+      .status(500)
+      .send({ error: error.message || "Failed to delete weight entry" });
   }
 };
 

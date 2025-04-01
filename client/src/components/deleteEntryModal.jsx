@@ -16,14 +16,21 @@ export const DeleteEntryModal = ({ entry, selected, fetchData }) => {
         throw new Error("You must be logged in to delete entries");
       }
 
-      console.log("Deleting weight entry:", entry.id);
+      // Ensure the ID is a valid number
+      const entryId = parseInt(entry.id);
+      if (isNaN(entryId)) {
+        throw new Error("Invalid entry ID format");
+      }
+
+      console.log("Deleting weight entry:", entryId);
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/weight-entry/delete/${entry.id}`,
+        `${import.meta.env.VITE_API_URL}/weight-entry/delete/${entryId}`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`, // Add auth token if needed
           },
         }
       );
