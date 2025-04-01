@@ -29,24 +29,19 @@ export const Workout = ({ workout }) => {
       setSaving(true);
       try {
         // Validate workout ID
-        if (!workout || !workout.id) {
+        if (!workout || (!workout.id && !workout.dbId)) {
           throw new Error("No workout selected");
         }
 
-        // Check for template workout flag
-        if (workout._templateWorkout === true) {
-          console.error("Cannot save weights for template workout:", workout);
-          throw new Error(
-            "Cannot save weight for template workout. This workout doesn't exist in the database."
-          );
-        }
+        // Get the appropriate workout ID
+        // If it's a template workout with a dbId, use that instead
+        let workoutId = workout.dbId || workout.id;
 
-        // Check for non-numeric IDs (like template IDs 'push-1')
-        const workoutId = workout.id;
+        // Check for non-numeric IDs that don't have a dbId
         if (typeof workoutId === "string" && !/^\d+$/.test(workoutId)) {
           console.error("Invalid workout ID format (non-numeric):", workoutId);
           throw new Error(
-            "Cannot save weight for template workout. Please use a saved workout instead."
+            "Cannot save weight for this workout. This template workout doesn't have a database ID reference."
           );
         }
 
