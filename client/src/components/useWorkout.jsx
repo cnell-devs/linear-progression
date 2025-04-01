@@ -64,7 +64,66 @@ export const useWorkout = (params) => {
         const template = defaultTemplates.find((t) => t.id === templateId);
 
         if (template) {
-          setWorkouts(template.workouts);
+          console.log("Using default template:", templateId);
+
+          // Fetch real workouts from the database using the stored dbIds
+          try {
+            const response = await fetch(`${apiUrl}/workouts`, {
+              headers: {
+                ...authHeaders,
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to fetch workouts for template");
+            }
+
+            let allWorkouts = await response.json();
+
+            // Find the real workout objects that match our template workout dbIds
+            const dbIds = template.workouts
+              .map((w) => w.dbId)
+              .filter((id) => id !== undefined);
+            console.log("Looking for workouts with database IDs:", dbIds);
+
+            // Get the real workout objects from the database
+            const matchedWorkouts = dbIds
+              .map((dbId) => {
+                const match = allWorkouts.find((w) => w.id === dbId);
+                if (match) {
+                  console.log(`Found workout with ID ${dbId}: ${match.name}`);
+                  return match;
+                } else {
+                  console.warn(`No workout found with ID ${dbId}`);
+                  return null;
+                }
+              })
+              .filter((w) => w !== null);
+
+            console.log("Found workouts:", matchedWorkouts);
+
+            if (matchedWorkouts.length > 0) {
+              setWorkouts(matchedWorkouts);
+            } else {
+              console.warn(
+                "No matching workouts found in database. Using template workouts with warning."
+              );
+              // Use template workouts but with warning about ID issues
+              setWorkouts(
+                template.workouts.map((w) => ({
+                  ...w,
+                  id: w.dbId || w.id, // Try to use the dbId if available
+                  _templateWorkout: true, // Mark as template workout
+                }))
+              );
+            }
+          } catch (error) {
+            console.error("Error fetching real workouts for template:", error);
+            console.warn(
+              "Using template workouts with string IDs - weight tracking will not work"
+            );
+            setWorkouts(template.workouts);
+          }
         } else {
           console.error("Default template not found:", templateId);
           setWorkouts([]);

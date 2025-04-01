@@ -43,6 +43,6 @@ console.log(`API URL: ${process.env.API_URL}`);
 console.log(`DB URL: ${process.env.DATABASE_URL}`);
 
 const PORT = 3000;
-app.listen(PORT, () => console.log(`listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
 
 module.exports = app;

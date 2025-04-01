@@ -5,6 +5,21 @@ const { validationResult } = require("express-validator");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/send-email");
+const bcrypt = require("bcrypt");
+
+// Local implementation of date conversion utility
+const convertUTCToLocalUTC = (utcString) => {
+  // Create a new Date object from the input
+  const date = new Date(utcString);
+
+  // Check if date is valid
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    return null;
+  }
+
+  // Format the date in ISO format
+  return date.toISOString();
+};
 
 exports.home = (req, res) => {
   res.json({ message: "Welcome to the API" });
@@ -298,61 +313,192 @@ exports.deleteWorkout = async (req, res) => {
 };
 
 exports.addWeight = async (req, res) => {
-  const { userId } = req.body;
-  const { workoutId } = req.body;
-  const { weight } = req.body;
   try {
+    // Get userId either from request body or from auth token
+    let userId;
+
+    if (req.user && req.user.id) {
+      // For authenticated requests (/weights/add endpoint)
+      userId = req.user.id;
+    } else if (req.body.userId) {
+      // For backward compatibility with /weight-entry endpoint
+      userId = req.body.userId;
+    } else {
+      return res.status(400).send({ error: "User ID is required" });
+    }
+
+    const { workoutId: rawWorkoutId, weight: rawWeight } = req.body;
+
+    if (rawWorkoutId === undefined || rawWorkoutId === null) {
+      return res.status(400).send({ error: "workoutId is required" });
+    }
+
+    // Check for non-numeric IDs (like template IDs 'push-1')
+    if (typeof rawWorkoutId === "string" && !/^\d+$/.test(rawWorkoutId)) {
+      console.error("Invalid workoutId format (non-numeric):", rawWorkoutId);
+      return res.status(400).send({
+        error: "workoutId must be a numeric value, not a string like 'push-1'",
+      });
+    }
+
+    if (rawWeight === undefined || rawWeight === null) {
+      return res.status(400).send({ error: "weight is required" });
+    }
+
+    // Parse and validate workoutId
+    console.log(
+      "Raw workoutId from request:",
+      rawWorkoutId,
+      "type:",
+      typeof rawWorkoutId
+    );
+    const workoutId = parseInt(rawWorkoutId);
+    if (isNaN(workoutId)) {
+      return res
+        .status(400)
+        .send({ error: "workoutId must be a valid number" });
+    }
+    console.log("Parsed workoutId:", workoutId, "type:", typeof workoutId);
+
+    // Parse and validate weight
+    const weight = parseInt(rawWeight);
+    if (isNaN(weight)) {
+      return res.status(400).send({ error: "weight must be a valid number" });
+    }
+
+    // Handle date parameter
     console.log("REQUEST DATE", req.body.date);
-    console.log("REQUEST DATE", new Date(req.body.date));
 
-    const date = req.body.date
-      ? new Date(req.body.date)
-      : convertUTCToLocalUTC(new Date());
+    let date;
+    try {
+      if (req.body.date) {
+        // Try to parse the date from the request
+        date = new Date(req.body.date);
+      } else {
+        date = convertUTCToLocalUTC(new Date());
+      }
 
-    console.log("CONTROLLER", date);
+      // Validate that the date is valid
+      if (!(date instanceof Date) || isNaN(date.getTime())) {
+        console.error("Invalid date:", req.body.date);
+        return res.status(400).send({
+          error:
+            "Invalid date format. Please use a valid ISO date string (YYYY-MM-DDTHH:mm:ss.sssZ)",
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing date:", error, req.body.date);
+      return res.status(400).send({
+        error: "Failed to parse date: " + error.message,
+      });
+    }
 
+    console.log("CONTROLLER date:", date);
+
+    // Check if entry already exists for this date
     const checkDate = await db.getWeightEntry(userId, workoutId, date);
-
     console.log("checkDate", checkDate);
     console.log("compare", date, checkDate?.date);
 
+    // Create or update weight entry
     const workouts = !checkDate
       ? await db.addWeightEntry(userId, workoutId, weight, date)
       : await db.updateWeightEntry(checkDate.id, userId, workoutId, weight);
 
-    console.log(workouts);
+    console.log("Result:", workouts);
     res.send(workouts);
   } catch (error) {
-    console.error(error);
-    return error;
+    console.error("Error in addWeight:", error);
+    res.status(500).send({ error: error.message });
   }
 };
 
 exports.updateWeight = async (req, res) => {
-  const { userId } = req.body;
-  const { workoutId } = req.body;
-  const { weight } = req.body;
   try {
-    const workouts = await db.updateWeightEntry(userId, workoutId, weight);
+    // Validate required parameters
+    const { userId, workoutId: rawWorkoutId, weight: rawWeight } = req.body;
 
+    if (!userId) {
+      return res.status(400).send({ error: "userId is required" });
+    }
+
+    if (rawWorkoutId === undefined || rawWorkoutId === null) {
+      return res.status(400).send({ error: "workoutId is required" });
+    }
+
+    // Check for non-numeric IDs (like template IDs 'push-1')
+    if (typeof rawWorkoutId === "string" && !/^\d+$/.test(rawWorkoutId)) {
+      console.error("Invalid workoutId format (non-numeric):", rawWorkoutId);
+      return res.status(400).send({
+        error: "workoutId must be a numeric value, not a string like 'push-1'",
+      });
+    }
+
+    if (rawWeight === undefined || rawWeight === null) {
+      return res.status(400).send({ error: "weight is required" });
+    }
+
+    // Parse and validate workoutId
+    console.log(
+      "Raw workoutId from request:",
+      rawWorkoutId,
+      "type:",
+      typeof rawWorkoutId
+    );
+    const workoutId = parseInt(rawWorkoutId);
+    if (isNaN(workoutId)) {
+      return res
+        .status(400)
+        .send({ error: "workoutId must be a valid number" });
+    }
+
+    // Parse and validate weight
+    const weight = parseInt(rawWeight);
+    if (isNaN(weight)) {
+      return res.status(400).send({ error: "weight must be a valid number" });
+    }
+
+    // Update weight entry
+    const workouts = await db.updateWeightEntry(userId, workoutId, weight);
+    if (!workouts) {
+      return res.status(404).send({ error: "Weight entry not found" });
+    }
+
+    console.log("Updated weight:", workouts);
     res.send(workouts);
   } catch (error) {
-    console.error(error);
-    return error;
+    console.error("Error in updateWeight:", error);
+    res.status(500).send({ error: error.message });
   }
 };
 
 exports.deleteWeight = async (req, res) => {
-  const { id } = req.params;
-  console.log(id);
-
   try {
-    const deleted = await db.deleteWeightEntry(Number(id));
+    // Validate id parameter
+    const rawId = req.params.id;
+    if (!rawId) {
+      return res.status(400).send({ error: "Weight entry ID is required" });
+    }
 
+    // Parse and validate ID
+    const id = parseInt(rawId);
+    if (isNaN(id)) {
+      return res.status(400).send({ error: "ID must be a valid number" });
+    }
+
+    console.log("Deleting weight entry with ID:", id);
+
+    // Delete weight entry
+    const deleted = await db.deleteWeightEntry(id);
+    if (!deleted) {
+      return res.status(404).send({ error: "Weight entry not found" });
+    }
+
+    console.log("Weight entry deleted:", deleted);
     res.send(deleted);
   } catch (error) {
-    console.error(error);
-    return error;
+    console.error("Error in deleteWeight:", error);
+    res.status(500).send({ error: error.message });
   }
 };
 
@@ -425,37 +571,6 @@ exports.resetPassword = async (req, res) => {
   } catch (error) {
     res.status(500).send({ message: "Internal Server Error" });
   }
-};
-
-const convertUTCToLocalUTC = (utcString) => {
-  // Get user's detected time zone
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  // Parse the UTC string
-  const utcDate = new Date(utcString);
-
-  // Get the local time zone offset in minutes for the detected time zone
-  const localDate = new Intl.DateTimeFormat("en-US", {
-    timeZone: userTimeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  }).formatToParts(utcDate);
-
-  // Extract parts
-  const year = localDate.find((part) => part.type === "year").value;
-  const month = localDate.find((part) => part.type === "month").value;
-  const day = localDate.find((part) => part.type === "day").value;
-  const hour = localDate.find((part) => part.type === "hour").value;
-  const minute = localDate.find((part) => part.type === "minute").value;
-  const second = localDate.find((part) => part.type === "second").value;
-
-  // Construct the new UTC-like format with local time
-  return `${year}-${month}-${day}T${hour}:${minute}:${second}.000Z`;
 };
 
 exports.createWorkoutTemplate = async (req, res) => {

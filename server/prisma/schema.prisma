@@ -4,25 +4,22 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url      = env("DATABASE_URL_DEV")
 }
 
 model Users {
-  id       String  @id @default(uuid())
-  admin    Boolean @default(false)
-  username String  @unique
-  email    String? @unique
-  password String
-  verified Boolean @default(false)
-
-  lastLogin DateTime @default(now()) @db.Date
-
-  tokens          Token[]
-  weights         WeightEntry[]
-  WorkoutTemplate WorkoutTemplate[]
-  workouts        Workout[]
+  id              String            @id @default(uuid())
+  admin           Boolean           @default(false)
+  username        String            @unique
+  password        String
+  email           String?           @unique
+  verified        Boolean           @default(false)
+  lastLogin       DateTime          @default(now()) @db.Date
+  tokens          Token?
   preferences     UserPreferences?
+  weights         WeightEntry[]
+  workouts        Workout[]
+  WorkoutTemplate WorkoutTemplate[]
 
   @@map("users")
 }
@@ -38,19 +35,19 @@ model Workout {
   alternateId    Int?             @unique
   alt            Boolean          @default(false)
   ss             Boolean          @default(false)
+  isTemplate     Boolean          @default(false)
+  templateId     Int?
+  workoutId      Int?
+  isGlobal       Boolean          @default(true)
+  userId         String?
   weights        WeightEntry[]
   alternate      Workout?         @relation("Alternate", fields: [alternateId], references: [id])
   primary        Workout?         @relation("Alternate")
-  supersetted    Workout?         @relation("Superset", fields: [supersettedId], references: [id])
-  superset       Workout?         @relation("Superset")
-  isTemplate     Boolean          @default(false)
-  templateId     Int?
-  parentTemplate WorkoutTemplate? @relation("TemplateToWorkout", fields: [templateId], references: [id])
-  workoutId      Int?
   relatedWorkout Workout?         @relation("RelatedWorkouts", fields: [workoutId], references: [id], map: "workout_related_fkey")
   relatedTo      Workout[]        @relation("RelatedWorkouts")
-  userId         String?
-  isGlobal       Boolean          @default(true)
+  supersetted    Workout?         @relation("Superset", fields: [supersettedId], references: [id])
+  superset       Workout?         @relation("Superset")
+  parentTemplate WorkoutTemplate? @relation("TemplateToWorkout", fields: [templateId], references: [id])
   user           Users?           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("workout")
@@ -82,20 +79,20 @@ model WeightEntry {
 }
 
 model Token {
-  id        Int      @id @default(autoincrement()) // Auto-incrementing unique ID
-  userId    String   @unique // Unique reference to the user
-  token     String // Token value
-  createdAt DateTime @default(now()) // Token creation timestamp
-  expiresAt DateTime @default(dbgenerated("now() + interval '1 hour'"))
+  id        Int      @id @default(autoincrement())
+  userId    String   @unique
+  token     String
+  createdAt DateTime @default(now())
+  expiresAt DateTime @default(dbgenerated("(now() + '01:00:00'::interval)"))
   user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("tokens") // Map to "tokens" table in the database
+  @@map("tokens")
 }
 
 model UserPreferences {
   id            Int      @id @default(autoincrement())
   userId        String   @unique
-  templateOrder String? // JSON string of template IDs in display order
+  templateOrder String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   user          Users    @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -377,29 +377,40 @@ exports.deleteWorkout = async (id, userId = null) => {
 
 exports.getWeightEntry = async (userId, workoutId, date) => {
   console.log("GET", date);
+  console.log("GET workoutId:", workoutId, "type:", typeof workoutId);
 
   try {
+    // Ensure workoutId is an integer
+    const workoutIdInt =
+      typeof workoutId === "string" ? parseInt(workoutId) : workoutId;
+
     const entry = await prisma.weightEntry.findFirst({
       where: {
-        userId,
-        workoutId,
         date: date,
+        userId: userId,
+        workoutId: workoutIdInt,
       },
     });
     return entry;
   } catch (error) {
     console.log(error);
+    throw error; // Re-throw the error for proper handling in the controller
   }
 };
 
 exports.addWeightEntry = async (userId, workoutId, weight, date) => {
   console.log("ADD", date);
+  console.log("ADD workoutId:", workoutId, "type:", typeof workoutId);
 
   try {
+    // Ensure workoutId is an integer
+    const workoutIdInt =
+      typeof workoutId === "string" ? parseInt(workoutId) : workoutId;
+
     const newEntry = await prisma.weightEntry.create({
       data: {
         userId: userId,
-        workoutId: workoutId,
+        workoutId: workoutIdInt,
         weight: weight,
         date: date,
       },
@@ -409,21 +420,26 @@ exports.addWeightEntry = async (userId, workoutId, weight, date) => {
     return newEntry;
   } catch (error) {
     console.error("Error creating weight entry:", error.message);
+    throw error; // Re-throw the error for proper handling in the controller
   }
 };
 
 exports.updateWeightEntry = async (id, userId, workoutId, newWeight) => {
+  console.log("UPDATE workoutId:", workoutId, "type:", typeof workoutId);
+
   try {
+    // Ensure workoutId is an integer
+    const workoutIdInt =
+      typeof workoutId === "string" ? parseInt(workoutId) : workoutId;
+
     const updatedEntry = await prisma.weightEntry.update({
       where: {
         id,
-        userId,
-        workoutId,
       },
-
       data: {
+        userId: userId,
+        workoutId: workoutIdInt,
         weight: newWeight, // Update the weight
-        // date: new Date(), // Optionally update the timestamp
       },
     });
 
@@ -431,6 +447,7 @@ exports.updateWeightEntry = async (id, userId, workoutId, newWeight) => {
     return updatedEntry;
   } catch (error) {
     console.error("Error updating weight:", error.message);
+    throw error; // Re-throw the error for proper handling in the controller
   }
 };
 
@@ -446,6 +463,7 @@ exports.deleteWeightEntry = async (id) => {
     return deleted;
   } catch (error) {
     console.error("Error deleted weight:", error.message);
+    throw error; // Re-throw the error for proper handling in the controller
   }
 };
 

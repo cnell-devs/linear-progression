@@ -11,7 +11,7 @@ passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
       const user = await db.getUser(username);
-console.log(user);
+      console.log("Local auth attempt for user:", username);
 
       if (!user) {
         return done(null, false, { message: "Invalid username" });
@@ -27,13 +27,40 @@ console.log(user);
   })
 );
 
+// Custom extractor function that logs token extraction attempts
+const extractJwt = (req) => {
+  const tokenFromHeader = ExtractJWT.fromAuthHeaderAsBearerToken()(req);
+  console.log(
+    "JWT extraction from header:",
+    tokenFromHeader ? "Token found" : "No token in header"
+  );
+
+  if (!tokenFromHeader) {
+    // Try to extract from x-access-token header as a fallback
+    const tokenFromXAccess = req.headers["x-access-token"];
+    console.log(
+      "JWT extraction from x-access-token:",
+      tokenFromXAccess ? "Token found" : "No token in x-access-token"
+    );
+    return tokenFromXAccess;
+  }
+
+  return tokenFromHeader;
+};
+
 passport.use(
   new JWTStrategy(
     {
-      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: extractJwt,
       secretOrKey: "swole",
+      passReqToCallback: true,
     },
-    function (jwtPayload, cb) {
+    function (req, jwtPayload, cb) {
+      console.log(
+        "JWT validation attempt for payload:",
+        jwtPayload ? "Payload found" : "No payload"
+      );
+      console.log("JWT headers:", JSON.stringify(req.headers));
       return cb(null, jwtPayload);
     }
   )

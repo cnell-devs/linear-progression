@@ -10,20 +10,15 @@ export const Workout = ({ workout }) => {
   // Ensure weights is always an array, even if undefined in workout object
   const weights = workout.weights || [];
 
-  let lastWeight;
-  if (weights.length && user) {
-    const userWeights = weights.filter((entry) => entry.userId == user?.id);
-    lastWeight = userWeights.length > 0 ? userWeights.length - 1 : undefined;
-  }
+  // Sort weights by date (newest first) and filter for current user
+  const userWeights = weights
+    .filter((entry) => entry.userId === user?.id)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  const [weight, setWeight] = useState(
-    user && weights.length
-      ? weights
-          .sort((a, b) => new Date(a.date) - new Date(b.date))
-          .filter((entry) => entry.userId == user?.id)[lastWeight]?.weight ||
-          100
-      : 100
-  );
+  // Get the most recent weight (first element after sorting)
+  const mostRecentWeight = userWeights.length > 0 ? userWeights[0].weight : 100;
+
+  const [weight, setWeight] = useState(user ? mostRecentWeight : 100);
 
   const increaseTopSet = () => setWeight(Number(weight) + 5);
   const decreaseTopSet = () =>
@@ -33,23 +28,103 @@ export const Workout = ({ workout }) => {
     if (!saved) {
       setSaving(true);
       try {
+        // Validate workout ID
+        if (!workout || !workout.id) {
+          throw new Error("No workout selected");
+        }
+
+        // Check for template workout flag
+        if (workout._templateWorkout === true) {
+          console.error("Cannot save weights for template workout:", workout);
+          throw new Error(
+            "Cannot save weight for template workout. This workout doesn't exist in the database."
+          );
+        }
+
+        // Check for non-numeric IDs (like template IDs 'push-1')
+        const workoutId = workout.id;
+        if (typeof workoutId === "string" && !/^\d+$/.test(workoutId)) {
+          console.error("Invalid workout ID format (non-numeric):", workoutId);
+          throw new Error(
+            "Cannot save weight for template workout. Please use a saved workout instead."
+          );
+        }
+
+        // Parse the workout ID
+        const parsedWorkoutId = parseInt(workoutId);
+        if (isNaN(parsedWorkoutId)) {
+          console.error("Failed to parse workout ID:", workoutId);
+          throw new Error("Invalid workout ID format");
+        }
+
+        // Validate weight
+        if (!weight) {
+          throw new Error("Weight cannot be empty");
+        }
+
+        const numWeight = Number(weight);
+        if (isNaN(numWeight) || numWeight <= 0) {
+          throw new Error("Please enter a valid weight");
+        }
+
+        console.log(
+          "Sending workoutId:",
+          parsedWorkoutId,
+          "type:",
+          typeof parsedWorkoutId,
+          "weight:",
+          numWeight
+        );
+
+        // Format the date as ISO string to ensure it's in the correct format
+        const currentDate = new Date().toISOString();
+
+        console.log(
+          "User object:",
+          user ? `ID: ${user.id}, has token: ${!!user.token}` : "No user"
+        );
+        console.log(
+          "Making API request to:",
+          `${import.meta.env.VITE_API_URL}/weights/add`
+        );
+
+        if (!user || !user.token) {
+          throw new Error(
+            "Authentication token not found. Please log in again."
+          );
+        }
+
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/weight-entry`,
+          `${import.meta.env.VITE_API_URL}/weights/add`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`,
             },
             body: JSON.stringify({
-              userId: user.id,
-              workoutId: workout.id,
-              weight: weight,
+              workoutId: parsedWorkoutId,
+              weight: numWeight,
+              date: currentDate,
             }),
           }
         );
 
         if (!response.ok) {
-          throw new Error("Post failed");
+          // First check the content type to determine how to parse the response
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await response.json();
+            console.error("Response error (JSON):", errorData);
+            throw new Error(errorData.error || "Post failed");
+          } else {
+            // Handle text responses (like "Unauthorized")
+            const errorText = await response.text();
+            console.error("Response error (text):", errorText);
+            throw new Error(
+              errorText || `Request failed with status ${response.status}`
+            );
+          }
         } else {
           setSaving(false);
           setSaved(true);
@@ -57,7 +132,7 @@ export const Workout = ({ workout }) => {
       } catch (error) {
         setSaving(false);
         console.error("Save failed", error);
-        alert("Save failed.");
+        alert("Save failed: " + error.message);
       }
     } else {
       setSaved(false);

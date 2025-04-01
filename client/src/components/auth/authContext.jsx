@@ -56,10 +56,13 @@ export const AuthProvider = ({ children }) => {
 
     const { token, user } = await response.json();
 
+    // Add token to user object before setting state
+    const userWithToken = { ...user, token };
+
     // Save the JWT to localStorage
     if (token) {
       localStorage.setItem("authToken", token);
-      setUser(user);
+      setUser(userWithToken);
     }
   };
 
@@ -83,7 +86,9 @@ export const AuthProvider = ({ children }) => {
 
         if (response.ok) {
           const { user } = await response.json();
-          setUser(user);
+          // Add token to user object
+          const userWithToken = { ...user, token };
+          setUser(userWithToken);
         } else {
           // If token validation fails, clear it
           localStorage.removeItem("authToken");

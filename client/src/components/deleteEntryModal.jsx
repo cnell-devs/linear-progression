@@ -6,7 +6,17 @@ export const DeleteEntryModal = ({ entry, selected, fetchData }) => {
 
   const deleteEntry = async () => {
     try {
-      if (!user) throw new Error("user not yet available");
+      // Validate entry exists
+      if (!entry || !entry.id) {
+        throw new Error("No weight entry selected for deletion");
+      }
+
+      // Verify user is logged in
+      if (!user) {
+        throw new Error("You must be logged in to delete entries");
+      }
+
+      console.log("Deleting weight entry:", entry.id);
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/weight-entry/delete/${entry.id}`,
@@ -19,12 +29,15 @@ export const DeleteEntryModal = ({ entry, selected, fetchData }) => {
       );
 
       if (!response.ok) {
-        throw new Error("Delete failed");
+        const errorData = await response.json();
+        console.error("Response error:", errorData);
+        throw new Error(errorData.error || "Delete failed");
       }
+
       fetchData();
     } catch (error) {
-      console.error(error);
-      return;
+      console.error("Delete failed:", error);
+      alert("Delete failed: " + error.message);
     }
   };
 

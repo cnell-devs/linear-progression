@@ -65,6 +65,11 @@ router.get(
 );
 
 router.post("/weight-entry", addWeight);
+router.post(
+  "/weights/add",
+  passport.authenticate("jwt", { session: false }),
+  addWeight
+);
 router.post("/recovery", passwordLink);
 router.get("/verify", verifyUrl);
 router.delete("/delete", deleteUser);
