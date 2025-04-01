@@ -6,6 +6,10 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/send-email");
 
+exports.home = (req, res) => {
+  res.json({ message: "Welcome to the API" });
+};
+
 console.log(process.env.API_URL);
 
 exports.emailLink = async (req, res) => {
@@ -120,14 +124,176 @@ exports.logout = (req, res, next) => {
 exports.getWorkouts = async (req, res) => {
   const alternate = req.query.alt === "true";
   try {
-    const workouts = await db.getWorkouts(req.query.split);
+    // Pass user ID if user is authenticated
+    const userId = req.user ? req.user.id : null;
+    console.log("Controller - getWorkouts");
+    console.log("Authenticated user:", req.user);
+    console.log("Using userId:", userId);
+    console.log("Query params:", req.query);
 
-    // console.log(workouts);
+    const workouts = await db.getWorkouts(req.query.split, userId);
+    console.log(`Retrieved ${workouts.length} workouts`);
+    console.log("Global workouts:", workouts.filter((w) => w.isGlobal).length);
+    console.log(
+      "User workouts:",
+      workouts.filter((w) => w.userId === userId).length
+    );
 
     res.send(workouts);
   } catch (error) {
+    console.error("Error in getWorkouts controller:", error);
+    res.status(500).send({ error: "Failed to fetch workouts" });
+  }
+};
+
+exports.getWorkoutById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const workout = await db.getWorkoutById(id);
+    if (!workout) {
+      return res.status(404).send({ error: "Workout not found" });
+    }
+    res.send(workout);
+  } catch (error) {
     console.error(error);
-    return error;
+    res.status(500).send({ error: "Failed to fetch workout" });
+  }
+};
+
+exports.createWorkout = async (req, res) => {
+  const {
+    name,
+    sets,
+    reps,
+    amrap,
+    type,
+    alt,
+    ss,
+    supersettedId,
+    alternateId,
+    isTemplate,
+    isGlobal,
+    userId: clientProvidedUserId, // Extract userId from request if provided
+  } = req.body;
+
+  console.log("Create workout request body:", req.body);
+  console.log("Authenticated user:", req.user);
+
+  try {
+    // Validate required fields
+    if (!name || sets === undefined || !reps || !type) {
+      console.error("Missing required workout fields:", {
+        name,
+        sets,
+        reps,
+        type,
+      });
+      return res.status(400).send({ error: "Missing required workout fields" });
+    }
+
+    // Set workout owner to current authenticated user
+    const authenticatedUserId = req.user.id;
+    console.log("Authenticated user ID:", authenticatedUserId);
+
+    // For security, only admins can create workouts for other users
+    // Otherwise, always use the authenticated user's ID
+    let workoutUserId = authenticatedUserId;
+
+    // If global workout, set userId to null
+    // Determine if the workout should be global (admin only) or personal
+    const isWorkoutGlobal = req.user.admin && isGlobal === true;
+
+    if (isWorkoutGlobal) {
+      workoutUserId = null; // Global workouts have null userId
+    }
+
+    console.log("Final workout userId:", workoutUserId);
+    console.log("Is workout global:", isWorkoutGlobal);
+
+    const workoutData = {
+      name,
+      sets,
+      reps,
+      amrap: amrap || false,
+      type,
+      alt: alt || false,
+      ss: ss || false,
+      isTemplate: isTemplate || false,
+      isGlobal: isWorkoutGlobal,
+      userId: workoutUserId,
+      supersettedId,
+      alternateId,
+    };
+
+    console.log("Creating workout with data:", workoutData);
+    const workout = await db.createWorkout(workoutData);
+    console.log("Workout created:", workout);
+
+    res.status(201).send(workout);
+  } catch (error) {
+    console.error("Error creating workout:", error);
+    res.status(500).send({ error: "Failed to create workout" });
+  }
+};
+
+exports.updateWorkout = async (req, res) => {
+  const { id } = req.params;
+  const { name, sets, reps, amrap, type, alt, ss, isGlobal } = req.body;
+
+  try {
+    // Get the user ID
+    const userId = req.user.id;
+    const isAdmin = req.user.admin;
+
+    // Determine if user wants to create a personal copy of a global workout
+    const makePersonal = isGlobal === false;
+
+    // Check if workout exists
+    const existingWorkout = await db.getWorkoutById(id);
+    if (!existingWorkout) {
+      return res.status(404).send({ error: "Workout not found" });
+    }
+
+    const workoutData = {
+      name,
+      sets,
+      reps,
+      amrap,
+      type,
+      alt,
+      ss,
+      isGlobal: isAdmin ? isGlobal : false,
+    };
+
+    const workout = await db.updateWorkout(id, workoutData, userId);
+    res.send(workout);
+  } catch (error) {
+    console.error(error);
+    if (error.message === "Unauthorized to update this workout") {
+      return res.status(403).send({ error: error.message });
+    }
+    res.status(500).send({ error: "Failed to update workout" });
+  }
+};
+
+exports.deleteWorkout = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Get the user ID
+    const userId = req.user.id;
+
+    // Try to delete the workout
+    await db.deleteWorkout(id, userId);
+    res.send({ message: "Workout deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    if (error.message === "Unauthorized to delete this workout") {
+      return res.status(403).send({ error: error.message });
+    } else if (error.message === "Workout not found") {
+      return res.status(404).send({ error: error.message });
+    }
+    res.status(500).send({ error: "Failed to delete workout" });
   }
 };
 
@@ -138,7 +304,6 @@ exports.addWeight = async (req, res) => {
   try {
     console.log("REQUEST DATE", req.body.date);
     console.log("REQUEST DATE", new Date(req.body.date));
-
 
     const date = req.body.date
       ? new Date(req.body.date)
@@ -219,9 +384,7 @@ exports.passwordLink = [
 
       await sendEmail(user.email, subject, message);
 
-      res
-        .status(200)
-        .send({ message: "Reset Link Sent to Email" });
+      res.status(200).send({ message: "Reset Link Sent to Email" });
     } catch (error) {
       res.status(500).send({ message: "Internal Server Error" });
     }
@@ -293,4 +456,121 @@ const convertUTCToLocalUTC = (utcString) => {
 
   // Construct the new UTC-like format with local time
   return `${year}-${month}-${day}T${hour}:${minute}:${second}.000Z`;
+};
+
+exports.createWorkoutTemplate = async (req, res) => {
+  const { name, description, workoutIds } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const template = await db.createWorkoutTemplate({
+      name,
+      description,
+      userId,
+      workoutIds,
+    });
+    res.status(201).send(template);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Failed to create template" });
+  }
+};
+
+exports.getWorkoutTemplates = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const templates = await db.getWorkoutTemplates(userId);
+    res.send(templates);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Failed to fetch templates" });
+  }
+};
+
+exports.getWorkoutTemplate = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const template = await db.getWorkoutTemplate(id, userId);
+    if (!template) {
+      return res.status(404).send({ error: "Template not found" });
+    }
+    res.send(template);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Failed to fetch template" });
+  }
+};
+
+exports.updateWorkoutTemplate = async (req, res) => {
+  const { id } = req.params;
+  const { name, description, workoutIds } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const template = await db.updateWorkoutTemplate(id, userId, {
+      name,
+      description,
+      workoutIds,
+    });
+    if (!template) {
+      return res.status(404).send({ error: "Template not found" });
+    }
+    res.send(template);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Failed to update template" });
+  }
+};
+
+exports.deleteWorkoutTemplate = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const template = await db.deleteWorkoutTemplate(id, userId);
+    if (!template) {
+      return res.status(404).send({ error: "Template not found" });
+    }
+    res.send({ message: "Template deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Failed to delete template" });
+  }
+};
+
+exports.validate = (req, res) => {
+  res.status(200).json({ user: req.user });
+};
+
+// User Preferences
+exports.getUserPreferences = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const preferences = await db.getUserPreferences(userId);
+    res.status(200).json(preferences);
+  } catch (error) {
+    console.error("Error getting user preferences:", error);
+    res.status(500).json({ error: "Failed to get user preferences" });
+  }
+};
+
+exports.updateTemplateOrder = async (req, res) => {
+  const userId = req.user.id;
+  const { templateOrder } = req.body;
+
+  if (!Array.isArray(templateOrder)) {
+    return res.status(400).json({ error: "Template order must be an array" });
+  }
+
+  try {
+    const preferences = await db.updateTemplateOrder(userId, templateOrder);
+    res.status(200).json(preferences);
+  } catch (error) {
+    console.error("Error updating template order:", error);
+    res.status(500).json({ error: "Failed to update template order" });
+  }
 };

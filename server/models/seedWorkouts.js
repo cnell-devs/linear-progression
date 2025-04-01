@@ -7,38 +7,19 @@ const addWorkouts = async () => {
   const workoutsData = [
     {
       name: "Bench Press",
-      sets: 5,
-      reps: "5",
-      amrap: true,
-      type: "push",
-      weights: undefined,
-      alternate: {
-        create: {
-          name: "Overhead Press",
-          sets: 5,
-          reps: "5",
-          amrap: true,
-          type: "push",
-          weights: undefined,
-        },
-      },
-    },
-    {
-      name: "Overhead Press",
       sets: 3,
       reps: "8-12",
       amrap: false,
       type: "push",
       weights: undefined,
-      alternate: {
-        create: {
-          name: "Bench Press",
-          sets: 3,
-          reps: "8-12",
-          type: "push",
-          weights: undefined,
-        },
-      },
+    },
+    {
+      name: "Overhead Press",
+      sets: 5,
+      reps: "5",
+      amrap: true,
+      type: "push",
+      weights: undefined,
     },
     {
       name: "Incline Dumbbell Press",

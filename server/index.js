@@ -1,21 +1,9 @@
-const {
-  home,
-  logIn,
-  signUp,
-  logOut,
-  workouts,
-  validate,
-  weightEntry,
-  password,
-  verify,
-  deleteUserRoute,
-} = require("./routes/routes.js");
-
 require("dotenv").config();
 const cors = require("cors");
 const express = require("express");
 const app = express();
 const passport = require("./config/passport.js");
+const router = require("./routes/routes.js");
 
 if (process.env.NODE_ENV === "development") {
   // Default to development if NODE_ENV is not set
@@ -47,25 +35,14 @@ app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use("/", home);
-app.use(
-  "/workouts",
-  /* passport.authenticate("jwt", { session: false }) ,*/
-  workouts
-);
-app.use("/signup", signUp);
-app.use("/login", logIn);
-app.use("/logout", logOut);
-app.use("/validate-token", validate);
-app.use("/weight-entry", weightEntry);
-app.use("/recovery", password);
-app.use("/verify", verify);
-app.use("/delete", deleteUserRoute);
+// Use the router for all routes
+app.use("/", router);
 
 console.log(`Running in ${process.env.NODE_ENV} mode`);
 console.log(`API URL: ${process.env.API_URL}`);
+console.log(`DB URL: ${process.env.DATABASE_URL}`);
 
 const PORT = 3000;
-app.listen(PORT, () => console.log(`listening on ${PORT}`));
+app.listen(PORT, () => console.log(`listening on port ${PORT}`));
 
 module.exports = app;
