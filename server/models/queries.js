@@ -453,9 +453,12 @@ exports.updateWeightEntry = async (id, userId, workoutId, newWeight) => {
 
 exports.deleteWeightEntry = async (id) => {
   try {
+    // Ensure id is an integer
+    const idInt = typeof id === "string" ? parseInt(id) : id;
+
     const deleted = await prisma.weightEntry.delete({
       where: {
-        id: id,
+        id: idInt,
       },
     });
 
