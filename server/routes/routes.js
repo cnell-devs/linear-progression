@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const passport = require("passport");
 const { weightEntry } = require("./weight-entry");
+const { password } = require("./password");
 const {
   home,
   logInPost,
@@ -29,6 +30,9 @@ const router = Router();
 
 // Mount the weight-entry router
 router.use("/weight-entry", weightEntry);
+
+// Mount the password recovery router
+router.use("/recovery", password);
 
 router.get("/", home);
 router.post("/login", logInPost);
@@ -74,7 +78,6 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   addWeight
 );
-router.post("/recovery", passwordLink);
 router.get("/verify", verifyUrl);
 router.delete("/delete", deleteUser);
 
