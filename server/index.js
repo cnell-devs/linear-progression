@@ -14,6 +14,8 @@ if (process.env.NODE_ENV === "development") {
 const allowedOrigins = [
   "http://localhost:5173", // Local development
   "https://linear-progression.vercel.app", // Vercel production URL
+  "https://linear-progression.vercel.app", // Vercel production URL
+  "https://linear-progression-git-agent-basednais-projects.vercel.app", // Vercel production URL
 ];
 
 app.use(
