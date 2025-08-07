@@ -146,13 +146,12 @@ exports.getWorkouts = async (req, res) => {
     console.log("Using userId:", userId);
     console.log("Query params:", req.query);
 
+    if (!userId) {
+      return res.status(401).send({ error: "Authentication required" });
+    }
+
     const workouts = await db.getWorkouts(req.query.split, userId);
-    console.log(`Retrieved ${workouts.length} workouts`);
-    console.log("Global workouts:", workouts.filter((w) => w.isGlobal).length);
-    console.log(
-      "User workouts:",
-      workouts.filter((w) => w.userId === userId).length
-    );
+    console.log(`Retrieved ${workouts.length} workouts for user ${userId}`);
 
     res.send(workouts);
   } catch (error) {
@@ -176,32 +175,16 @@ exports.getWorkoutById = async (req, res) => {
 };
 
 exports.createWorkout = async (req, res) => {
-  const {
-    name,
-    sets,
-    reps,
-    amrap,
-    type,
-    alt,
-    ss,
-    supersettedId,
-    alternateId,
-    isTemplate,
-    isGlobal,
-    userId: clientProvidedUserId, // Extract userId from request if provided
-  } = req.body;
+  const { name, alt, ss, supersettedId, alternateId } = req.body;
 
   console.log("Create workout request body:", req.body);
   console.log("Authenticated user:", req.user);
 
   try {
     // Validate required fields
-    if (!name || sets === undefined || !reps || !type) {
+    if (!name) {
       console.error("Missing required workout fields:", {
         name,
-        sets,
-        reps,
-        type,
       });
       return res.status(400).send({ error: "Missing required workout fields" });
     }
@@ -210,32 +193,11 @@ exports.createWorkout = async (req, res) => {
     const authenticatedUserId = req.user.id;
     console.log("Authenticated user ID:", authenticatedUserId);
 
-    // For security, only admins can create workouts for other users
-    // Otherwise, always use the authenticated user's ID
-    let workoutUserId = authenticatedUserId;
-
-    // If global workout, set userId to null
-    // Determine if the workout should be global (admin only) or personal
-    const isWorkoutGlobal = req.user.admin && isGlobal === true;
-
-    if (isWorkoutGlobal) {
-      workoutUserId = null; // Global workouts have null userId
-    }
-
-    console.log("Final workout userId:", workoutUserId);
-    console.log("Is workout global:", isWorkoutGlobal);
-
     const workoutData = {
       name,
-      sets,
-      reps,
-      amrap: amrap || false,
-      type,
       alt: alt || false,
       ss: ss || false,
-      isTemplate: isTemplate || false,
-      isGlobal: isWorkoutGlobal,
-      userId: workoutUserId,
+      userId: authenticatedUserId,
       supersettedId,
       alternateId,
     };
@@ -253,15 +215,11 @@ exports.createWorkout = async (req, res) => {
 
 exports.updateWorkout = async (req, res) => {
   const { id } = req.params;
-  const { name, sets, reps, amrap, type, alt, ss, isGlobal } = req.body;
+  const { name, sets, reps, amrap, alt, ss } = req.body;
 
   try {
     // Get the user ID
     const userId = req.user.id;
-    const isAdmin = req.user.admin;
-
-    // Determine if user wants to create a personal copy of a global workout
-    const makePersonal = isGlobal === false;
 
     // Check if workout exists
     const existingWorkout = await db.getWorkoutById(id);
@@ -274,10 +232,8 @@ exports.updateWorkout = async (req, res) => {
       sets,
       reps,
       amrap,
-      type,
       alt,
       ss,
-      isGlobal: isAdmin ? isGlobal : false,
     };
 
     const workout = await db.updateWorkout(id, workoutData, userId);
@@ -327,7 +283,7 @@ exports.addWeight = async (req, res) => {
       return res.status(400).send({ error: "User ID is required" });
     }
 
-    const { workoutId: rawWorkoutId, weight: rawWeight } = req.body;
+    const { workoutId: rawWorkoutId, weight: rawWeight, templateId } = req.body;
 
     if (rawWorkoutId === undefined || rawWorkoutId === null) {
       return res.status(400).send({ error: "workoutId is required" });
@@ -396,13 +352,18 @@ exports.addWeight = async (req, res) => {
     console.log("CONTROLLER date:", date);
 
     // Check if entry already exists for this date
-    const checkDate = await db.getWeightEntry(userId, workoutId, date);
+    const checkDate = await db.getWeightEntry(
+      userId,
+      workoutId,
+      date,
+      templateId
+    );
     console.log("checkDate", checkDate);
     console.log("compare", date, checkDate?.date);
 
     // Create or update weight entry
     const workouts = !checkDate
-      ? await db.addWeightEntry(userId, workoutId, weight, date)
+      ? await db.addWeightEntry(userId, workoutId, weight, date, templateId)
       : await db.updateWeightEntry(checkDate.id, userId, workoutId, weight);
 
     console.log("Result:", workouts);
@@ -580,7 +541,7 @@ exports.resetPassword = async (req, res) => {
 };
 
 exports.createWorkoutTemplate = async (req, res) => {
-  const { name, description, workoutIds } = req.body;
+  const { name, description, workouts } = req.body;
   const userId = req.user.id;
 
   try {
@@ -588,7 +549,7 @@ exports.createWorkoutTemplate = async (req, res) => {
       name,
       description,
       userId,
-      workoutIds,
+      workouts,
     });
     res.status(201).send(template);
   } catch (error) {
@@ -627,14 +588,14 @@ exports.getWorkoutTemplate = async (req, res) => {
 
 exports.updateWorkoutTemplate = async (req, res) => {
   const { id } = req.params;
-  const { name, description, workoutIds } = req.body;
+  const { name, description, workouts } = req.body;
   const userId = req.user.id;
 
   try {
     const template = await db.updateWorkoutTemplate(id, userId, {
       name,
       description,
-      workoutIds,
+      workouts,
     });
     if (!template) {
       return res.status(404).send({ error: "Template not found" });

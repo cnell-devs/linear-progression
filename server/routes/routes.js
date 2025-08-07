@@ -2,6 +2,7 @@ const { Router } = require("express");
 const passport = require("passport");
 const { weightEntry } = require("./weight-entry");
 const { password } = require("./password");
+const { userWorkouts } = require("./userWorkouts");
 const {
   home,
   logInPost,
@@ -33,6 +34,13 @@ router.use("/weight-entry", weightEntry);
 
 // Mount the password recovery router
 router.use("/recovery", password);
+
+// Mount the new user workouts router (v2 API)
+router.use(
+  "/v2/workouts",
+  passport.authenticate("jwt", { session: false }),
+  userWorkouts
+);
 
 router.get("/", home);
 router.post("/login", logInPost);
