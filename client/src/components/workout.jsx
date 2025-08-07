@@ -15,8 +15,14 @@ export const Workout = ({ workout }) => {
     .filter((entry) => entry.userId === user?.id)
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
+  console.log("Workout:", workout.name);
+  console.log("Raw weights:", weights);
+  console.log("User weights:", userWeights);
+
   // Get the most recent weight (first element after sorting)
   const mostRecentWeight = userWeights.length > 0 ? userWeights[0].weight : 100;
+
+  console.log("Most recent weight:", mostRecentWeight);
 
   const [weight, setWeight] = useState(user ? mostRecentWeight : 100);
 
@@ -101,6 +107,7 @@ export const Workout = ({ workout }) => {
               workoutId: parsedWorkoutId,
               weight: numWeight,
               date: currentDate,
+              ...(workout.templateId && { templateId: workout.templateId }), // Include templateId if workout is from a template
             }),
           }
         );

@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "./auth/authContext";
-import { defaultTemplates } from "./templates/defaultTemplates";
 
 export const useWorkout = (params) => {
   const [workouts, setWorkouts] = useState(null);
@@ -20,6 +19,7 @@ export const useWorkout = (params) => {
       // If "all" is passed, fetch all workouts
       if (params === "all") {
         console.log("Fetching all workouts");
+        console.log("Auth headers:", authHeaders);
         const response = await fetch(`${apiUrl}/workouts`, {
           headers: {
             ...authHeaders,
@@ -27,7 +27,18 @@ export const useWorkout = (params) => {
         });
 
         if (!response.ok) {
-          console.error("Error fetching workouts:", response.status);
+          console.error(
+            "Error fetching workouts:",
+            response.status,
+            response.statusText
+          );
+          if (response.status === 401) {
+            console.error(
+              "Authentication required - user may not be logged in"
+            );
+          }
+          const errorText = await response.text();
+          console.error("Error response:", errorText);
           setWorkouts([]);
           return;
         }
@@ -58,79 +69,6 @@ export const useWorkout = (params) => {
         return;
       }
 
-      // Check if we're using a default template
-      if (params && params.get("defaultTemplate")) {
-        const templateId = params.get("defaultTemplate");
-        const template = defaultTemplates.find((t) => t.id === templateId);
-
-        if (template) {
-          console.log("Using default template:", templateId);
-
-          // Fetch real workouts from the database using the stored dbIds
-          try {
-            const response = await fetch(`${apiUrl}/workouts`, {
-              headers: {
-                ...authHeaders,
-              },
-            });
-
-            if (!response.ok) {
-              throw new Error("Failed to fetch workouts for template");
-            }
-
-            let allWorkouts = await response.json();
-
-            // Find the real workout objects that match our template workout dbIds
-            const dbIds = template.workouts
-              .map((w) => w.dbId)
-              .filter((id) => id !== undefined);
-            console.log("Looking for workouts with database IDs:", dbIds);
-
-            // Get the real workout objects from the database
-            const matchedWorkouts = dbIds
-              .map((dbId) => {
-                const match = allWorkouts.find((w) => w.id === dbId);
-                if (match) {
-                  console.log(`Found workout with ID ${dbId}: ${match.name}`);
-                  return match;
-                } else {
-                  console.warn(`No workout found with ID ${dbId}`);
-                  return null;
-                }
-              })
-              .filter((w) => w !== null);
-
-            console.log("Found workouts:", matchedWorkouts);
-
-            if (matchedWorkouts.length > 0) {
-              setWorkouts(matchedWorkouts);
-            } else {
-              console.warn(
-                "No matching workouts found in database. Using template workouts with warning."
-              );
-              // Use template workouts but with warning about ID issues
-              setWorkouts(
-                template.workouts.map((w) => ({
-                  ...w,
-                  id: w.dbId || w.id, // Try to use the dbId if available
-                  _templateWorkout: true, // Mark as template workout
-                }))
-              );
-            }
-          } catch (error) {
-            console.error("Error fetching real workouts for template:", error);
-            console.warn(
-              "Using template workouts with string IDs - weight tracking will not work"
-            );
-            setWorkouts(template.workouts);
-          }
-        } else {
-          console.error("Default template not found:", templateId);
-          setWorkouts([]);
-        }
-        return;
-      }
-
       // Check if we're using a user template
       if (params && params.get("template")) {
         const templateId = params.get("template");
@@ -146,13 +84,54 @@ export const useWorkout = (params) => {
           if (!response.ok) throw new Error("Failed to fetch template");
 
           const template = await response.json();
-          let templateWorkouts = template.workouts || [];
+          let templateWorkouts = [];
+
+          // Handle the new structure with templateWorkouts
+          if (template.templateWorkouts) {
+            templateWorkouts = template.templateWorkouts.map((tw) => {
+              // Handle both legacy workouts and new userWorkouts
+              const workout = tw.workout || tw.userWorkout;
+              const workoutName = workout
+                ? tw.userWorkout?.customName ||
+                  tw.userWorkout?.globalWorkout?.name ||
+                  workout.name
+                : "Unknown Workout";
+
+              return {
+                id: workout?.id,
+                name: workoutName,
+                sets: tw.sets,
+                reps: tw.reps,
+                amrap: tw.amrap,
+                templateId: template.id, // Add templateId for weight entry context
+                // Extract weights from the nested structure
+                weights: tw.userWorkout?.weights || workout?.weights || [],
+                // Include other workout properties that might be needed
+                category:
+                  tw.userWorkout?.globalWorkout?.category || workout?.category,
+                muscleGroup:
+                  tw.userWorkout?.globalWorkout?.muscleGroup ||
+                  workout?.muscleGroup,
+                equipment:
+                  tw.userWorkout?.globalWorkout?.equipment ||
+                  workout?.equipment,
+                alternate: tw.userWorkout?.alternate || workout?.alternate,
+                superset: tw.userWorkout?.superset || workout?.superset,
+              };
+            });
+          }
 
           if (user) {
             templateWorkouts.forEach((workout) => {
-              workout.weights =
-                workout?.weights?.filter((entry) => entry.userId == user.id) ||
-                [];
+              // Filter weights to only show entries for this template and user
+              if (workout.weights) {
+                workout.weights = workout.weights.filter(
+                  (entry) =>
+                    entry.userId == user.id && entry.templateId == template.id
+                );
+              } else {
+                workout.weights = [];
+              }
             });
           }
 
@@ -164,10 +143,8 @@ export const useWorkout = (params) => {
         return;
       }
 
-      // Normal split-based workout fetching
-      const url = `${apiUrl}/workouts?split=${params.get(
-        "split"
-      )}&alt=${params.get("alt")}`;
+      // Normal workout fetching
+      const url = `${apiUrl}/workouts?alt=${params.get("alt")}`;
 
       const response = await fetch(url, {
         headers: {

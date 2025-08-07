@@ -1,34 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Nav } from "../nav";
-import { useAuth } from "../auth/authContext";
 import { useWorkout } from "../useWorkout";
 import { CreateWorkoutModal } from "../workouts/CreateWorkoutModal";
 import { EditWorkoutModal } from "../workouts/EditWorkoutModal";
 import { DeleteWorkoutModal } from "../workouts/DeleteWorkoutModal";
 
 export function WorkoutManager() {
-  const { user } = useAuth();
   const { workouts, fetchWorkouts } = useWorkout("all");
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [filter, setFilter] = useState("all");
-  const [ownerFilter, setOwnerFilter] = useState("all");
 
-  // Filter workouts by type and ownership
-  const filteredWorkouts = workouts
-    ? workouts
-        .filter((workout) =>
-          filter === "all" ? true : workout.type === filter
-        )
-        .filter((workout) => {
-          if (ownerFilter === "all") return true;
-          if (ownerFilter === "mine") return workout.userId === user?.id;
-          if (ownerFilter === "global") return workout.isGlobal;
-          return true;
-        })
-    : [];
+  // Show all workouts (no type filtering needed)
+  const filteredWorkouts = workouts || [];
 
   const handleCreateWorkout = async (workoutData) => {
     try {
@@ -113,92 +98,13 @@ export function WorkoutManager() {
           </button>
         </div>
 
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold mb-2">Filter Workouts</h2>
-          <div className="flex flex-wrap gap-4">
-            <div>
-              <span className="block text-sm font-medium text-gray-700 mb-1">
-                Workout Type
-              </span>
-              <div className="tabs">
-                <a
-                  className={`tab tab-bordered ${
-                    filter === "all" ? "tab-active" : ""
-                  }`}
-                  onClick={() => setFilter("all")}
-                >
-                  All
-                </a>
-                <a
-                  className={`tab tab-bordered ${
-                    filter === "push" ? "tab-active" : ""
-                  }`}
-                  onClick={() => setFilter("push")}
-                >
-                  Push
-                </a>
-                <a
-                  className={`tab tab-bordered ${
-                    filter === "pull" ? "tab-active" : ""
-                  }`}
-                  onClick={() => setFilter("pull")}
-                >
-                  Pull
-                </a>
-                <a
-                  className={`tab tab-bordered ${
-                    filter === "legs" ? "tab-active" : ""
-                  }`}
-                  onClick={() => setFilter("legs")}
-                >
-                  Legs
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <span className="block text-sm font-medium text-gray-700 mb-1">
-                Ownership
-              </span>
-              <div className="tabs">
-                <a
-                  className={`tab tab-bordered ${
-                    ownerFilter === "all" ? "tab-active" : ""
-                  }`}
-                  onClick={() => setOwnerFilter("all")}
-                >
-                  All
-                </a>
-                <a
-                  className={`tab tab-bordered ${
-                    ownerFilter === "mine" ? "tab-active" : ""
-                  }`}
-                  onClick={() => setOwnerFilter("mine")}
-                >
-                  My Workouts
-                </a>
-                <a
-                  className={`tab tab-bordered ${
-                    ownerFilter === "global" ? "tab-active" : ""
-                  }`}
-                  onClick={() => setOwnerFilter("global")}
-                >
-                  Global
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="overflow-x-auto">
           <table className="table w-full">
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Type</th>
                 <th>Sets</th>
                 <th>Reps</th>
-                <th>Owner</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -206,25 +112,10 @@ export function WorkoutManager() {
               {workouts ? (
                 filteredWorkouts.length > 0 ? (
                   filteredWorkouts.map((workout) => (
-                    <tr
-                      key={workout.id}
-                      className={workout.isGlobal ? "bg-gray-50" : ""}
-                    >
+                    <tr key={workout.id}>
                       <td>{workout.name}</td>
-                      <td>{workout.type}</td>
                       <td>{workout.sets}</td>
                       <td>{workout.reps}</td>
-                      <td>
-                        {workout.isGlobal ? (
-                          <span className="badge badge-info">Global</span>
-                        ) : workout.userId === user?.id ? (
-                          <span className="badge">Mine</span>
-                        ) : (
-                          <span className="badge badge-secondary">
-                            Other User
-                          </span>
-                        )}
-                      </td>
                       <td>
                         <div className="flex space-x-2">
                           <button
@@ -236,31 +127,29 @@ export function WorkoutManager() {
                           >
                             Edit
                           </button>
-                          {(user?.admin || workout.userId === user?.id) && (
-                            <button
-                              className="btn btn-sm btn-outline btn-error"
-                              onClick={() => {
-                                setSelectedWorkout(workout);
-                                setIsDeleteModalOpen(true);
-                              }}
-                            >
-                              Delete
-                            </button>
-                          )}
+                          <button
+                            className="btn btn-sm btn-outline btn-error"
+                            onClick={() => {
+                              setSelectedWorkout(workout);
+                              setIsDeleteModalOpen(true);
+                            }}
+                          >
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="text-center">
+                    <td colSpan="4" className="text-center">
                       No workouts found.
                     </td>
                   </tr>
                 )
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center">
+                  <td colSpan="4" className="text-center">
                     <span className="material-icons animate-spin spinner text-xl">
                       refresh
                     </span>

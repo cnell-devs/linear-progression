@@ -1,15 +1,15 @@
 /* eslint-disable react/prop-types */
-import {
-  convertUtcToDateFormat,
-  convertUTCToLocalUTC,
-} from "../utils/date-formatter";
 import { useAuth } from "./auth/authContext";
+import { useTemplates } from "../hooks/useTemplates";
 import { useState } from "react";
 
-export const AddEntryModal = ({ selected, fetchData }) => {
+export const AddEntryModal = ({ fetchData }) => {
   const { user } = useAuth();
+  const { userTemplates, loading } = useTemplates();
 
   const [weight, setWeight] = useState(100);
+  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [selectedWorkout, setSelectedWorkout] = useState("");
   // Format today's date to match the date input element (YYYY-MM-DD)
   const today = new Date();
   const formattedToday = `${today.getFullYear()}-${String(
@@ -18,27 +18,61 @@ export const AddEntryModal = ({ selected, fetchData }) => {
 
   const [date, setDate] = useState(formattedToday);
 
+  const resetForm = () => {
+    setSelectedTemplate("");
+    setSelectedWorkout("");
+    setWeight(100);
+    setDate(formattedToday);
+  };
+
+  // Get workouts for the selected template
+  const getTemplateWorkouts = () => {
+    if (!selectedTemplate) return [];
+    const template = userTemplates.find(
+      (t) => t.id === parseInt(selectedTemplate)
+    );
+    return template?.templateWorkouts || [];
+  };
+
+  // Handle template selection change
+  const handleTemplateChange = (templateId) => {
+    setSelectedTemplate(templateId);
+    setSelectedWorkout(""); // Reset workout selection when template changes
+  };
+
   const saveWeight = async () => {
     try {
+      // Validate template selection
+      if (!selectedTemplate) {
+        throw new Error("Please select a template");
+      }
+
       // Validate workout selection
-      if (!selected || (!selected.id && !selected.dbId)) {
-        throw new Error("No workout selected");
+      if (!selectedWorkout) {
+        throw new Error("Please select a workout from the template");
       }
 
-      // Get the appropriate workout ID
-      // If it's a template workout with a dbId, use that instead
-      let workoutId = selected.dbId || selected.id;
-
-      // Check for non-numeric IDs that don't have a dbId
-      if (typeof workoutId === "string" && !/^\d+$/.test(workoutId)) {
-        console.error("Invalid workout ID format (non-numeric):", workoutId);
-        throw new Error(
-          "Cannot save weight for this workout. This template workout doesn't have a database ID reference."
-        );
+      // Find the selected template to get workout information
+      const template = userTemplates.find(
+        (t) => t.id === parseInt(selectedTemplate)
+      );
+      if (!template) {
+        throw new Error("Selected template not found");
       }
 
-      // Parse the workout ID
+      // Find the selected workout from the template
+      const templateWorkout = template.templateWorkouts.find((tw) => {
+        const workout = tw.workout || tw.userWorkout;
+        return workout?.id === parseInt(selectedWorkout);
+      });
+      if (!templateWorkout) {
+        throw new Error("Selected workout not found in template");
+      }
+
+      const workout = templateWorkout.workout || templateWorkout.userWorkout;
+      const workoutId = workout?.id;
       const parsedWorkoutId = parseInt(workoutId);
+
       if (isNaN(parsedWorkoutId)) {
         console.error("Failed to parse workout ID:", workoutId);
         throw new Error("Invalid workout ID format");
@@ -95,7 +129,9 @@ export const AddEntryModal = ({ selected, fetchData }) => {
         "date:",
         isoDate,
         "original date:",
-        date
+        date,
+        "templateId:",
+        template.id
       );
 
       const response = await fetch(
@@ -110,6 +146,7 @@ export const AddEntryModal = ({ selected, fetchData }) => {
             workoutId: parsedWorkoutId,
             date: isoDate,
             weight: numWeight,
+            templateId: template.id, // Include templateId from selected template
           }),
         }
       );
@@ -132,6 +169,7 @@ export const AddEntryModal = ({ selected, fetchData }) => {
       }
 
       fetchData();
+      resetForm(); // Reset form after successful save
     } catch (error) {
       console.error("Save failed", error);
       alert("Save failed: " + error.message);
@@ -144,10 +182,67 @@ export const AddEntryModal = ({ selected, fetchData }) => {
         {
           <div className="modal-box flex flex-col gap-6">
             <h3 className="font-extrabold text-center text-lg ">
-              {selected?.name}
+              Add New Entry
             </h3>
-            {selected ? (
-              <form action="">
+            <form action="">
+              <div className="flex flex-col gap-4">
+                <label className="">
+                  Select Template: &nbsp;
+                  <select
+                    className="select select-bordered w-full max-w-xs"
+                    value={selectedTemplate}
+                    onChange={(e) => handleTemplateChange(e.target.value)}
+                    required
+                  >
+                    <option value="">Choose a template...</option>
+                    {loading ? (
+                      <option disabled>Loading templates...</option>
+                    ) : (
+                      userTemplates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </label>
+
+                {selectedTemplate && (
+                  <label className="">
+                    Select Workout: &nbsp;
+                    <select
+                      className="select select-bordered w-full max-w-xs"
+                      value={selectedWorkout}
+                      onChange={(e) => setSelectedWorkout(e.target.value)}
+                      required
+                    >
+                      <option value="">Choose a workout...</option>
+                      {getTemplateWorkouts().map((templateWorkout) => {
+                        // Handle both legacy workouts and new userWorkouts
+                        const workout =
+                          templateWorkout.workout ||
+                          templateWorkout.userWorkout;
+                        const workoutName = workout
+                          ? templateWorkout.userWorkout?.customName ||
+                            templateWorkout.userWorkout?.globalWorkout?.name ||
+                            workout.name
+                          : "Unknown Workout";
+
+                        return (
+                          <option
+                            key={workout?.id || templateWorkout.id}
+                            value={workout?.id || templateWorkout.id}
+                          >
+                            {workoutName} ({templateWorkout.sets} sets ×{" "}
+                            {templateWorkout.reps} reps
+                            {templateWorkout.amrap ? " + AMRAP" : ""})
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </label>
+                )}
+
                 <label className="">
                   Enter Date: &nbsp;
                   <input
@@ -158,7 +253,7 @@ export const AddEntryModal = ({ selected, fetchData }) => {
                     value={date}
                   />
                 </label>
-                <br />
+
                 <label className="">
                   Enter Weight: &nbsp;
                   <input
@@ -172,23 +267,26 @@ export const AddEntryModal = ({ selected, fetchData }) => {
                     value={weight}
                   />
                 </label>
-              </form>
-            ) : (
-              <p className="flex justify-center font-bold">Select a Workout</p>
-            )}
+              </div>
+            </form>
             <div className="modal-action m-0">
               <form method="dialog">
                 <div className="flex gap-2">
-                  <button className="btn">Discard</button>
+                  <button className="btn" onClick={resetForm}>
+                    Discard
+                  </button>
 
-                  {selected && (
-                    <button
-                      className="btn bg-blue-500 text-white px-6"
-                      onClick={saveWeight}
-                    >
-                      save
-                    </button>
-                  )}
+                  <button
+                    className={`btn px-6 ${
+                      selectedTemplate && selectedWorkout
+                        ? "bg-blue-500 text-white"
+                        : "btn-disabled"
+                    }`}
+                    onClick={saveWeight}
+                    disabled={!selectedTemplate || !selectedWorkout}
+                  >
+                    Save
+                  </button>
                 </div>
               </form>
             </div>

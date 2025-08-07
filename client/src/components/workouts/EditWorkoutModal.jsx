@@ -8,14 +8,11 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
     sets: 3,
     reps: "8-12",
     amrap: false,
-    type: "push",
     alt: false,
     ss: false,
-    isGlobal: false,
   });
 
-  const [isGlobalWorkout, setIsGlobalWorkout] = useState(false);
-  const [makingPersonalCopy, setMakingPersonalCopy] = useState(false);
+  const [cannotEdit, setCannotEdit] = useState(false);
 
   useEffect(() => {
     if (workout) {
@@ -25,17 +22,12 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
         sets: workout.sets || 3,
         reps: workout.reps || "8-12",
         amrap: workout.amrap || false,
-        type: workout.type || "push",
         alt: workout.alt || false,
         ss: workout.ss || false,
-        isGlobal: workout.isGlobal || false,
       });
 
-      // Determine if this is a global workout not owned by the current user
-      setIsGlobalWorkout(
-        workout.isGlobal && (!workout.userId || workout.userId !== user?.id)
-      );
-      setMakingPersonalCopy(false);
+      // Check if user can edit this workout (only their own workouts)
+      setCannotEdit(workout.userId !== user?.id);
     }
   }, [workout, user]);
 
@@ -45,14 +37,6 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
       ...formData,
       [name]: type === "checkbox" ? checked : value,
     });
-
-    // If user is editing a global workout and unchecks the global flag,
-    // they're making a personal copy
-    if (isGlobalWorkout && name === "isGlobal" && !checked) {
-      setMakingPersonalCopy(true);
-    } else if (name === "isGlobal" && checked) {
-      setMakingPersonalCopy(false);
-    }
   };
 
   const handleSubmit = (e) => {
@@ -60,7 +44,6 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
     onSubmit(workout.id, {
       ...formData,
       sets: parseInt(formData.sets),
-      isGlobal: user?.admin ? formData.isGlobal : false,
     });
   };
 
@@ -71,13 +54,9 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <h2 className="text-xl font-bold mb-4">Edit Workout</h2>
 
-        {isGlobalWorkout && !user?.admin && (
-          <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4">
-            <p>
-              {makingPersonalCopy
-                ? "You're creating your own copy of this global workout."
-                : "This is a global workout. Any changes will create your own personal copy."}
-            </p>
+        {cannotEdit && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+            <p>You can only edit your own workouts.</p>
           </div>
         )}
 
@@ -127,23 +106,6 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Workout Type
-            </label>
-            <select
-              name="type"
-              value={formData.type}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-            >
-              <option value="push">Push</option>
-              <option value="pull">Pull</option>
-              <option value="legs">Legs</option>
-            </select>
-          </div>
-
           <div className="flex space-x-4 mb-4">
             <div className="flex items-center">
               <input
@@ -185,22 +147,6 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
               </label>
             </div>
           </div>
-
-          {user && user.admin && (
-            <div className="flex items-center mb-4">
-              <input
-                type="checkbox"
-                id="isGlobal"
-                name="isGlobal"
-                checked={formData.isGlobal}
-                onChange={handleChange}
-                className="mr-2"
-              />
-              <label htmlFor="isGlobal" className="text-sm text-gray-700">
-                Make available to all users (Admin only)
-              </label>
-            </div>
-          )}
 
           <div className="flex justify-end space-x-2">
             <button type="button" onClick={onClose} className="btn btn-outline">

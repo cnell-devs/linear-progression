@@ -5,7 +5,13 @@ import { useEffect, useState } from "react";
 import { DeleteEntryModal } from "./deleteEntryModal";
 import { convertUtcToDateFormat } from "../utils/date-formatter";
 
-export const EntryLog = ({ workouts, selected, fetchData }) => {
+export const EntryLog = ({
+  workouts,
+  selected,
+  fetchData,
+  templateFilter,
+  userTemplates,
+}) => {
   const [workoutLog, setWorkoutLog] = useState(false);
   const [currentEntry, setCurrentEntry] = useState();
 
@@ -17,8 +23,39 @@ export const EntryLog = ({ workouts, selected, fetchData }) => {
       name: workout.name,
       entries: workout.weights,
     }));
-    setWorkoutLog(log?.filter((entry) => entry?.id === selected?.id));
-  }, [workouts, selected]);
+
+    let filteredLog = log?.filter((entry) => entry?.id === selected?.id);
+
+    // Apply template filter to the entries
+    if (filteredLog && templateFilter) {
+      filteredLog = filteredLog.map((entry) => {
+        let filteredEntries = entry.entries;
+
+        if (templateFilter !== "all") {
+          if (templateFilter === "none") {
+            // Show only entries without a template
+            filteredEntries = entry.entries.filter(
+              (weight) =>
+                weight.templateId === null || weight.templateId === undefined
+            );
+          } else {
+            // Show only entries for specific template
+            filteredEntries = entry.entries.filter(
+              (weight) => weight.templateId == templateFilter
+            );
+          }
+        }
+        // If "all", show all entries (no additional filtering)
+
+        return {
+          ...entry,
+          entries: filteredEntries,
+        };
+      });
+    }
+
+    setWorkoutLog(filteredLog);
+  }, [workouts, selected, templateFilter]);
 
   return (
     !selected?.weights?.length == 0 && (
@@ -30,6 +67,7 @@ export const EntryLog = ({ workouts, selected, fetchData }) => {
                 <th></th>
                 <td>Date</td>
                 <td>Weight &#40;lbs&#41;</td>
+                <td>Template</td>
                 <th></th>
               </tr>
             </thead>
@@ -38,14 +76,32 @@ export const EntryLog = ({ workouts, selected, fetchData }) => {
                 entry.entries
                   .sort((a, b) => new Date(b.date) - new Date(a.date))
                   .map((workout, z) => {
+                    const templateName = workout.templateId
+                      ? userTemplates.find((t) => t.id == workout.templateId)
+                          ?.name || "Unknown"
+                      : "None";
+
                     return (
                       <tr key={z} className="">
                         <th></th>
                         <td>
-                          {convertUtcToDateFormat(new Date(workout.date).toISOString())}
+                          {convertUtcToDateFormat(
+                            new Date(workout.date).toISOString()
+                          )}
                         </td>
 
                         <td>{workout.weight}</td>
+                        <td>
+                          <span
+                            className={`badge badge-sm ${
+                              workout.templateId
+                                ? "badge-primary"
+                                : "badge-ghost"
+                            }`}
+                          >
+                            {templateName}
+                          </span>
+                        </td>
                         <td>
                           <button
                             className="material-icons text-red-500 font-bold w-full text-right"
@@ -69,6 +125,7 @@ export const EntryLog = ({ workouts, selected, fetchData }) => {
                 <th></th>
                 <td>Date</td>
                 <td>Weight &#40;lbs&#41;</td>
+                <td>Template</td>
                 <th></th>
               </tr>
             </tfoot>

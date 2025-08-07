@@ -3,7 +3,6 @@ import { Workout } from "../workout";
 import { useSearchParams } from "react-router-dom";
 import { useWorkout } from "../useWorkout";
 import { useState, useEffect } from "react";
-import { defaultTemplates } from "../templates/defaultTemplates";
 
 export function Exercises() {
   const [searchParams] = useSearchParams();
@@ -13,16 +12,6 @@ export function Exercises() {
   const showDivider = (index) => !(workouts && index == workouts.length - 1);
 
   useEffect(() => {
-    // Check for default template parameter
-    const defaultTemplateId = searchParams.get("defaultTemplate");
-    if (defaultTemplateId) {
-      const template = defaultTemplates.find((t) => t.id === defaultTemplateId);
-      if (template) {
-        setTemplateInfo(template);
-      }
-      return;
-    }
-
     // If we're using a user template, fetch the template info
     const fetchTemplateInfo = async () => {
       const templateId = searchParams.get("template");
@@ -51,7 +40,7 @@ export function Exercises() {
 
   return (
     <>
-      <Nav workouts={workouts} />
+      <Nav />
 
       {templateInfo && (
         <div className="container mx-auto px-4 py-4">

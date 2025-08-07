@@ -1,9 +1,7 @@
-/* eslint-disable react/prop-types */
-
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "./auth/authContext";
 
-export const Nav = ({ workouts }) => {
+export const Nav = () => {
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
 
@@ -11,11 +9,8 @@ export const Nav = ({ workouts }) => {
 
   const { user } = useAuth();
 
-  const type = workouts
-    ? workouts[0].type.charAt(0).toUpperCase() + workouts[0].type.slice(1)
-    : pathname == "/forgot-password"
-    ? "Forgot Password"
-    : "Linear Progression";
+  const title =
+    pathname == "/forgot-password" ? "Forgot Password" : "Linear Progression";
 
   return (
     <>
@@ -31,7 +26,7 @@ export const Nav = ({ workouts }) => {
           )}
 
           <Link to={"/"} className="text-3xl">
-            {type}
+            {title}
           </Link>
         </div>
 
@@ -48,22 +43,22 @@ export const Nav = ({ workouts }) => {
               tabIndex="0"
               className="menu dropdown-content z-[1] w-52 rounded-lg border bg-base-100 p-2 shadow"
             >
+              <li>
+                <Link to="/">Home</Link>
+              </li>
               {user && (
                 <li>
                   <Link to="/profile">My Profile</Link>
                 </li>
               )}
-              <li>
-                <Link to="/">Workouts</Link>
-              </li>
               {user && (
                 <li>
-                  <Link to="/templates">My Templates</Link>
+                  <Link to="/templates">Manage Templates</Link>
                 </li>
               )}
-              <li>
+              {/* <li>
                 <Link to="/about">About</Link>
-              </li>
+              </li> */}
 
               <div className="flex justify-between">
                 {user ? <li className="p-2">{user.username}</li> : ""}

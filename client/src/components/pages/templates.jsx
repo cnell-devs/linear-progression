@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Nav } from "../nav";
-import { TemplateList } from "../templates/TemplateList";
 import { CreateTemplateModal } from "../templates/CreateTemplateModal";
 import { EditTemplateModal } from "../templates/EditTemplateModal";
 import { DeleteTemplateModal } from "../templates/DeleteTemplateModal";
-import { useTemplates } from "../templates/useTemplates";
+import { useTemplates } from "../../hooks/useTemplates";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export function Templates() {
@@ -12,13 +11,8 @@ export function Templates() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const {
-    allTemplates,
-    userTemplates,
-    loading,
-    reorderTemplates,
-    refreshTemplates,
-  } = useTemplates();
+  const { userTemplates, loading, reorderTemplates, refreshTemplates } =
+    useTemplates();
 
   const handleCreateTemplate = async (templateData) => {
     try {
@@ -130,8 +124,7 @@ export function Templates() {
             <div className="mb-6">
               <h2 className="text-lg font-semibold mb-4">Arrange Templates</h2>
               <p className="text-sm text-gray-600 mb-4">
-                Drag and drop to reorder your templates. Default templates
-                cannot be removed but can be repositioned.
+                Drag and drop to reorder your templates.
               </p>
 
               <DragDropContext onDragEnd={onDragEnd}>
@@ -142,43 +135,62 @@ export function Templates() {
                       ref={provided.innerRef}
                       className="space-y-2"
                     >
-                      {allTemplates.map((template, index) => (
+                      {userTemplates.map((template, index) => (
                         <Draggable
-                          key={
-                            typeof template.id === "string"
-                              ? template.id
-                              : `t-${template.id}`
-                          }
-                          draggableId={
-                            typeof template.id === "string"
-                              ? template.id
-                              : `t-${template.id}`
-                          }
+                          key={`t-${template.id}`}
+                          draggableId={`t-${template.id}`}
                           index={index}
                         >
                           {(provided) => (
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              {...provided.dragHandleProps}
                               className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow p-3 flex items-center"
                             >
-                              <div className="flex-1">
+                              <div
+                                {...provided.dragHandleProps}
+                                className="flex-1 cursor-grab"
+                              >
                                 <h3 className="font-semibold">
                                   {template.name}
-                                  {template.isDefault && (
-                                    <span className="badge badge-sm ml-2">
-                                      Default
-                                    </span>
-                                  )}
                                 </h3>
                                 <p className="text-xs text-gray-500">
-                                  {template.workouts.length} workout
-                                  {template.workouts.length !== 1 ? "s" : ""}
+                                  {template.templateWorkouts?.length || 0}{" "}
+                                  workout
+                                  {(template.templateWorkouts?.length || 0) !==
+                                  1
+                                    ? "s"
+                                    : ""}
                                 </p>
                               </div>
-                              <div className="flex space-x-2">
-                                <span className="material-icons text-gray-400">
+                              <div className="flex space-x-2 items-center">
+                                <button
+                                  className="btn btn-sm btn-ghost btn-square"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedTemplate(template);
+                                    setIsEditModalOpen(true);
+                                  }}
+                                  title="Edit template"
+                                >
+                                  <span className="material-icons text-sm">
+                                    edit
+                                  </span>
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-ghost btn-square text-error"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedTemplate(template);
+                                    setIsDeleteModalOpen(true);
+                                  }}
+                                  title="Delete template"
+                                >
+                                  <span className="material-icons text-sm">
+                                    delete
+                                  </span>
+                                </button>
+                                <span className="material-icons text-gray-400 cursor-grab">
                                   drag_handle
                                 </span>
                               </div>
@@ -191,23 +203,6 @@ export function Templates() {
                   )}
                 </Droppable>
               </DragDropContext>
-            </div>
-
-            <div className="mt-8">
-              <h2 className="text-lg font-semibold mb-4">
-                My Custom Templates
-              </h2>
-              <TemplateList
-                templates={userTemplates}
-                onEdit={(template) => {
-                  setSelectedTemplate(template);
-                  setIsEditModalOpen(true);
-                }}
-                onDelete={(template) => {
-                  setSelectedTemplate(template);
-                  setIsDeleteModalOpen(true);
-                }}
-              />
             </div>
           </>
         )}

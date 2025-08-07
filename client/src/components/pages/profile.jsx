@@ -1,8 +1,8 @@
 import { useAuth } from "../auth/authContext";
 import { GraphWorkout } from "../graphWorkout";
-import { useWorkout } from "../useWorkout";
+import { useUserWorkouts } from "../hooks/useUserWorkouts";
 import { Nav } from "../nav";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { PastWeek } from "../pastWeek";
 import { CreateWorkoutModal } from "../workouts/CreateWorkoutModal";
 import { EditWorkoutModal } from "../workouts/EditWorkoutModal";
@@ -14,7 +14,7 @@ export const Profile = () => {
   const initialTab = searchParams.get("tab") || "stats";
 
   const { user } = useAuth();
-  const { workouts, fetchWorkouts } = useWorkout("all");
+  const { workouts, fetchUserWorkouts: fetchWorkouts } = useUserWorkouts();
   const [activeTab, setActiveTab] = useState(initialTab);
 
   // Workout management state
@@ -22,8 +22,6 @@ export const Profile = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [filter, setFilter] = useState("all");
-  const [ownerFilter, setOwnerFilter] = useState("all");
 
   // Update active tab if URL parameter changes
   useEffect(() => {
@@ -33,36 +31,15 @@ export const Profile = () => {
     }
   }, [searchParams]);
 
-  // Filter workouts for workout management
-  const filteredWorkouts = workouts
-    ? workouts
-        .filter((workout) => {
-          const typeMatch = filter === "all" ? true : workout.type === filter;
-          return typeMatch;
-        })
-        .filter((workout) => {
-          let ownerMatch = false;
-
-          // Debug each workout's ownership for filtering
-          console.log(`Filtering workout: ${workout.name}`);
-          console.log(`- userId: ${workout.userId} (${typeof workout.userId})`);
-          console.log(`- user.id: ${user?.id} (${typeof user?.id})`);
-          console.log(`- isGlobal: ${workout.isGlobal}`);
-          console.log(`- ownerFilter: ${ownerFilter}`);
-
-          if (ownerFilter === "all") {
-            ownerMatch = true;
-          } else if (ownerFilter === "mine") {
-            // Fix: Use strict equality for userId matching and handle null/undefined cases
-            ownerMatch = String(workout.userId) === String(user?.id);
-            console.log(`- Mine filter match: ${ownerMatch}`);
-          } else if (ownerFilter === "global") {
-            ownerMatch = workout.isGlobal === true;
-          }
-
+  // Filter workouts for workout management - only show user's own workouts
+  const filteredWorkouts = useMemo(() => {
+    return workouts
+      ? workouts.filter((workout) => {
+          const ownerMatch = String(workout.userId) === String(user?.id);
           return ownerMatch;
         })
-    : [];
+      : [];
+  }, [workouts, user?.id]);
 
   // Add debug logging for workouts
   useEffect(() => {
@@ -70,71 +47,66 @@ export const Profile = () => {
       console.log("All workouts:", workouts);
       console.log("Filtered workouts:", filteredWorkouts);
       console.log("Current user ID:", user?.id);
-      console.log("Current filters - Type:", filter, "Owner:", ownerFilter);
 
       // Log all user-created workouts
       const userWorkouts = workouts.filter((w) => w.userId === user?.id);
       console.log("User workouts:", userWorkouts);
     }
-  }, [workouts, filteredWorkouts, filter, ownerFilter, user]);
+  }, [workouts, filteredWorkouts, user]);
 
   // Handle workout creation
   const handleCreateWorkout = async (workoutData) => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          console.error("No auth token found");
-          reject(new Error("Not authenticated. Please log in again."));
-          return;
-        }
-
-        // Using the environment variable for API URL
-        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
-        console.log("Creating workout with API URL:", apiUrl);
-        console.log("Submitting workout data:", workoutData);
-
-        // Ensure the userId is set to the current user
-        const submitData = {
-          ...workoutData,
-          userId: user?.id, // Make sure userId is explicitly set
-        };
-
-        console.log("Final workout data being sent:", submitData);
-
-        const response = await fetch(`${apiUrl}/workouts`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(submitData),
-        });
-
-        // Check the response status
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error("Error creating workout:", response.status, errorData);
-          reject(new Error(`Failed to create workout (${response.status})`));
-          return;
-        }
-
-        // Get the created workout data
-        const createdWorkout = await response.json();
-        console.log("Workout created successfully:", createdWorkout);
-
-        setIsCreateModalOpen(false);
-
-        // Force a refresh of workouts data
-        await fetchWorkouts();
-        console.log("Workouts refreshed after creation");
-
-        resolve(createdWorkout);
-      } catch (error) {
-        console.error("Error creating workout:", error);
-        reject(error);
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        console.error("No auth token found");
+        throw new Error("Not authenticated. Please log in again.");
       }
-    });
+
+      // Using the environment variable for API URL
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      console.log("Creating workout with API URL:", apiUrl);
+      console.log("Submitting workout data:", workoutData);
+
+      // Ensure the userId is set to the current user
+      const submitData = {
+        ...workoutData,
+        userId: user?.id, // Make sure userId is explicitly set
+      };
+
+      console.log("Final workout data being sent:", submitData);
+
+      const response = await fetch(`${apiUrl}/v2/workouts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      // Check the response status
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error creating workout:", response.status, errorData);
+        throw new Error(`Failed to create workout (${response.status})`);
+      }
+
+      // Get the created workout data
+      const createdWorkout = await response.json();
+      console.log("Workout created successfully:", createdWorkout);
+
+      setIsCreateModalOpen(false);
+
+      // Force a refresh of workouts data
+      await fetchWorkouts();
+      console.log("Workouts refreshed after creation");
+
+      return createdWorkout;
+    } catch (error) {
+      console.error("Error creating workout:", error);
+      throw error;
+    }
   };
 
   // Handle workout editing
@@ -142,7 +114,7 @@ export const Profile = () => {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/workouts/${id}`,
+        `${import.meta.env.VITE_API_URL}/v2/workouts/${id}`,
         {
           method: "PUT",
           headers: {
@@ -168,7 +140,7 @@ export const Profile = () => {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/workouts/${id}`,
+        `${import.meta.env.VITE_API_URL}/v2/workouts/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -243,115 +215,61 @@ export const Profile = () => {
                 </div>
               </div>
 
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold mb-2">Filter Workouts</h2>
-                <div className="flex flex-wrap gap-4">
-                  <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-1">
-                      Workout Type
-                    </span>
-                    <div className="tabs">
-                      <a
-                        className={`tab tab-bordered ${
-                          filter === "all" ? "tab-active" : ""
-                        }`}
-                        onClick={() => setFilter("all")}
-                      >
-                        All
-                      </a>
-                      <a
-                        className={`tab tab-bordered ${
-                          filter === "push" ? "tab-active" : ""
-                        }`}
-                        onClick={() => setFilter("push")}
-                      >
-                        Push
-                      </a>
-                      <a
-                        className={`tab tab-bordered ${
-                          filter === "pull" ? "tab-active" : ""
-                        }`}
-                        onClick={() => setFilter("pull")}
-                      >
-                        Pull
-                      </a>
-                      <a
-                        className={`tab tab-bordered ${
-                          filter === "legs" ? "tab-active" : ""
-                        }`}
-                        onClick={() => setFilter("legs")}
-                      >
-                        Legs
-                      </a>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="block text-sm font-medium text-gray-700 mb-1">
-                      Ownership
-                    </span>
-                    <div className="tabs">
-                      <a
-                        className={`tab tab-bordered ${
-                          ownerFilter === "all" ? "tab-active" : ""
-                        }`}
-                        onClick={() => setOwnerFilter("all")}
-                      >
-                        All
-                      </a>
-                      <a
-                        className={`tab tab-bordered ${
-                          ownerFilter === "mine" ? "tab-active" : ""
-                        }`}
-                        onClick={() => setOwnerFilter("mine")}
-                      >
-                        My Workouts
-                      </a>
-                      <a
-                        className={`tab tab-bordered ${
-                          ownerFilter === "global" ? "tab-active" : ""
-                        }`}
-                        onClick={() => setOwnerFilter("global")}
-                      >
-                        Global
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <div className="overflow-x-auto">
                 <table className="table w-full">
                   <thead>
                     <tr>
                       <th>Name</th>
-                      <th>Type</th>
-                      <th>Sets</th>
-                      <th>Reps</th>
-                      <th>Owner</th>
+                      <th>Source</th>
+                      <th>Category</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredWorkouts.length > 0 ? (
                       filteredWorkouts.map((workout) => (
-                        <tr
-                          key={workout.id}
-                          className={workout.isGlobal ? "bg-gray-50" : ""}
-                        >
-                          <td>{workout.name}</td>
-                          <td>{workout.type}</td>
-                          <td>{workout.sets}</td>
-                          <td>{workout.reps}</td>
+                        <tr key={workout.id}>
                           <td>
-                            {workout.isGlobal ? (
-                              <span className="badge badge-info">Global</span>
-                            ) : workout.userId === user?.id ? (
-                              <span className="badge">Mine</span>
-                            ) : (
-                              <span className="badge badge-secondary">
-                                Other User
+                            <div className="flex items-center">
+                              {workout.name}
+                              {workout.alt && (
+                                <span className="ml-2 badge badge-sm badge-secondary">
+                                  ALT
+                                </span>
+                              )}
+                              {workout.ss && (
+                                <span className="ml-2 badge badge-sm badge-accent">
+                                  SS
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <span
+                              className={`badge ${
+                                workout.globalWorkoutId
+                                  ? "badge-success"
+                                  : workout.pendingApproval
+                                  ? "badge-warning"
+                                  : "badge-info"
+                              }`}
+                            >
+                              {workout.globalWorkoutId
+                                ? "Global"
+                                : workout.userCreated
+                                ? workout.pendingApproval
+                                  ? "Custom (Pending)"
+                                  : "Custom"
+                                : "Unknown"}
+                            </span>
+                          </td>
+                          <td>
+                            {workout.category ? (
+                              <span className="badge badge-primary">
+                                {workout.category}
                               </span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
                             )}
                           </td>
                           <td>
@@ -365,24 +283,22 @@ export const Profile = () => {
                               >
                                 Edit
                               </button>
-                              {(user?.admin || workout.userId === user?.id) && (
-                                <button
-                                  className="btn btn-sm btn-outline btn-error"
-                                  onClick={() => {
-                                    setSelectedWorkout(workout);
-                                    setIsDeleteModalOpen(true);
-                                  }}
-                                >
-                                  Delete
-                                </button>
-                              )}
+                              <button
+                                className="btn btn-sm btn-outline btn-error"
+                                onClick={() => {
+                                  setSelectedWorkout(workout);
+                                  setIsDeleteModalOpen(true);
+                                }}
+                              >
+                                Delete
+                              </button>
                             </div>
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="6" className="text-center">
+                        <td colSpan="4" className="text-center">
                           No workouts found.
                         </td>
                       </tr>
