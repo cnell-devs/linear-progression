@@ -60,7 +60,8 @@ export const EntryLog = ({
   return (
     !selected?.weights?.length == 0 && (
       <>
-        <div className="w-full">
+        {/* Desktop Table */}
+        <div className="w-full hidden sm:block">
           <table className="table table-xs table-pin-rows table-pin-cols">
             <thead>
               <tr>
@@ -131,6 +132,59 @@ export const EntryLog = ({
             </tfoot>
           </table>
         </div>
+
+        {/* Mobile Cards */}
+        <div className="w-full sm:hidden space-y-3">
+          {workoutLog?.map((entry) =>
+            entry.entries
+              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .map((workout, z) => {
+                const templateName = workout.templateId
+                  ? userTemplates.find((t) => t.id == workout.templateId)
+                      ?.name || "Unknown"
+                  : "None";
+
+                return (
+                  <div
+                    key={z}
+                    className="card bg-base-100 shadow-sm border p-4"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="text-sm text-gray-600 mb-1">
+                          {convertUtcToDateFormat(
+                            new Date(workout.date).toISOString()
+                          )}
+                        </div>
+                        <div className="text-lg font-bold mb-2">
+                          {workout.weight} lbs
+                        </div>
+                        <span
+                          className={`badge badge-sm ${
+                            workout.templateId ? "badge-primary" : "badge-ghost"
+                          }`}
+                        >
+                          {templateName}
+                        </span>
+                      </div>
+                      <button
+                        className="btn btn-sm btn-ghost btn-square text-red-500"
+                        onClick={() => {
+                          document
+                            .getElementById("delete_entry_modal")
+                            .showModal();
+                          setCurrentEntry(workout);
+                        }}
+                      >
+                        <span className="material-icons text-lg">close</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+          )}
+        </div>
+
         <DeleteEntryModal
           entry={currentEntry}
           selected={selected}

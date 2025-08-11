@@ -9,7 +9,7 @@ console.log("Mode:", import.meta.env.MODE);
 router;
 const App = () => {
   return (
-    <div className="container mx-auto w-4/5">
+    <div className="container mx-auto w-full px-4 sm:w-5/6 lg:w-4/5 sm:px-6">
       <AuthProvider>
         <RouterProvider router={router} />
       </AuthProvider>

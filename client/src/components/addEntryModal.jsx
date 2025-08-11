@@ -180,16 +180,20 @@ export const AddEntryModal = ({ fetchData }) => {
     <>
       <dialog id="add_entry_modal" className="modal">
         {
-          <div className="modal-box flex flex-col gap-6">
-            <h3 className="font-extrabold text-center text-lg ">
+          <div className="modal-box w-11/12 max-w-md max-h-[90vh] overflow-y-auto flex flex-col gap-4 sm:gap-6 p-4 sm:p-6">
+            <h3 className="font-extrabold text-center text-lg sm:text-xl">
               Add New Entry
             </h3>
             <form action="">
               <div className="flex flex-col gap-4">
-                <label className="">
-                  Select Template: &nbsp;
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-medium">
+                      Select Template:
+                    </span>
+                  </label>
                   <select
-                    className="select select-bordered w-full max-w-xs"
+                    className="select select-bordered w-full text-base"
                     value={selectedTemplate}
                     onChange={(e) => handleTemplateChange(e.target.value)}
                     required
@@ -205,13 +209,17 @@ export const AddEntryModal = ({ fetchData }) => {
                       ))
                     )}
                   </select>
-                </label>
+                </div>
 
                 {selectedTemplate && (
-                  <label className="">
-                    Select Workout: &nbsp;
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-medium">
+                        Select Workout:
+                      </span>
+                    </label>
                     <select
-                      className="select select-bordered w-full max-w-xs"
+                      className="select select-bordered w-full text-base"
                       value={selectedWorkout}
                       onChange={(e) => setSelectedWorkout(e.target.value)}
                       required
@@ -240,52 +248,63 @@ export const AddEntryModal = ({ fetchData }) => {
                         );
                       })}
                     </select>
-                  </label>
+                  </div>
                 )}
 
-                <label className="">
-                  Enter Date: &nbsp;
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-medium">Enter Date:</span>
+                  </label>
                   <input
                     type="date"
                     name="add_date"
                     id="add_date"
+                    className="input input-bordered w-full text-base"
                     onChange={(e) => setDate(e.target.value)}
                     value={date}
                   />
-                </label>
+                </div>
 
-                <label className="">
-                  Enter Weight: &nbsp;
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-medium">
+                      Enter Weight (lbs):
+                    </span>
+                  </label>
                   <input
                     onChange={(e) => setWeight(e.target.value)}
                     onBlur={() => setWeight(Math.round(weight / 5) * 5)}
                     type="number"
                     name="add_weight"
                     id="add_weight"
-                    // step="5"
+                    className="input input-bordered w-full text-base"
                     pattern="[0-9]*"
                     value={weight}
+                    placeholder="Enter weight in pounds"
                   />
-                </label>
+                </div>
               </div>
             </form>
-            <div className="modal-action m-0">
+            <div className="modal-action m-0 mt-4">
               <form method="dialog">
-                <div className="flex gap-2">
-                  <button className="btn" onClick={resetForm}>
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
+                  <button
+                    className="btn btn-outline w-full sm:w-auto order-2 sm:order-1"
+                    onClick={resetForm}
+                  >
                     Discard
                   </button>
 
                   <button
-                    className={`btn px-6 ${
+                    className={`btn w-full sm:w-auto px-6 order-1 sm:order-2 ${
                       selectedTemplate && selectedWorkout
-                        ? "bg-blue-500 text-white"
+                        ? "btn-primary"
                         : "btn-disabled"
                     }`}
                     onClick={saveWeight}
                     disabled={!selectedTemplate || !selectedWorkout}
                   >
-                    Save
+                    Save Entry
                   </button>
                 </div>
               </form>

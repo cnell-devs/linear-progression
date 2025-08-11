@@ -48,9 +48,9 @@ export function Home() {
           </div>
 
           {/* User Templates */}
-          <div className="bg-base-200 rounded-box p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">My Templates</h2>
+          <div className="bg-base-200 rounded-box p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
+              <h2 className="text-xl sm:text-2xl font-bold">My Templates</h2>
               <Link to="/templates" className="btn btn-ghost btn-sm">
                 Manage Templates
                 <span className="material-icons ml-1">arrow_forward</span>
@@ -64,16 +64,18 @@ export function Home() {
                 </span>
               </div>
             ) : userTemplates.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {userTemplates.map((template) => (
                   <div
                     key={template.id}
                     className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow"
                   >
                     <div className="card-body p-4">
-                      <h3 className="card-title text-lg">{template.name}</h3>
+                      <h3 className="card-title text-base sm:text-lg">
+                        {template.name}
+                      </h3>
                       {template.description && (
-                        <p className="text-sm text-gray-500 mb-2">
+                        <p className="text-xs sm:text-sm text-gray-500 mb-2">
                           {template.description}
                         </p>
                       )}

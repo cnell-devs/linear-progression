@@ -50,9 +50,9 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
   if (!isOpen || !workout) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">Edit Workout</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <h2 className="text-lg sm:text-xl font-bold mb-4">Edit Workout</h2>
 
         {cannotEdit && (
           <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
@@ -70,12 +70,12 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
+              className="w-full p-3 sm:p-2 border rounded text-base"
               required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Sets
@@ -85,7 +85,7 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
                 name="sets"
                 value={formData.sets}
                 onChange={handleChange}
-                className="w-full p-2 border rounded"
+                className="w-full p-3 sm:p-2 border rounded text-base"
                 min="1"
                 required
               />
@@ -99,14 +99,14 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
                 name="reps"
                 value={formData.reps}
                 onChange={handleChange}
-                className="w-full p-2 border rounded"
+                className="w-full p-3 sm:p-2 border rounded text-base"
                 placeholder="e.g. 8-12, 15"
                 required
               />
             </div>
           </div>
 
-          <div className="flex space-x-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0 mb-4">
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -114,7 +114,7 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
                 name="amrap"
                 checked={formData.amrap}
                 onChange={handleChange}
-                className="mr-2"
+                className="mr-2 w-4 h-4"
               />
               <label htmlFor="amrap" className="text-sm text-gray-700">
                 AMRAP
@@ -127,7 +127,7 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
                 name="alt"
                 checked={formData.alt}
                 onChange={handleChange}
-                className="mr-2"
+                className="mr-2 w-4 h-4"
               />
               <label htmlFor="alt" className="text-sm text-gray-700">
                 Alternate
@@ -140,7 +140,7 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
                 name="ss"
                 checked={formData.ss}
                 onChange={handleChange}
-                className="mr-2"
+                className="mr-2 w-4 h-4"
               />
               <label htmlFor="ss" className="text-sm text-gray-700">
                 Superset
@@ -148,11 +148,20 @@ export function EditWorkoutModal({ isOpen, onClose, onSubmit, workout }) {
             </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <button type="button" onClick={onClose} className="btn btn-outline">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-outline w-full sm:w-auto"
+              disabled={cannotEdit}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button
+              type="submit"
+              className="btn btn-primary w-full sm:w-auto"
+              disabled={cannotEdit}
+            >
               Save Changes
             </button>
           </div>

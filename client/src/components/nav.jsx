@@ -14,18 +14,20 @@ export const Nav = () => {
 
   return (
     <>
-      <div className="navbar mt-4 px-0 py-0">
+      <div className="navbar mt-2 sm:mt-4 px-2 sm:px-0 py-0">
         <div className="flex-1 flex">
           {back && (
             <>
               <Link to={`/`}>
-                <button className="material-icons">arrow_back_ios</button>
+                <button className="material-icons p-1 sm:p-0">
+                  arrow_back_ios
+                </button>
               </Link>
               <div className="divider divider-horizontal"></div>
             </>
           )}
 
-          <Link to={"/"} className="text-3xl">
+          <Link to={"/"} className="text-xl sm:text-2xl md:text-3xl truncate">
             {title}
           </Link>
         </div>
@@ -41,7 +43,7 @@ export const Nav = () => {
             </div>
             <ul
               tabIndex="0"
-              className="menu dropdown-content z-[1] w-52 rounded-lg border bg-base-100 p-2 shadow"
+              className="menu dropdown-content z-[1] w-48 sm:w-52 rounded-lg border bg-base-100 p-2 shadow right-0"
             >
               <li>
                 <Link to="/">Home</Link>

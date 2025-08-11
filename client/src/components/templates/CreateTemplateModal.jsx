@@ -107,7 +107,7 @@ export function CreateTemplateModal({ isOpen, onClose, onSubmit }) {
 
   return (
     <dialog className="modal modal-open">
-      <div className="modal-box overflow-visible">
+      <div className="modal-box max-w-4xl w-11/12 max-h-[90vh] overflow-y-auto">
         <h3 className="font-bold text-lg mb-4">Create Workout Template</h3>
         <form onSubmit={handleSubmit}>
           <div className="form-control">
@@ -202,7 +202,7 @@ export function CreateTemplateModal({ isOpen, onClose, onSubmit }) {
                       </div>
 
                       {/* Inline editing controls */}
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                           <label className="text-xs text-gray-600 block mb-1">
                             Sets
@@ -239,7 +239,7 @@ export function CreateTemplateModal({ isOpen, onClose, onSubmit }) {
                             }
                           />
                         </div>
-                        <div className="flex items-center">
+                        <div className="flex items-center sm:justify-center">
                           <label className="cursor-pointer label">
                             <input
                               type="checkbox"
@@ -272,7 +272,7 @@ export function CreateTemplateModal({ isOpen, onClose, onSubmit }) {
                   Configure: {pendingWorkout.name}
                 </h4>
                 <div className="grid gap-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="label">
                         <span className="label-text">Sets *</span>
@@ -341,11 +341,18 @@ export function CreateTemplateModal({ isOpen, onClose, onSubmit }) {
             )}
           </div>
 
-          <div className="modal-action">
-            <button type="button" className="btn" onClick={onClose}>
+          <div className="modal-action flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+            <button
+              type="button"
+              className="btn w-full sm:w-auto order-2 sm:order-1"
+              onClick={onClose}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button
+              type="submit"
+              className="btn btn-primary w-full sm:w-auto order-1 sm:order-2"
+            >
               Create Template
             </button>
           </div>

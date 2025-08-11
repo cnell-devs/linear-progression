@@ -1,27 +1,38 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
-
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-*,body {
-    font-family: 'Roboto', 'Tahoma';
-    font-weight:  500;
+*,
+body {
+  font-family: "Roboto", "Tahoma";
+  font-weight: 500;
 }
-
-
 
 .spinner-box {
-    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+  @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2;
 }
-/* 
-button {
-  all: unset;
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border: none;
-  cursor: pointer;
-  font-weight: 100;
-} */
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
+
+  /* Improve tap targets for mobile */
+  .btn {
+    @apply min-h-[44px];
+  }
+
+  /* Better spacing for mobile forms */
+  .form-control {
+    @apply mb-4;
+  }
+
+  /* Improve readability on mobile */
+  .card-title {
+    @apply text-base;
+  }
+}

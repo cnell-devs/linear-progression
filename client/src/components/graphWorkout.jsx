@@ -76,21 +76,27 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
     (workout) => workout.id == graphWorkout
   );
   return (
-    <div>
-      <h1 className="text-2xl">Workout Weight Progression</h1>
+    <div className="px-2 sm:px-0">
+      <h1 className="text-xl sm:text-2xl mb-4">Workout Weight Progression</h1>
       {workouts && (
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div className="dropdown dropdown-bottom ">
-              <div tabIndex={0} role="button" className="flex items-center m-1">
-                {selectedWorkout ? selectedWorkout?.name : "Select a Workout"}
-                <span className="material-icons text-sm">
-                  &nbsp;expand_circle_down
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="dropdown dropdown-bottom w-full sm:w-auto">
+              <div
+                tabIndex={0}
+                role="button"
+                className="flex items-center m-1 btn btn-outline w-full sm:w-auto justify-between"
+              >
+                <span className="truncate">
+                  {selectedWorkout ? selectedWorkout?.name : "Select a Workout"}
+                </span>
+                <span className="material-icons text-sm ml-2">
+                  expand_circle_down
                 </span>
               </div>
               <ul
                 tabIndex={0}
-                className="dropdown-content menu bg-base-100 rounded-box w-52 p-2 shadow overflow-y-scroll z-10"
+                className="dropdown-content menu bg-base-100 rounded-box w-full sm:w-52 p-2 shadow overflow-y-scroll z-10 max-h-60"
               >
                 {workouts.map((workout, index) => (
                   <li key={index}>
@@ -102,77 +108,81 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
               </ul>
             </div>
             <button
-              className="flex items-center btn"
+              className="flex items-center justify-center btn btn-primary w-full sm:w-auto"
               onClick={() =>
                 document.getElementById("add_entry_modal").showModal()
               }
             >
+              <span className="material-icons text-sm mr-2">add_circle</span>
               Add An Entry
-              <span className="material-icons text-sm">&nbsp;add_circle</span>
             </button>
           </div>
 
           {/* Template Filter */}
           {selectedWorkout && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <span className="text-sm font-medium">Filter by Template:</span>
-              <div className="dropdown dropdown-bottom">
-                <div
-                  tabIndex={0}
-                  role="button"
-                  className="flex items-center btn btn-sm btn-outline"
-                >
-                  {templateFilter === "all"
-                    ? "All Templates"
-                    : templateFilter === "none"
-                    ? "No Template"
-                    : userTemplates.find((t) => t.id == templateFilter)?.name ||
-                      "Unknown Template"}
-                  <span className="material-icons text-sm ml-1">
-                    expand_circle_down
-                  </span>
-                </div>
-                <ul
-                  tabIndex={0}
-                  className="dropdown-content menu bg-base-100 rounded-box w-52 p-2 shadow z-10"
-                >
-                  <li>
-                    <button onClick={() => setTemplateFilter("all")}>
-                      All Templates
-                    </button>
-                  </li>
-                  {userTemplates.map((template) => (
-                    <li key={template.id}>
-                      <button onClick={() => setTemplateFilter(template.id)}>
-                        {template.name}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="dropdown dropdown-bottom flex-1 sm:flex-none">
+                  <div
+                    tabIndex={0}
+                    role="button"
+                    className="flex items-center justify-between btn btn-sm btn-outline w-full sm:w-auto"
+                  >
+                    <span className="truncate">
+                      {templateFilter === "all"
+                        ? "All Templates"
+                        : templateFilter === "none"
+                        ? "No Template"
+                        : userTemplates.find((t) => t.id == templateFilter)
+                            ?.name || "Unknown Template"}
+                    </span>
+                    <span className="material-icons text-sm ml-1">
+                      expand_circle_down
+                    </span>
+                  </div>
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content menu bg-base-100 rounded-box w-full sm:w-52 p-2 shadow z-10 max-h-60 overflow-y-scroll"
+                  >
+                    <li>
+                      <button onClick={() => setTemplateFilter("all")}>
+                        All Templates
                       </button>
                     </li>
-                  ))}
-                  {/* Show "No Template" option if there are entries without templateId */}
-                  {getWeights &&
-                    getWeights.some(
-                      (entry) =>
-                        entry.userId == user.id &&
-                        (entry.templateId === null ||
-                          entry.templateId === undefined)
-                    ) && (
-                      <li>
-                        <button onClick={() => setTemplateFilter("none")}>
-                          No Template
+                    {userTemplates.map((template) => (
+                      <li key={template.id}>
+                        <button onClick={() => setTemplateFilter(template.id)}>
+                          {template.name}
                         </button>
                       </li>
-                    )}
-                </ul>
+                    ))}
+                    {/* Show "No Template" option if there are entries without templateId */}
+                    {getWeights &&
+                      getWeights.some(
+                        (entry) =>
+                          entry.userId == user.id &&
+                          (entry.templateId === null ||
+                            entry.templateId === undefined)
+                      ) && (
+                        <li>
+                          <button onClick={() => setTemplateFilter("none")}>
+                            No Template
+                          </button>
+                        </li>
+                      )}
+                  </ul>
+                </div>
+                {templateFilter !== "all" && (
+                  <button
+                    className="btn btn-xs btn-ghost"
+                    onClick={() => setTemplateFilter("all")}
+                    title="Clear filter"
+                  >
+                    <span className="material-icons text-sm">clear</span>
+                  </button>
+                )}
               </div>
-              {templateFilter !== "all" && (
-                <button
-                  className="btn btn-xs btn-ghost"
-                  onClick={() => setTemplateFilter("all")}
-                  title="Clear filter"
-                >
-                  <span className="material-icons text-sm">clear</span>
-                </button>
-              )}
             </div>
           )}
         </div>
@@ -182,10 +192,15 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
         !selectedWorkout ? (
           ""
         ) : (
-          <p>more data needed</p>
+          <p className="text-center text-gray-500 py-8">
+            More data needed to display chart
+          </p>
         )
       ) : (
-        <div style={{ width: "100%", height: 400 }}>
+        <div
+          className="w-full"
+          style={{ height: window.innerWidth < 640 ? 300 : 400 }}
+        >
           <ParentSize>
             {({ width, height }) => (
               <XYChart
@@ -198,9 +213,9 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
                 <AnimatedAxis orientation="left" />
                 <text
                   x={-height / 2}
-                  y={20}
+                  y={15}
                   transform={`rotate(-90)`}
-                  fontSize={14}
+                  fontSize={window.innerWidth < 640 ? 12 : 14}
                   textAnchor="middle"
                 >
                   Weight &#40;lbs&#41;
@@ -215,15 +230,18 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
                 />
                 <text
                   x={width / 2}
-                  y={height - 20}
-                  fontSize={14}
+                  y={height - 10}
+                  fontSize={window.innerWidth < 640 ? 12 : 14}
                   textAnchor="middle"
                 >
                   Date
                 </text>
 
                 {/* Grid */}
-                <AnimatedGrid columns={true} numTicks={4} />
+                <AnimatedGrid
+                  columns={true}
+                  numTicks={window.innerWidth < 640 ? 3 : 4}
+                />
 
                 {/* Line Series */}
                 <AnimatedLineSeries
@@ -239,7 +257,7 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
                   showVerticalCrosshair
                   showSeriesGlyphs
                   renderTooltip={({ tooltipData, colorScale }) => (
-                    <div>
+                    <div className="bg-white p-2 rounded shadow-lg border text-xs sm:text-sm">
                       <div
                         style={{
                           color: colorScale(tooltipData.nearestDatum.key),
