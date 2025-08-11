@@ -315,23 +315,11 @@ exports.getWeightEntry = async (userId, workoutId, date, templateId = null) => {
     const workoutIdInt =
       typeof workoutId === "string" ? parseInt(workoutId) : workoutId;
 
-    // Check if this is a UserWorkout or legacy Workout
-    const userWorkout = await prisma.userWorkout.findUnique({
-      where: { id: workoutIdInt },
-    });
-
     let whereClause = {
       date: date,
       userId: userId,
+      userWorkoutId: workoutIdInt, // Only support userWorkoutId now
     };
-
-    if (userWorkout) {
-      // This is a UserWorkout
-      whereClause.userWorkoutId = workoutIdInt;
-    } else {
-      // This is a legacy Workout
-      whereClause.workoutId = workoutIdInt;
-    }
 
     // Add templateId filter if provided
     if (templateId !== null) {
@@ -367,35 +355,12 @@ exports.addWeightEntry = async (
     const workoutIdInt =
       typeof workoutId === "string" ? parseInt(workoutId) : workoutId;
 
-    // Check if this is a UserWorkout or legacy Workout
-    const userWorkout = await prisma.userWorkout.findUnique({
-      where: { id: workoutIdInt },
-    });
-
     const data = {
       userId: userId,
       weight: weight,
       date: date,
+      userWorkoutId: workoutIdInt, // Only support userWorkoutId now
     };
-
-    if (userWorkout) {
-      // This is a UserWorkout
-      data.userWorkoutId = workoutIdInt;
-    } else {
-      // Check if this is a legacy Workout
-      const legacyWorkout = await prisma.workout.findUnique({
-        where: { id: workoutIdInt },
-      });
-
-      if (legacyWorkout) {
-        // This is a legacy Workout
-        data.workoutId = workoutIdInt;
-      } else {
-        throw new Error(
-          `Workout with ID ${workoutIdInt} not found in either UserWorkout or legacy Workout tables`
-        );
-      }
-    }
 
     // Add templateId if provided
     if (templateId) {
@@ -422,25 +387,11 @@ exports.updateWeightEntry = async (id, userId, workoutId, newWeight) => {
     const workoutIdInt =
       typeof workoutId === "string" ? parseInt(workoutId) : workoutId;
 
-    // Check if this is a UserWorkout or legacy Workout
-    const userWorkout = await prisma.userWorkout.findUnique({
-      where: { id: workoutIdInt },
-    });
-
     const updateData = {
       userId: userId,
       weight: newWeight, // Update the weight
+      userWorkoutId: workoutIdInt, // Only support userWorkoutId now
     };
-
-    if (userWorkout) {
-      // This is a UserWorkout
-      updateData.userWorkoutId = workoutIdInt;
-      updateData.workoutId = null; // Clear legacy workoutId if set
-    } else {
-      // This is a legacy Workout
-      updateData.workoutId = workoutIdInt;
-      updateData.userWorkoutId = null; // Clear userWorkoutId if set
-    }
 
     const updatedEntry = await prisma.weightEntry.update({
       where: {
@@ -498,38 +449,17 @@ exports.createWorkoutTemplate = async ({
         description,
         userId,
         templateWorkouts: {
-          create: await Promise.all(
-            workouts.map(async (workout) => {
-              // Check if this is a UserWorkout or legacy Workout
-              const userWorkout = await prisma.userWorkout.findUnique({
-                where: { id: parseInt(workout.id) },
-              });
-
-              if (userWorkout) {
-                // This is a UserWorkout
-                return {
-                  userWorkoutId: parseInt(workout.id),
-                  sets: workout.sets,
-                  reps: workout.reps,
-                  amrap: workout.amrap || false,
-                };
-              } else {
-                // This is a legacy Workout
-                return {
-                  workoutId: parseInt(workout.id),
-                  sets: workout.sets,
-                  reps: workout.reps,
-                  amrap: workout.amrap || false,
-                };
-              }
-            })
-          ),
+          create: workouts.map((workout) => ({
+            userWorkoutId: parseInt(workout.id),
+            sets: workout.sets,
+            reps: workout.reps,
+            amrap: workout.amrap || false,
+          })),
         },
       },
       include: {
         templateWorkouts: {
           include: {
-            workout: true,
             userWorkout: {
               include: {
                 globalWorkout: true,
@@ -555,7 +485,6 @@ exports.getWorkoutTemplates = async (userId) => {
       include: {
         templateWorkouts: {
           include: {
-            workout: true,
             userWorkout: {
               include: {
                 globalWorkout: true,
@@ -582,15 +511,6 @@ exports.getWorkoutTemplate = async (id, userId) => {
       include: {
         templateWorkouts: {
           include: {
-            workout: {
-              include: {
-                weights: {
-                  where: {
-                    templateId: parseInt(id), // Only include weights for this template
-                  },
-                },
-              },
-            },
             userWorkout: {
               include: {
                 globalWorkout: true,
@@ -632,7 +552,7 @@ exports.updateWorkoutTemplate = async (
       return null;
     }
 
-    // Validate and prepare workout data
+    // Validate and prepare workout data - only support UserWorkouts now
     const validWorkouts = [];
     for (const workout of workouts) {
       const workoutId = parseInt(workout.id);
@@ -651,23 +571,8 @@ exports.updateWorkoutTemplate = async (
           amrap: workout.amrap || false,
         });
       } else {
-        // Check if this is a legacy Workout
-        const legacyWorkout = await prisma.workout.findUnique({
-          where: { id: workoutId },
-        });
-
-        if (legacyWorkout) {
-          // This is a legacy Workout
-          validWorkouts.push({
-            workoutId: workoutId,
-            sets: workout.sets,
-            reps: workout.reps,
-            amrap: workout.amrap || false,
-          });
-        } else {
-          // Workout doesn't exist, skip it or throw an error
-          console.warn(`Workout with id ${workoutId} not found, skipping`);
-        }
+        // Workout doesn't exist, skip it or throw an error
+        console.warn(`UserWorkout with id ${workoutId} not found, skipping`);
       }
     }
 
@@ -688,7 +593,6 @@ exports.updateWorkoutTemplate = async (
       include: {
         templateWorkouts: {
           include: {
-            workout: true,
             userWorkout: {
               include: {
                 globalWorkout: true,
