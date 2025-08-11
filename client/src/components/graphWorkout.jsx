@@ -157,20 +157,45 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
                         </button>
                       </li>
                     ))}
-                    {/* Show "No Template" option if there are entries without templateId */}
-                    {getWeights &&
-                      getWeights.some(
-                        (entry) =>
-                          entry.userId == user.id &&
-                          (entry.templateId === null ||
-                            entry.templateId === undefined)
-                      ) && (
-                        <li>
-                          <button onClick={() => setTemplateFilter("none")}>
-                            No Template
-                          </button>
-                        </li>
-                      )}
+                    {/* Always show "No Template" option for better discoverability */}
+                    <li>
+                      <button
+                        onClick={() => setTemplateFilter("none")}
+                        className={
+                          getWeights &&
+                          !getWeights.some(
+                            (entry) =>
+                              entry.userId == user.id &&
+                              (entry.templateId === null ||
+                                entry.templateId === undefined)
+                          )
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }
+                        disabled={
+                          getWeights &&
+                          !getWeights.some(
+                            (entry) =>
+                              entry.userId == user.id &&
+                              (entry.templateId === null ||
+                                entry.templateId === undefined)
+                          )
+                        }
+                      >
+                        No Template
+                        {getWeights &&
+                          !getWeights.some(
+                            (entry) =>
+                              entry.userId == user.id &&
+                              (entry.templateId === null ||
+                                entry.templateId === undefined)
+                          ) && (
+                            <span className="text-xs ml-1 opacity-60">
+                              (no entries)
+                            </span>
+                          )}
+                      </button>
+                    </li>
                   </ul>
                 </div>
                 {templateFilter !== "all" && (
@@ -193,7 +218,11 @@ export const GraphWorkout = ({ workouts, fetchData }) => {
           ""
         ) : (
           <p className="text-center text-gray-500 py-8">
-            More data needed to display chart
+            {templateFilter === "none"
+              ? "No entries found without a template. Try selecting 'All Templates' or a specific template."
+              : templateFilter !== "all"
+              ? `No entries found for the selected template. Try selecting 'All Templates' or a different template.`
+              : "More data needed to display chart"}
           </p>
         )
       ) : (
