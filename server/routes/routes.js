@@ -23,8 +23,6 @@ const {
   getWorkoutTemplate,
   updateWorkoutTemplate,
   deleteWorkoutTemplate,
-  getUserPreferences,
-  updateTemplateOrder,
 } = require("../controller/controller");
 
 const router = Router();
@@ -114,18 +112,6 @@ router.delete(
   "/templates/:id",
   passport.authenticate("jwt", { session: false }),
   deleteWorkoutTemplate
-);
-
-// User Preferences routes
-router.get(
-  "/preferences",
-  passport.authenticate("jwt", { session: false }),
-  getUserPreferences
-);
-router.put(
-  "/preferences/template-order",
-  passport.authenticate("jwt", { session: false }),
-  updateTemplateOrder
 );
 
 module.exports = router;

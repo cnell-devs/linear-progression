@@ -4,15 +4,13 @@ import { CreateTemplateModal } from "../templates/CreateTemplateModal";
 import { EditTemplateModal } from "../templates/EditTemplateModal";
 import { DeleteTemplateModal } from "../templates/DeleteTemplateModal";
 import { useTemplates } from "../../hooks/useTemplates";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export function Templates() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const { userTemplates, loading, reorderTemplates, refreshTemplates } =
-    useTemplates();
+  const { userTemplates, loading, refreshTemplates } = useTemplates();
 
   const handleCreateTemplate = async (templateData) => {
     try {
@@ -89,16 +87,6 @@ export function Templates() {
     }
   };
 
-  const onDragEnd = (result) => {
-    // Dropped outside the list
-    if (!result.destination) {
-      return;
-    }
-
-    // Reorder the templates
-    reorderTemplates(result.source.index, result.destination.index);
-  };
-
   return (
     <>
       <Nav />
@@ -122,87 +110,51 @@ export function Templates() {
         ) : (
           <>
             <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-4">Arrange Templates</h2>
+              <h2 className="text-lg font-semibold mb-4">Your Templates</h2>
               <p className="text-sm text-gray-600 mb-4">
-                Drag and drop to reorder your templates.
+                Templates are ordered by most recently updated.
               </p>
 
-              <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="templates">
-                  {(provided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="space-y-2"
-                    >
-                      {userTemplates.map((template, index) => (
-                        <Draggable
-                          key={`t-${template.id}`}
-                          draggableId={`t-${template.id}`}
-                          index={index}
-                        >
-                          {(provided) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow p-3 flex items-center"
-                            >
-                              <div
-                                {...provided.dragHandleProps}
-                                className="flex-1 cursor-grab"
-                              >
-                                <h3 className="font-semibold">
-                                  {template.name}
-                                </h3>
-                                <p className="text-xs text-gray-500">
-                                  {template.templateWorkouts?.length || 0}{" "}
-                                  workout
-                                  {(template.templateWorkouts?.length || 0) !==
-                                  1
-                                    ? "s"
-                                    : ""}
-                                </p>
-                              </div>
-                              <div className="flex space-x-2 items-center">
-                                <button
-                                  className="btn btn-sm btn-ghost btn-square"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedTemplate(template);
-                                    setIsEditModalOpen(true);
-                                  }}
-                                  title="Edit template"
-                                >
-                                  <span className="material-icons text-sm">
-                                    edit
-                                  </span>
-                                </button>
-                                <button
-                                  className="btn btn-sm btn-ghost btn-square text-error"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedTemplate(template);
-                                    setIsDeleteModalOpen(true);
-                                  }}
-                                  title="Delete template"
-                                >
-                                  <span className="material-icons text-sm">
-                                    delete
-                                  </span>
-                                </button>
-                                <span className="material-icons text-gray-400 cursor-grab">
-                                  drag_handle
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
+              <div className="space-y-2">
+                {userTemplates.map((template) => (
+                  <div
+                    key={template.id}
+                    className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow p-3 flex items-center"
+                  >
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{template.name}</h3>
+                      <p className="text-xs text-gray-500">
+                        {template.templateWorkouts?.length || 0} workout
+                        {(template.templateWorkouts?.length || 0) !== 1
+                          ? "s"
+                          : ""}
+                      </p>
                     </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
+                    <div className="flex space-x-2 items-center">
+                      <button
+                        className="btn btn-sm btn-ghost btn-square"
+                        onClick={() => {
+                          setSelectedTemplate(template);
+                          setIsEditModalOpen(true);
+                        }}
+                        title="Edit template"
+                      >
+                        <span className="material-icons text-sm">edit</span>
+                      </button>
+                      <button
+                        className="btn btn-sm btn-ghost btn-square text-error"
+                        onClick={() => {
+                          setSelectedTemplate(template);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        title="Delete template"
+                      >
+                        <span className="material-icons text-sm">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </>
         )}

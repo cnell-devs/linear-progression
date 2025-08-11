@@ -493,6 +493,9 @@ exports.getWorkoutTemplates = async (userId) => {
           },
         },
       },
+      orderBy: {
+        updatedAt: 'desc'
+      },
     });
     return templates;
   } catch (error) {
@@ -620,61 +623,6 @@ exports.deleteWorkoutTemplate = async (id, userId) => {
     return template;
   } catch (error) {
     console.error(error);
-    throw error;
-  }
-};
-
-// User Preferences
-exports.getUserPreferences = async (userId) => {
-  try {
-    let preferences = await prisma.userPreferences.findUnique({
-      where: { userId },
-    });
-
-    // If preferences don't exist yet, create a default entry
-    if (!preferences) {
-      preferences = await prisma.userPreferences.create({
-        data: {
-          userId,
-          templateOrder: null,
-        },
-      });
-    }
-
-    return preferences;
-  } catch (error) {
-    console.error("Error getting user preferences:", error);
-    throw error;
-  }
-};
-
-exports.updateTemplateOrder = async (userId, templateOrder) => {
-  try {
-    // Check if user preferences exist
-    const existingPrefs = await prisma.userPreferences.findUnique({
-      where: { userId },
-    });
-
-    if (existingPrefs) {
-      // Update existing preferences
-      return await prisma.userPreferences.update({
-        where: { userId },
-        data: {
-          templateOrder: JSON.stringify(templateOrder),
-          updatedAt: new Date(),
-        },
-      });
-    } else {
-      // Create new preferences
-      return await prisma.userPreferences.create({
-        data: {
-          userId,
-          templateOrder: JSON.stringify(templateOrder),
-        },
-      });
-    }
-  } catch (error) {
-    console.error("Error updating template order:", error);
     throw error;
   }
 };

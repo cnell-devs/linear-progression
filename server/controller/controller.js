@@ -626,33 +626,3 @@ exports.deleteWorkoutTemplate = async (req, res) => {
 exports.validate = (req, res) => {
   res.status(200).json({ user: req.user });
 };
-
-// User Preferences
-exports.getUserPreferences = async (req, res) => {
-  const userId = req.user.id;
-
-  try {
-    const preferences = await db.getUserPreferences(userId);
-    res.status(200).json(preferences);
-  } catch (error) {
-    console.error("Error getting user preferences:", error);
-    res.status(500).json({ error: "Failed to get user preferences" });
-  }
-};
-
-exports.updateTemplateOrder = async (req, res) => {
-  const userId = req.user.id;
-  const { templateOrder } = req.body;
-
-  if (!Array.isArray(templateOrder)) {
-    return res.status(400).json({ error: "Template order must be an array" });
-  }
-
-  try {
-    const preferences = await db.updateTemplateOrder(userId, templateOrder);
-    res.status(200).json(preferences);
-  } catch (error) {
-    console.error("Error updating template order:", error);
-    res.status(500).json({ error: "Failed to update template order" });
-  }
-};

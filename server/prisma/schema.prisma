@@ -19,7 +19,6 @@ model Users {
   verified              Boolean           @default(false)
   lastLogin             DateTime          @default(now()) @db.Date
   tokens                Token?
-  preferences           UserPreferences?
   weights               WeightEntry[]
   userWorkouts          UserWorkout[]     @relation("UserWorkouts")
   createdGlobalWorkouts GlobalWorkout[]   @relation("CreatedGlobalWorkouts")
@@ -128,13 +127,4 @@ model Token {
   @@map("tokens")
 }
 
-model UserPreferences {
-  id            Int      @id @default(autoincrement())
-  userId        String   @unique
-  templateOrder String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("user_preferences")
-}
