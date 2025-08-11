@@ -253,11 +253,6 @@ export function WorkoutAutocomplete({
                         {workout.name}
                       </div>
                       <div className="text-sm text-gray-500 flex items-center gap-2">
-                        {workout.category && (
-                          <span className="bg-gray-100 px-2 py-1 rounded text-xs">
-                            {workout.category}
-                          </span>
-                        )}
                         {workout.muscleGroup && (
                           <span className="bg-blue-100 px-2 py-1 rounded text-xs">
                             {workout.muscleGroup}

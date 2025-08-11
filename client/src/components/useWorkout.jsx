@@ -107,8 +107,6 @@ export const useWorkout = (params) => {
                 // Extract weights from the nested structure
                 weights: tw.userWorkout?.weights || workout?.weights || [],
                 // Include other workout properties that might be needed
-                category:
-                  tw.userWorkout?.globalWorkout?.category || workout?.category,
                 muscleGroup:
                   tw.userWorkout?.globalWorkout?.muscleGroup ||
                   workout?.muscleGroup,

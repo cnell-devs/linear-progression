@@ -20,7 +20,6 @@ export function AutocompleteDemo() {
         {
           id: workout.id || `temp-${Date.now()}`,
           name: workout.name,
-          category: workout.category,
           muscleGroup: workout.muscleGroup,
           equipment: workout.equipment,
           isCustom: workout.isCustom,
@@ -86,11 +85,6 @@ export function AutocompleteDemo() {
                       )}
                     </div>
                     <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
-                      {workout.category && (
-                        <span className="bg-gray-100 px-2 py-1 rounded text-xs">
-                          {workout.category}
-                        </span>
-                      )}
                       {workout.muscleGroup && (
                         <span className="bg-blue-100 px-2 py-1 rounded text-xs">
                           {workout.muscleGroup}

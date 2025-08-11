@@ -139,7 +139,6 @@ export function WorkoutManagerV2() {
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Category</th>
                     <th>Muscle Group</th>
                     <th>Equipment</th>
                     <th>Source</th>
@@ -164,15 +163,6 @@ export function WorkoutManagerV2() {
                             </span>
                           )}
                         </div>
-                      </td>
-                      <td>
-                        {workout.category ? (
-                          <span className="badge badge-primary">
-                            {workout.category}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
                       </td>
                       <td>
                         {workout.muscleGroup ? (
@@ -271,17 +261,6 @@ export function WorkoutManagerV2() {
                     </div>
 
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Category:</span>
-                        {workout.category ? (
-                          <span className="badge badge-primary badge-sm">
-                            {workout.category}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </div>
-
                       <div className="flex justify-between">
                         <span className="text-gray-600">Muscle Group:</span>
                         {workout.muscleGroup ? (

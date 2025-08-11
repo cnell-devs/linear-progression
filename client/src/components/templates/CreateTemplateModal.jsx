@@ -38,6 +38,9 @@ export function CreateTemplateModal({ isOpen, onClose, onSubmit }) {
     setAutocompleteQuery("");
 
     await handleWorkoutSelect(selectedWorkout, (workoutToAdd) => {
+      // Debug: log the workout object
+      console.log("Pending workout object:", workoutToAdd);
+
       // Instead of adding directly, show configuration modal
       setPendingWorkout(workoutToAdd);
       setConfigSets(3);
@@ -269,7 +272,10 @@ export function CreateTemplateModal({ isOpen, onClose, onSubmit }) {
             {showWorkoutConfig && pendingWorkout && (
               <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
                 <h4 className="font-semibold mb-3 text-blue-800">
-                  Configure: {pendingWorkout.name}
+                  Configure:{" "}
+                  {pendingWorkout.name ||
+                    pendingWorkout.customName ||
+                    "New Workout"}
                 </h4>
                 <div className="grid gap-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

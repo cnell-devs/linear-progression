@@ -221,7 +221,6 @@ export const Profile = () => {
                     <tr>
                       <th>Name</th>
                       <th>Source</th>
-                      <th>Category</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -264,15 +263,6 @@ export const Profile = () => {
                             </span>
                           </td>
                           <td>
-                            {workout.category ? (
-                              <span className="badge badge-primary">
-                                {workout.category}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
-                          </td>
-                          <td>
                             <div className="flex space-x-2">
                               <button
                                 className="btn btn-sm btn-outline"
@@ -298,7 +288,7 @@ export const Profile = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="4" className="text-center">
+                        <td colSpan="3" className="text-center">
                           No workouts found.
                         </td>
                       </tr>

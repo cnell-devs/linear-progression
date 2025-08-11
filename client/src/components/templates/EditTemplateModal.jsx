@@ -69,6 +69,9 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
     setAutocompleteQuery("");
 
     await handleWorkoutSelect(selectedWorkout, (workoutToAdd) => {
+      // Debug: log the workout object
+      console.log("Pending workout object:", workoutToAdd);
+
       // Instead of adding directly, show configuration modal
       setPendingWorkout(workoutToAdd);
       setConfigSets(3);
@@ -139,9 +142,11 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
 
   return (
     <dialog className="modal modal-open">
-      <div className="modal-box overflow-visible">
-        <h3 className="font-bold text-lg mb-4">Edit Workout Template</h3>
-        <form onSubmit={handleSubmit}>
+      <div className="modal-box w-11/12 max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <h3 className="font-bold text-lg sm:text-xl mb-4">
+          Edit Workout Template
+        </h3>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
           <div className="form-control">
             <label className="label">
               <span className="label-text">Template Name *</span>
@@ -156,7 +161,7 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
             />
           </div>
 
-          <div className="form-control mt-4">
+          <div className="form-control">
             <label className="label">
               <span className="label-text">Description</span>
             </label>
@@ -168,7 +173,7 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
             />
           </div>
 
-          <div className="form-control mt-4">
+          <div className="form-control">
             <div className="flex justify-between items-center mb-2">
               <label className="label">
                 <span className="label-text">Add Workouts *</span>
@@ -176,7 +181,7 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
             </div>
 
             {/* Smart Autocomplete for adding workouts */}
-            <div className="mb-4 relative z-0">
+            <div className="mb-4 relative">
               <label className="label">
                 <span className="label-text">Search for workouts to add</span>
               </label>
@@ -198,27 +203,33 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
 
             {/* Instructions for custom workout creation */}
             <div className="mb-4">
-              <div className="text-sm text-gray-600">
-                <span className="material-icons text-xs mr-1">info</span>
-                Tip: Type a workout name that doesn&apos;t exist to create a
-                custom workout
+              <div className="text-xs sm:text-sm text-gray-600 flex items-start gap-1">
+                <span className="material-icons text-xs mt-0.5 flex-shrink-0">
+                  info
+                </span>
+                <span>
+                  Tip: Type a workout name that doesn&apos;t exist to create a
+                  custom workout
+                </span>
               </div>
             </div>
 
             {/* Selected Workouts with Inline Editing */}
             {selectedWorkouts.length > 0 && (
-              <div className="mb-4 p-3 bg-base-100 border border-gray-200 rounded">
-                <h4 className="font-medium text-gray-800 mb-3">
+              <div className="mb-4 p-3 sm:p-4 bg-base-100 border border-gray-200 rounded">
+                <h4 className="font-medium text-gray-800 mb-3 text-sm sm:text-base">
                   Selected Workouts ({selectedWorkouts.length})
                 </h4>
                 <div className="space-y-3">
                   {selectedWorkouts.map((workout) => (
                     <div
                       key={workout.id}
-                      className="bg-white p-3 rounded border"
+                      className="bg-white p-3 sm:p-4 rounded border"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">{workout.name}</span>
+                      <div className="flex items-start justify-between mb-2 gap-2">
+                        <span className="font-medium text-sm sm:text-base break-words flex-1">
+                          {workout.name}
+                        </span>
                         <button
                           type="button"
                           className="btn btn-xs btn-ghost text-error hover:bg-error hover:text-white"
@@ -234,7 +245,7 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
                       </div>
 
                       {/* Inline editing controls */}
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                         <div>
                           <label className="text-xs text-gray-600 block mb-1">
                             Sets
@@ -271,7 +282,7 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
                             }
                           />
                         </div>
-                        <div className="flex items-center">
+                        <div className="col-span-2 sm:col-span-1 flex items-center">
                           <label className="cursor-pointer label">
                             <input
                               type="checkbox"
@@ -299,12 +310,15 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
 
             {/* Workout Configuration Modal for Autocomplete Selected Workouts */}
             {showWorkoutConfig && pendingWorkout && (
-              <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
-                <h4 className="font-semibold mb-3 text-blue-800">
-                  Configure: {pendingWorkout.name}
+              <div className="bg-blue-50 border border-blue-200 rounded p-3 sm:p-4 mb-4">
+                <h4 className="font-semibold mb-3 text-blue-800 text-sm sm:text-base">
+                  Configure:{" "}
+                  {pendingWorkout.name ||
+                    pendingWorkout.customName ||
+                    "New Workout"}
                 </h4>
-                <div className="grid gap-3">
-                  <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="label">
                         <span className="label-text">Sets *</span>
@@ -333,36 +347,34 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
                       />
                     </div>
                   </div>
-                  <div className="flex gap-4">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="configAmrap"
-                        className="checkbox checkbox-sm"
-                        checked={configAmrap}
-                        onChange={(e) => setConfigAmrap(e.target.checked)}
-                      />
-                      <label
-                        htmlFor="configAmrap"
-                        className="label cursor-pointer"
-                      >
-                        <span className="label-text ml-2">
-                          AMRAP (As Many Reps As Possible)
-                        </span>
-                      </label>
-                    </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="configAmrap"
+                      className="checkbox checkbox-sm"
+                      checked={configAmrap}
+                      onChange={(e) => setConfigAmrap(e.target.checked)}
+                    />
+                    <label
+                      htmlFor="configAmrap"
+                      className="label cursor-pointer"
+                    >
+                      <span className="label-text ml-2 text-sm">
+                        AMRAP (As Many Reps As Possible)
+                      </span>
+                    </label>
                   </div>
-                  <div className="flex gap-2 justify-end">
+                  <div className="flex flex-col sm:flex-row gap-2 justify-end">
                     <button
                       type="button"
-                      className="btn btn-sm btn-ghost"
+                      className="btn btn-sm btn-ghost order-2 sm:order-1"
                       onClick={handleWorkoutConfigCancel}
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
-                      className="btn btn-sm btn-primary"
+                      className="btn btn-sm btn-primary order-1 sm:order-2"
                       onClick={handleWorkoutConfigConfirm}
                     >
                       Add to Template
@@ -373,11 +385,18 @@ export function EditTemplateModal({ isOpen, onClose, onSubmit, template }) {
             )}
           </div>
 
-          <div className="modal-action">
-            <button type="button" className="btn" onClick={onClose}>
+          <div className="modal-action flex-col sm:flex-row gap-2 sm:gap-3">
+            <button
+              type="button"
+              className="btn order-2 sm:order-1"
+              onClick={onClose}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button
+              type="submit"
+              className="btn btn-primary order-1 sm:order-2"
+            >
               Save Changes
             </button>
           </div>

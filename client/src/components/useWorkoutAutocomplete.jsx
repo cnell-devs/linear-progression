@@ -7,6 +7,8 @@ export function useWorkoutAutocomplete(fetchWorkouts) {
 
   // Handle workout selection from autocomplete
   const handleWorkoutSelect = async (selectedWorkout, onWorkoutAdded) => {
+    console.log("handleWorkoutSelect called with:", selectedWorkout);
+
     if (selectedWorkout.isCustom) {
       // Handle custom workout creation
       await handleCreateCustomWorkout(selectedWorkout.name, onWorkoutAdded);
@@ -41,6 +43,8 @@ export function useWorkoutAutocomplete(fetchWorkouts) {
       }
 
       const createdWorkout = await response.json();
+      console.log("Created workout response:", createdWorkout);
+
       if (fetchWorkouts) {
         await fetchWorkouts();
       }
@@ -48,6 +52,7 @@ export function useWorkoutAutocomplete(fetchWorkouts) {
       // Add to selected workouts
       const workoutToAdd = {
         ...createdWorkout,
+        name: createdWorkout.name || workoutName.trim(), // Ensure name is set
         sets: 3,
         reps: "8-12",
         amrap: false,
@@ -90,6 +95,9 @@ export function useWorkoutAutocomplete(fetchWorkouts) {
       }
 
       const userWorkout = await response.json();
+      console.log("Global workout user workout response:", userWorkout);
+      console.log("Global workout original:", globalWorkout);
+
       if (fetchWorkouts) {
         await fetchWorkouts();
       }
@@ -101,7 +109,6 @@ export function useWorkoutAutocomplete(fetchWorkouts) {
         sets: 3,
         reps: "8-12",
         amrap: false,
-        category: globalWorkout.category,
         muscleGroup: globalWorkout.muscleGroup,
         equipment: globalWorkout.equipment,
       };
@@ -118,7 +125,6 @@ export function useWorkoutAutocomplete(fetchWorkouts) {
         sets: 3,
         reps: "8-12",
         amrap: false,
-        category: globalWorkout.category,
         muscleGroup: globalWorkout.muscleGroup,
         equipment: globalWorkout.equipment,
         isGlobal: true,

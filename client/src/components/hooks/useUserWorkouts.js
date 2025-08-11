@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../auth/authContext";
 
-export const useUserWorkouts = (filters = {}) => {
+export const useUserWorkouts = () => {
   const [workouts, setWorkouts] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -22,7 +22,6 @@ export const useUserWorkouts = (filters = {}) => {
 
       // Build query parameters
       const params = new URLSearchParams();
-      if (filters.category) params.append("category", filters.category);
 
       const queryString = params.toString();
       const url = `${apiUrl}/v2/workouts${
@@ -52,7 +51,7 @@ export const useUserWorkouts = (filters = {}) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, filters.category]);
+  }, [user]);
 
   const createUserWorkout = async (workoutData) => {
     try {
@@ -263,7 +262,6 @@ export const useGlobalWorkouts = () => {
 
       // Build query parameters
       const params = new URLSearchParams();
-      if (filters.category) params.append("category", filters.category);
       if (filters.muscleGroup)
         params.append("muscleGroup", filters.muscleGroup);
       if (filters.equipment) params.append("equipment", filters.equipment);

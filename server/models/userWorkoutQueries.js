@@ -31,10 +31,6 @@ exports.getGlobalWorkouts = async (filters = {}) => {
   try {
     const where = { isApproved: true };
 
-    if (filters.category) {
-      where.category = filters.category;
-    }
-
     if (filters.muscleGroup) {
       where.muscleGroup = filters.muscleGroup;
     }
@@ -45,7 +41,7 @@ exports.getGlobalWorkouts = async (filters = {}) => {
 
     const workouts = await prisma.globalWorkout.findMany({
       where,
-      orderBy: [{ category: "asc" }, { name: "asc" }],
+      orderBy: [{ name: "asc" }],
     });
 
     return workouts;
@@ -132,13 +128,6 @@ exports.getUserWorkouts = async (userId, filters = {}) => {
   try {
     const where = { userId };
 
-    if (filters.category) {
-      where.OR = [
-        { globalWorkout: { category: filters.category } },
-        { userCreated: true }, // Include user-created workouts in all category searches
-      ];
-    }
-
     const userWorkouts = await prisma.userWorkout.findMany({
       where,
       include: {
@@ -160,7 +149,6 @@ exports.getUserWorkouts = async (userId, filters = {}) => {
     return userWorkouts.map((userWorkout) => ({
       id: userWorkout.id,
       name: userWorkout.globalWorkout?.name || userWorkout.customName,
-      category: userWorkout.globalWorkout?.category || "custom",
       muscleGroup: userWorkout.globalWorkout?.muscleGroup,
       equipment: userWorkout.globalWorkout?.equipment,
       userCreated: userWorkout.userCreated,
@@ -282,7 +270,6 @@ exports.addUserWorkoutWeight = async ({
 // Suggest global workout creation (for admin approval)
 exports.suggestGlobalWorkout = async ({
   name,
-  category,
   muscleGroup,
   equipment,
   description,
@@ -306,7 +293,6 @@ exports.suggestGlobalWorkout = async ({
     return await prisma.globalWorkout.create({
       data: {
         name,
-        category,
         muscleGroup,
         equipment,
         description,

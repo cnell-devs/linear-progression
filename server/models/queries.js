@@ -167,13 +167,14 @@ exports.getWorkouts = async (split, userId) => {
         userId: userId,
       },
       include: {
+        globalWorkout: true,
         superset: true,
         weights: true,
       },
     };
 
     console.log("Final query:", JSON.stringify(query, null, 2));
-    const workouts = await prisma.workout.findMany(query);
+    const workouts = await prisma.userWorkout.findMany(query);
 
     console.log(`Found ${workouts.length} workouts for user ${userId}`);
 
@@ -186,11 +187,12 @@ exports.getWorkouts = async (split, userId) => {
 
 exports.getWorkoutById = async (id) => {
   try {
-    const workout = await prisma.workout.findUnique({
+    const workout = await prisma.userWorkout.findUnique({
       where: {
         id: parseInt(id),
       },
       include: {
+        globalWorkout: true,
         superset: true,
         weights: true,
         user: true,
@@ -206,12 +208,25 @@ exports.getWorkoutById = async (id) => {
 
 exports.createWorkout = async (workoutData) => {
   try {
-    const workout = await prisma.workout.create({
+    // First, check if a global workout with this name exists
+    let globalWorkout = null;
+    if (workoutData.name) {
+      globalWorkout = await prisma.globalWorkout.findUnique({
+        where: { name: workoutData.name },
+      });
+    }
+
+    const workout = await prisma.userWorkout.create({
       data: {
-        name: workoutData.name,
+        userId: workoutData.userId,
+        ...(globalWorkout
+          ? { globalWorkoutId: globalWorkout.id }
+          : {
+              customName: workoutData.name,
+              userCreated: true,
+            }),
         alt: workoutData.alt || false,
         ss: workoutData.ss || false,
-        userId: workoutData.userId,
         // Handle relationships if provided
         ...(workoutData.supersettedId && {
           supersetted: { connect: { id: workoutData.supersettedId } },
@@ -221,6 +236,7 @@ exports.createWorkout = async (workoutData) => {
         }),
       },
       include: {
+        globalWorkout: true,
         superset: true,
       },
     });
@@ -235,7 +251,7 @@ exports.createWorkout = async (workoutData) => {
 exports.updateWorkout = async (id, workoutData, userId) => {
   try {
     // First check if this workout belongs to the user
-    const existingWorkout = await prisma.workout.findUnique({
+    const existingWorkout = await prisma.userWorkout.findUnique({
       where: { id: parseInt(id) },
     });
 
@@ -250,23 +266,23 @@ exports.updateWorkout = async (id, workoutData, userId) => {
     }
 
     // Update the workout
-    const workout = await prisma.workout.update({
+    const workout = await prisma.userWorkout.update({
       where: {
         id: parseInt(id),
       },
       data: {
-        ...(workoutData.name !== undefined && { name: workoutData.name }),
-        ...(workoutData.sets !== undefined && { sets: workoutData.sets }),
-        ...(workoutData.reps !== undefined && { reps: workoutData.reps }),
-        ...(workoutData.amrap !== undefined && { amrap: workoutData.amrap }),
+        ...(workoutData.name !== undefined && { customName: workoutData.name }),
         ...(workoutData.alt !== undefined && { alt: workoutData.alt }),
         ...(workoutData.ss !== undefined && { ss: workoutData.ss }),
       },
       include: {
+        globalWorkout: true,
         superset: true,
         weights: true,
       },
     });
+
+    return workout;
 
     return workout;
   } catch (error) {
@@ -278,7 +294,7 @@ exports.updateWorkout = async (id, workoutData, userId) => {
 exports.deleteWorkout = async (id, userId) => {
   try {
     // First check if this workout belongs to the user
-    const existingWorkout = await prisma.workout.findUnique({
+    const existingWorkout = await prisma.userWorkout.findUnique({
       where: { id: parseInt(id) },
     });
 
@@ -292,7 +308,7 @@ exports.deleteWorkout = async (id, userId) => {
       throw new Error("Unauthorized to delete this workout");
     }
 
-    const workout = await prisma.workout.delete({
+    const workout = await prisma.userWorkout.delete({
       where: {
         id: parseInt(id),
       },
@@ -494,7 +510,7 @@ exports.getWorkoutTemplates = async (userId) => {
         },
       },
       orderBy: {
-        updatedAt: 'desc'
+        updatedAt: "desc",
       },
     });
     return templates;

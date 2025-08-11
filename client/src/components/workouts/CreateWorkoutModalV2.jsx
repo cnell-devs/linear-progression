@@ -17,7 +17,6 @@ export function CreateWorkoutModalV2({ isOpen, onClose, onSubmit }) {
     globalWorkoutId: null,
     alt: false,
     ss: false,
-    category: "",
     muscleGroup: "",
     equipment: "",
     description: "",
@@ -31,7 +30,6 @@ export function CreateWorkoutModalV2({ isOpen, onClose, onSubmit }) {
         globalWorkoutId: null,
         alt: false,
         ss: false,
-        category: "",
         muscleGroup: "",
         equipment: "",
         description: "",
@@ -108,7 +106,6 @@ export function CreateWorkoutModalV2({ isOpen, onClose, onSubmit }) {
       ...prev,
       name: workout.name,
       globalWorkoutId: workout.id,
-      category: workout.category || "",
       muscleGroup: workout.muscleGroup || "",
       equipment: workout.equipment || "",
     }));
@@ -151,7 +148,6 @@ export function CreateWorkoutModalV2({ isOpen, onClose, onSubmit }) {
         ...(formData.globalWorkoutId && {
           globalWorkoutId: formData.globalWorkoutId,
         }),
-        ...(formData.category && { category: formData.category }),
         ...(formData.muscleGroup && { muscleGroup: formData.muscleGroup }),
         ...(formData.equipment && { equipment: formData.equipment }),
         ...(formData.description && { description: formData.description }),
@@ -212,11 +208,6 @@ export function CreateWorkoutModalV2({ isOpen, onClose, onSubmit }) {
                     >
                       <div className="font-medium">{workout.name}</div>
                       <div className="text-sm text-gray-600">
-                        {workout.category && (
-                          <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-1">
-                            {workout.category}
-                          </span>
-                        )}
                         {workout.muscleGroup && (
                           <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs mr-1">
                             {workout.muscleGroup}
@@ -280,26 +271,6 @@ export function CreateWorkoutModalV2({ isOpen, onClose, onSubmit }) {
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category
-                  </label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded text-sm"
-                  >
-                    <option value="">Select category</option>
-                    <option value="push">Push</option>
-                    <option value="pull">Pull</option>
-                    <option value="legs">Legs</option>
-                    <option value="cardio">Cardio</option>
-                    <option value="core">Core</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Equipment
                   </label>
                   <select
@@ -317,23 +288,23 @@ export function CreateWorkoutModalV2({ isOpen, onClose, onSubmit }) {
                     <option value="other">Other</option>
                   </select>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Muscle Group
+                  </label>
+                  <input
+                    type="text"
+                    name="muscleGroup"
+                    value={formData.muscleGroup}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded text-sm"
+                    placeholder="e.g., chest, back, shoulders"
+                  />
+                </div>
               </div>
 
               <div className="mb-3">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Muscle Group
-                </label>
-                <input
-                  type="text"
-                  name="muscleGroup"
-                  value={formData.muscleGroup}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded text-sm"
-                  placeholder="e.g., chest, back, shoulders"
-                />
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description
                 </label>

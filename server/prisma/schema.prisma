@@ -31,7 +31,6 @@ model Users {
 model GlobalWorkout {
   id           Int           @id @default(autoincrement())
   name         String        @unique
-  category     String? // e.g., "push", "pull", "legs", "cardio"
   muscleGroup  String? // e.g., "chest", "back", "shoulders"
   equipment    String? // e.g., "barbell", "dumbbell", "machine"
   description  String?
@@ -126,5 +125,3 @@ model Token {
 
   @@map("tokens")
 }
-
-

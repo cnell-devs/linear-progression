@@ -23,10 +23,9 @@ exports.searchGlobalWorkouts = async (req, res) => {
 // Get all global workouts with filtering
 exports.getGlobalWorkouts = async (req, res) => {
   try {
-    const { category, muscleGroup, equipment } = req.query;
+    const { muscleGroup, equipment } = req.query;
 
     const filters = {};
-    if (category) filters.category = category;
     if (muscleGroup) filters.muscleGroup = muscleGroup;
     if (equipment) filters.equipment = equipment;
 
@@ -42,10 +41,8 @@ exports.getGlobalWorkouts = async (req, res) => {
 exports.getUserWorkouts = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { category } = req.query;
 
     const filters = {};
-    if (category) filters.category = category;
 
     const workouts = await userWorkoutQueries.getUserWorkouts(userId, filters);
 
@@ -70,7 +67,6 @@ exports.createUserWorkout = async (req, res) => {
       ss = false,
       supersettedId,
       alternateId,
-      category,
       muscleGroup,
       equipment,
       description,
@@ -112,12 +108,11 @@ exports.createUserWorkout = async (req, res) => {
       // If it's a completely new workout and user provided metadata, suggest it as global
       if (
         userWorkout.userCreated &&
-        (category || muscleGroup || equipment || description)
+        (muscleGroup || equipment || description)
       ) {
         try {
           await userWorkoutQueries.suggestGlobalWorkout({
             name,
-            category,
             muscleGroup,
             equipment,
             description,
