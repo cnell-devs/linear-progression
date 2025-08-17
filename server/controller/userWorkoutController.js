@@ -74,11 +74,9 @@ exports.createUserWorkout = async (req, res) => {
 
     // Validate required fields
     if (!name && !globalWorkoutId) {
-      return res
-        .status(400)
-        .send({
-          error: "Either workout name or global workout ID is required",
-        });
+      return res.status(400).send({
+        error: "Either workout name or global workout ID is required",
+      });
     }
 
     const customData = {
