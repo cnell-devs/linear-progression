@@ -168,7 +168,15 @@ export const useUserWorkouts = () => {
         body: JSON.stringify({
           userWorkoutId,
           weight,
-          date: date || new Date().toISOString(),
+          date:
+            date ||
+            (() => {
+              // Create current date preserving local date regardless of timezone
+              const now = new Date();
+              return new Date(
+                Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+              ).toISOString();
+            })(),
           ...(templateId && { templateId }),
         }),
       });

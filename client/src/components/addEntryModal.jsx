@@ -95,15 +95,17 @@ export const AddEntryModal = ({ fetchData }) => {
 
       // Convert the date string to a proper ISO format the server can parse
       // Input date from form is in YYYY-MM-DD format
-      // Convert to ISO string for the server
-      const formattedDate = new Date(date);
+      // To preserve the user's intended date regardless of timezone,
+      // we create a UTC date that represents the user's selected date
+      const [year, month, day] = date.split("-").map((num) => parseInt(num));
+      const formattedDate = new Date(Date.UTC(year, month - 1, day)); // Create UTC date
 
       // Ensure the date is valid
       if (isNaN(formattedDate.getTime())) {
         throw new Error("Invalid date format");
       }
 
-      // Convert to proper ISO string
+      // Convert to proper ISO string (already in UTC)
       const isoDate = formattedDate.toISOString();
 
       console.log(

@@ -77,8 +77,12 @@ export const Workout = ({ workout }) => {
           numWeight
         );
 
-        // Format the date as ISO string to ensure it's in the correct format
-        const currentDate = new Date().toISOString();
+        // Format the date to preserve the user's local date regardless of timezone
+        // Get current local date components
+        const now = new Date();
+        const currentDate = new Date(
+          Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+        ).toISOString();
 
         console.log(
           "User object:",

@@ -85,11 +85,7 @@ export const EntryLog = ({
                     return (
                       <tr key={z} className="">
                         <th></th>
-                        <td>
-                          {convertUtcToDateFormat(
-                            new Date(workout.date).toISOString()
-                          )}
-                        </td>
+                        <td>{convertUtcToDateFormat(workout.date)}</td>
 
                         <td>{workout.weight}</td>
                         <td>
@@ -152,9 +148,7 @@ export const EntryLog = ({
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="text-sm text-gray-600 mb-1">
-                          {convertUtcToDateFormat(
-                            new Date(workout.date).toISOString()
-                          )}
+                          {convertUtcToDateFormat(workout.date)}
                         </div>
                         <div className="text-lg font-bold mb-2">
                           {workout.weight} lbs

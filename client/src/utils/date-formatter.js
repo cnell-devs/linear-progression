@@ -12,8 +12,6 @@ export const formatDate = (time) => {
     .split(",");
 };
 
-
-
 export const convertUtcToDateFormat = (isoString) => {
   const date = new Date(isoString); // Parse the ISO string (UTC time)
 
