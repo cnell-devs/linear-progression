@@ -2,10 +2,11 @@
  * Converts pre-set-tracking WeightEntry rows into WorkoutSessions + WorkoutSets
  * so old history appears in History and Progress alongside new workouts.
  *
- * A WeightEntry only ever recorded a single weight per exercise per day — no
- * reps. Reps are therefore taken from the template's prescribed value when the
- * entry has a templateId, and default to 1 otherwise. Every imported session is
- * labelled in its notes so the inference is visible rather than silent.
+ * A WeightEntry recorded the top set's weight for an exercise on a given day,
+ * within a three-working-set scheme, and never stored reps. Only the top set's
+ * weight is known, so each entry becomes a single set — inventing the other two
+ * sets' weights would be fabrication — recorded at TOP_SET_REPS reps, which is
+ * how that top set was performed. Every imported session says so in its notes.
  *
  * Entries are skipped when a WorkoutSet already exists for that exercise on
  * that date, so running this after set-level data exists cannot duplicate it.
@@ -18,8 +19,10 @@ require("dotenv").config();
 
 const prisma = new PrismaClient();
 const APPLY = process.argv.includes("--apply");
+const TOP_SET_REPS = 3;
 const IMPORT_NOTE =
-  "Imported from weight-only history — reps were not recorded at the time.";
+  "Imported from weight-only history — the top set, recorded at " +
+  `${TOP_SET_REPS} reps.`;
 
 const dateKey = (d) => new Date(d).toISOString().slice(0, 10);
 
@@ -92,21 +95,15 @@ async function main() {
         });
 
         await prisma.workoutSet.createMany({
-          data: group.map((entry) => {
-            const prescribed = template?.templateWorkouts.find(
-              (tw) => tw.userWorkoutId === entry.userWorkoutId
-            )?.reps;
-            const reps = prescribed ? parseInt(String(prescribed).match(/\d+/)?.[0] ?? 1) : 1;
-            return {
-              sessionId: session.id,
-              userWorkoutId: entry.userWorkoutId,
-              setNumber: 1,
-              weight: entry.weight,
-              reps: reps || 1,
-              isWarmup: false,
-              completed: true,
-            };
-          }),
+          data: group.map((entry) => ({
+            sessionId: session.id,
+            userWorkoutId: entry.userWorkoutId,
+            setNumber: 1,
+            weight: entry.weight,
+            reps: TOP_SET_REPS,
+            isWarmup: false,
+            completed: true,
+          })),
         });
       }
 
