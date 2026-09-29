@@ -154,6 +154,9 @@ model WorkoutTemplate {
 // user can review a workout as a unit instead of per-exercise silos.
 model WorkoutSession {
   id         Int              @id @default(autoincrement())
+  // Generated on the device so a workout can be created, edited and synced
+  // while offline, and so a retried sync upserts instead of duplicating.
+  clientId   String?
   userId     String
   templateId Int?
   name       String?
@@ -167,6 +170,7 @@ model WorkoutSession {
   template   WorkoutTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
   sets       WorkoutSet[]
 
+  @@unique([userId, clientId])
   @@index([userId, date])
   @@map("workout_session")
 }
@@ -174,6 +178,7 @@ model WorkoutSession {
 // One performed set: the actual weight and reps, not the prescribed scheme.
 model WorkoutSet {
   id            Int            @id @default(autoincrement())
+  clientId      String?
   sessionId     Int
   userWorkoutId Int
   setNumber     Int
@@ -187,6 +192,7 @@ model WorkoutSet {
   session       WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   userWorkout   UserWorkout    @relation(fields: [userWorkoutId], references: [id], onDelete: Cascade)
 
+  @@unique([sessionId, clientId])
   @@index([sessionId, userWorkoutId])
   @@index([userWorkoutId])
   @@map("workout_set")

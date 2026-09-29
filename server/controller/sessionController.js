@@ -77,6 +77,25 @@ exports.deleteSession = async (req, res) => {
   }
 };
 
+// Accepts a whole session document from a device. Idempotent: replaying the
+// same payload converges rather than duplicating, which is what makes an
+// offline queue safe to retry.
+exports.syncSession = async (req, res) => {
+  try {
+    if (!req.body?.clientId) {
+      return res.status(400).send({ error: "clientId is required" });
+    }
+    const session = await db.syncSession(req.user.id, req.body);
+    res.send(session);
+  } catch (error) {
+    console.error("Error syncing session:", error);
+    if (error.message === "clientId is required") {
+      return res.status(400).send({ error: error.message });
+    }
+    res.status(500).send({ error: "Failed to sync session" });
+  }
+};
+
 exports.addSet = async (req, res) => {
   try {
     const session = await db.getSessionById(req.params.id, req.user.id);

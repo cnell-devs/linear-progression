@@ -11,6 +11,7 @@ const {
   deleteSet,
   getLastPerformance,
   getWorkoutHistory,
+  syncSession,
 } = require("../controller/sessionController");
 
 // Mounted behind JWT auth in routes.js, so every handler can rely on req.user.
@@ -19,6 +20,8 @@ const sessions = Router();
 // "/active" must be declared before "/:id" or Express matches it as an id.
 sessions.get("/active", getActiveSession);
 sessions.get("/", getSessions);
+// Whole-session upsert used by the offline queue; must precede "/:id".
+sessions.put("/sync", syncSession);
 sessions.post("/", createSession);
 
 sessions.get("/history/:workoutId", getWorkoutHistory);

@@ -86,6 +86,8 @@ export function ActiveSession() {
     finishSession,
     discardSession,
     reload,
+    online,
+    pending,
   } = useSession();
   const { userTemplates, loading: templatesLoading } = useTemplates();
 
@@ -143,14 +145,14 @@ export function ActiveSession() {
   };
 
   const handleToggleComplete = async (set, values) => {
-    await updateSet(set.id, values);
+    await updateSet(set.clientId, values);
     // Start resting only when checking a set off, not when un-checking it.
     if (values.completed) setRestTimer({ startedAt: Date.now() });
   };
 
   const handleRemoveExercise = async (group) => {
     for (const set of group.sets) {
-      await deleteSet(set.id);
+      await deleteSet(set.clientId);
     }
   };
 
@@ -232,11 +234,38 @@ export function ActiveSession() {
               {/* Session totals only. Averaging across different exercises
                   blends squats with lateral raises, so the average lives on
                   each exercise card instead. */}
-              <div className="flex gap-3 text-xs opacity-60">
+              <div className="flex items-center gap-3 text-xs opacity-60">
                 <span>{formatDuration(session.startedAt)}</span>
                 <span>
                   {totalSets} set{totalSets === 1 ? "" : "s"}
                 </span>
+                {/* Sets are saved on the device first, so losing signal is
+                    informational rather than an error. */}
+                {!online ? (
+                  <span
+                    className="flex items-center gap-1 text-warning"
+                    title="Saved on this device — will sync when you're back online"
+                  >
+                    <span className="material-icons text-sm">cloud_off</span>
+                    Offline
+                  </span>
+                ) : pending ? (
+                  <span
+                    className="flex items-center gap-1"
+                    title="Saving to your account"
+                  >
+                    <span className="material-icons text-sm">cloud_sync</span>
+                    Saving
+                  </span>
+                ) : (
+                  <span
+                    className="flex items-center gap-1 text-success"
+                    title="Saved to your account"
+                  >
+                    <span className="material-icons text-sm">cloud_done</span>
+                    Saved
+                  </span>
+                )}
               </div>
             </div>
 

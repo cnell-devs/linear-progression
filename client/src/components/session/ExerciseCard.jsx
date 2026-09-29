@@ -2,6 +2,10 @@
 import { useState, useEffect } from "react";
 import { SetRow } from "./SetRow";
 import { api } from "../../utils/api";
+import {
+  readCachedPrevious,
+  cachePrevious,
+} from "../../utils/localSession";
 import { averageWeight, formatWeight } from "../../utils/workout-display";
 import { convertUtcToDateFormat } from "../../utils/date-formatter";
 
@@ -20,13 +24,20 @@ export const ExerciseCard = ({
 
   useEffect(() => {
     let cancelled = false;
-    api(
-      `/sessions/last/${group.userWorkoutId}?excludeSession=${sessionId}`
-    )
+    // Show the cached value immediately so the column is populated offline,
+    // then refresh it if the network is available.
+    const cached = readCachedPrevious(group.userWorkoutId);
+    if (cached) setPrevious(cached);
+
+    api(`/sessions/last/${group.userWorkoutId}?excludeSession=${sessionId ?? ""}`)
       .then((data) => {
-        if (!cancelled) setPrevious(data);
+        if (cancelled) return;
+        setPrevious(data);
+        cachePrevious(group.userWorkoutId, data);
       })
-      .catch((err) => console.error("Failed to load last performance:", err));
+      .catch(() => {
+        // Offline, or no history yet — the cached value stands.
+      });
     return () => {
       cancelled = true;
     };
@@ -151,15 +162,15 @@ export const ExerciseCard = ({
         <div className="flex flex-col gap-1">
           {rows.map(({ set, index, previousSet }) => (
             <SetRow
-              key={set.id}
+              key={set.clientId}
               set={set}
               index={index}
               previous={previousSet}
-              onCommit={(patch) => onUpdateSet(set.id, patch)}
+              onCommit={(patch) => onUpdateSet(set.clientId, patch)}
               onToggleComplete={(values) =>
                 onToggleComplete(set, { ...values, completed: !set.completed })
               }
-              onDelete={() => onDeleteSet(set.id)}
+              onDelete={() => onDeleteSet(set.clientId)}
             />
           ))}
         </div>

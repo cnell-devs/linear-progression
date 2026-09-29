@@ -134,6 +134,82 @@ exports.deleteSet = async (id, userId) => {
   return prisma.workoutSet.delete({ where: { id: existing.id } });
 };
 
+// Upserts an entire session from a device, keyed by its client id.
+//
+// The client owns the document while a workout is in progress and may sync it
+// many times — or replay the same sync after a failure — so this has to be
+// idempotent and must converge on exactly the payload it was given. Sets
+// absent from the payload were deleted on the device and are removed here.
+//
+// Runs in a transaction: a partially-applied workout is worse than a failed
+// sync, because the device would then reconcile against a torn session.
+exports.syncSession = async (userId, payload) => {
+  const { clientId, sets = [] } = payload;
+  if (!clientId) throw new Error("clientId is required");
+
+  // Sets may only reference the caller's own exercises.
+  const workoutIds = [
+    ...new Set(sets.map((s) => parseInt(s.userWorkoutId)).filter(Number.isInteger)),
+  ];
+  const owned = await prisma.userWorkout.findMany({
+    where: { id: { in: workoutIds }, userId },
+    select: { id: true },
+  });
+  const ownedIds = new Set(owned.map((w) => w.id));
+  const validSets = sets.filter((s) => ownedIds.has(parseInt(s.userWorkoutId)));
+
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.workoutSession.findUnique({
+      where: { userId_clientId: { userId, clientId } },
+      select: { id: true },
+    });
+
+    const data = {
+      name: payload.name ?? null,
+      notes: payload.notes ?? null,
+      templateId: payload.templateId ? parseInt(payload.templateId) : null,
+      ...(payload.date ? { date: new Date(payload.date) } : {}),
+      ...(payload.startedAt ? { startedAt: new Date(payload.startedAt) } : {}),
+      finishedAt: payload.finishedAt ? new Date(payload.finishedAt) : null,
+    };
+
+    const session = existing
+      ? await tx.workoutSession.update({ where: { id: existing.id }, data })
+      : await tx.workoutSession.create({ data: { ...data, userId, clientId } });
+
+    // Converge the set list on the payload.
+    const keep = validSets.map((s) => s.clientId).filter(Boolean);
+    await tx.workoutSet.deleteMany({
+      where: {
+        sessionId: session.id,
+        ...(keep.length ? { clientId: { notIn: keep } } : {}),
+      },
+    });
+
+    for (const set of validSets) {
+      const fields = {
+        userWorkoutId: parseInt(set.userWorkoutId),
+        setNumber: parseInt(set.setNumber),
+        weight: parseFloat(set.weight) || 0,
+        reps: parseInt(set.reps) || 0,
+        rpe: set.rpe === undefined || set.rpe === null ? null : parseInt(set.rpe),
+        isWarmup: Boolean(set.isWarmup),
+        completed: Boolean(set.completed),
+      };
+      await tx.workoutSet.upsert({
+        where: { sessionId_clientId: { sessionId: session.id, clientId: set.clientId } },
+        create: { ...fields, sessionId: session.id, clientId: set.clientId },
+        update: fields,
+      });
+    }
+
+    return tx.workoutSession.findUnique({
+      where: { id: session.id },
+      include: sessionInclude,
+    });
+  });
+};
+
 // The sets this user last performed for a given exercise, excluding the
 // session they're in right now. Drives the "last time" reference shown
 // next to each set while logging.
