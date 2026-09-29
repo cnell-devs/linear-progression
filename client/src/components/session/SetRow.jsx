@@ -30,8 +30,19 @@ export const SetRow = ({
     setReps(set.reps ?? "");
   }, [set.weight, set.reps, unit]);
 
+  // Converting a displayed value back to storage is lossy: 185 lb shows as
+  // 83.91 kg, which converts back to 184.99. Re-saving an untouched field
+  // would therefore drift the record every time a set was checked off, so
+  // keep the stored value unless the user actually changed what they see.
+  const resolveWeight = () => {
+    const typed = weight === "" ? 0 : Number(weight);
+    return typed === toDisplayWeight(set.weight, unit)
+      ? set.weight
+      : fromInputWeight(typed, unit);
+  };
+
   const commit = () => {
-    const nextWeight = weight === "" ? 0 : fromInputWeight(weight, unit);
+    const nextWeight = resolveWeight();
     const nextReps = reps === "" ? 0 : Number(reps);
     if (nextWeight === set.weight && nextReps === set.reps) return;
     onCommit({ weight: nextWeight, reps: nextReps });
@@ -104,7 +115,7 @@ export const SetRow = ({
             set.completed ? "btn-success" : "btn-ghost border border-base-300"
           }`}
           onClick={() => {
-            const nextWeight = weight === "" ? 0 : fromInputWeight(weight, unit);
+            const nextWeight = resolveWeight();
             const nextReps = reps === "" ? 0 : Number(reps);
             onToggleComplete({ weight: nextWeight, reps: nextReps });
           }}

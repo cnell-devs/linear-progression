@@ -6,7 +6,11 @@ import {
   readCachedPrevious,
   cachePrevious,
 } from "../../utils/localSession";
-import { averageWeight, formatWeight } from "../../utils/workout-display";
+import {
+  averageWeight,
+  formatWeight,
+  unitLabel,
+} from "../../utils/workout-display";
 import { useWeightUnit } from "../../hooks/useWeightUnit";
 import { convertUtcToDateFormat } from "../../utils/date-formatter";
 
@@ -155,7 +159,7 @@ export const ExerciseCard = ({
         <div className="grid grid-cols-[1.5rem_0.8fr_1fr_1fr_2.25rem_1.75rem] gap-1.5 px-1 text-[0.65rem] font-bold uppercase tracking-wide opacity-50">
           <div className="text-center">Set</div>
           <div className="text-center">Previous</div>
-          <div className="text-center">Lbs</div>
+          <div className="text-center">{unitLabel(unit)}</div>
           <div className="text-center">Reps</div>
           <div />
           <div />
