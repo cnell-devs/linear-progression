@@ -6,6 +6,7 @@ const ExtractJWT = passportJWT.ExtractJwt;
 
 const db = require("../models/queries");
 const pw = require("../utils/pw-encrypt");
+const { JWT_SECRET } = require("./secrets");
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {
@@ -27,41 +28,32 @@ passport.use(
   })
 );
 
-// Custom extractor function that logs token extraction attempts
-const extractJwt = (req) => {
-  const tokenFromHeader = ExtractJWT.fromAuthHeaderAsBearerToken()(req);
-  console.log(
-    "JWT extraction from header:",
-    tokenFromHeader ? "Token found" : "No token in header"
-  );
-
-  if (!tokenFromHeader) {
-    // Try to extract from x-access-token header as a fallback
-    const tokenFromXAccess = req.headers["x-access-token"];
-    console.log(
-      "JWT extraction from x-access-token:",
-      tokenFromXAccess ? "Token found" : "No token in x-access-token"
-    );
-    return tokenFromXAccess;
-  }
-
-  return tokenFromHeader;
-};
+// Bearer header, falling back to x-access-token. Nothing is logged here: the
+// value is a working credential.
+const extractJwt = (req) =>
+  ExtractJWT.fromAuthHeaderAsBearerToken()(req) ||
+  req.headers["x-access-token"];
 
 passport.use(
   new JWTStrategy(
     {
       jwtFromRequest: extractJwt,
-      secretOrKey: "swole",
-      passReqToCallback: true,
+      secretOrKey: JWT_SECRET,
     },
-    function (req, jwtPayload, cb) {
-      console.log(
-        "JWT validation attempt for payload:",
-        jwtPayload ? "Payload found" : "No payload"
-      );
-      console.log("JWT headers:", JSON.stringify(req.headers));
-      return cb(null, jwtPayload);
+    async (jwtPayload, cb) => {
+      try {
+        // Resolve the user from the database rather than trusting the token's
+        // contents. Previously the payload was returned as-is, so a token with
+        // an arbitrary id — or admin: true — was simply believed, and tokens
+        // for deleted users kept working.
+        const user = await db.getUserById(jwtPayload.id);
+        if (!user || !user.id) return cb(null, false);
+
+        const { password, ...safeUser } = user;
+        return cb(null, safeUser);
+      } catch (err) {
+        return cb(err);
+      }
     }
   )
 );

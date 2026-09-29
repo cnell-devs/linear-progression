@@ -6,6 +6,12 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/send-email");
 const bcrypt = require("bcrypt");
+const {
+  JWT_SECRET,
+  JWT_VERIFY_SECRET,
+  SESSION_EXPIRES_IN,
+  LINK_EXPIRES_IN,
+} = require("../config/secrets");
 
 // Local implementation of date conversion utility
 const convertUTCToLocalUTC = (utcString) => {
@@ -70,7 +76,9 @@ exports.signUpPost = [
       // create Token and save to db
       // send verification email
       //add email to signup form and test
-      const token = jwt.sign(user, "verify");
+      const token = jwt.sign({ id: user.id }, JWT_VERIFY_SECRET, {
+        expiresIn: LINK_EXPIRES_IN,
+      });
 
       console.log("token", token);
 
@@ -114,9 +122,14 @@ exports.logInPost = async (req, res) => {
         res.send(err);
       }
       await db.updateLastLogin(user.id);
-      // generate a signed json web token with the contents of user object and return it in the response
-      const token = jwt.sign(user, "swole");
-      return res.json({ user, token });
+      // Sign only the claims the app needs. Signing the whole row put the
+      // bcrypt password hash inside the token — and a JWT payload is just
+      // base64, readable by anyone holding it.
+      const { password, ...safeUser } = user;
+      const token = jwt.sign(safeUser, JWT_SECRET, {
+        expiresIn: SESSION_EXPIRES_IN,
+      });
+      return res.json({ user: safeUser, token });
     });
   })(req, res);
 };
@@ -485,7 +498,12 @@ exports.passwordLink = [
       let token = await db.getToken(user.id);
 
       if (!token) {
-        token = await db.addToken(user, jwt.sign(user, "verify"));
+        token = await db.addToken(
+          user,
+          jwt.sign({ id: user.id }, JWT_VERIFY_SECRET, {
+            expiresIn: LINK_EXPIRES_IN,
+          })
+        );
       }
       console.log(process.env.API_URL);
       const url = `${process.env.API_URL}/recovery/${user.id}/${token.token}`;
@@ -553,6 +571,9 @@ exports.createWorkoutTemplate = async (req, res) => {
     res.status(201).send(template);
   } catch (error) {
     console.error(error);
+    if (error.message === "No valid exercises for this template") {
+      return res.status(400).send({ error: error.message });
+    }
     res.status(500).send({ error: "Failed to create template" });
   }
 };
@@ -602,6 +623,9 @@ exports.updateWorkoutTemplate = async (req, res) => {
     res.send(template);
   } catch (error) {
     console.error(error);
+    if (error.message === "No valid exercises for this template") {
+      return res.status(400).send({ error: error.message });
+    }
     res.status(500).send({ error: "Failed to update template" });
   }
 };
@@ -623,5 +647,8 @@ exports.deleteWorkoutTemplate = async (req, res) => {
 };
 
 exports.validate = (req, res) => {
-  res.status(200).json({ user: req.user });
+  // Tokens issued before the fix above still carry a password hash, so strip
+  // it here too rather than echoing it back.
+  const { password, ...safeUser } = req.user || {};
+  res.status(200).json({ user: safeUser });
 };

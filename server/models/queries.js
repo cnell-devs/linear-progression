@@ -102,22 +102,24 @@ exports.changePassword = async (userId, password) => {
   }
 };
 
-exports.getToken = async (userId, tokenid = false) => {
+// Looks up a verification / password-reset token.
+//
+// The previous version filtered on `tokenid.id` — but `tokenid` is the token
+// *string* from the URL, so `.id` was undefined, Prisma dropped the clause,
+// and the lookup matched on userId alone. Knowing a user's id was therefore
+// enough to pass the reset check. Expiry was never applied either.
+exports.getToken = async (userId, tokenValue = null) => {
   try {
-    const token = await prisma.token.findUnique({
-      where: tokenid
-        ? {
-            userId: userId,
-            token: tokenid.id,
-          }
-        : {
-            userId: userId,
-          },
+    return await prisma.token.findFirst({
+      where: {
+        userId,
+        ...(tokenValue ? { token: tokenValue } : {}),
+        expiresAt: { gt: new Date() },
+      },
     });
-
-    return token;
   } catch (error) {
-    return error;
+    console.error("Error fetching token:", error.message);
+    throw error;
   }
 };
 
@@ -458,6 +460,41 @@ exports.logout = (req, res, next) => {
   });
 };
 
+// Keeps only the entries whose workout id is a real UserWorkout belonging to
+// this user, and drops duplicates (template_workout is unique on
+// [templateId, userWorkoutId], so a repeat would fail the whole write).
+// Throws when nothing valid remains, rather than silently saving an empty
+// template.
+exports.filterOwnedWorkouts = async (workouts = [], userId) => {
+  const ids = [
+    ...new Set(
+      workouts
+        .map((w) => parseInt(w.id))
+        .filter((id) => Number.isInteger(id))
+    ),
+  ];
+
+  const owned = await prisma.userWorkout.findMany({
+    where: { id: { in: ids }, userId },
+    select: { id: true },
+  });
+  const ownedIds = new Set(owned.map((w) => w.id));
+
+  const seen = new Set();
+  const result = [];
+  for (const workout of workouts) {
+    const id = parseInt(workout.id);
+    if (!ownedIds.has(id) || seen.has(id)) continue;
+    seen.add(id);
+    result.push({ ...workout, id });
+  }
+
+  if (result.length === 0) {
+    throw new Error("No valid exercises for this template");
+  }
+  return result;
+};
+
 exports.createWorkoutTemplate = async ({
   name,
   description,
@@ -465,13 +502,17 @@ exports.createWorkoutTemplate = async ({
   workouts, // Changed from workoutIds to workouts array with sets/reps
 }) => {
   try {
+    // Only the caller's own exercises may go into their template — the id
+    // arrives from the client and was previously trusted outright.
+    const owned = await exports.filterOwnedWorkouts(workouts, userId);
+
     const template = await prisma.workoutTemplate.create({
       data: {
         name,
         description,
         userId,
         templateWorkouts: {
-          create: workouts.map((workout) => ({
+          create: owned.map((workout) => ({
             userWorkoutId: parseInt(workout.id),
             sets: workout.sets,
             reps: workout.reps,
@@ -577,29 +618,16 @@ exports.updateWorkoutTemplate = async (
       return null;
     }
 
-    // Validate and prepare workout data - only support UserWorkouts now
-    const validWorkouts = [];
-    for (const workout of workouts) {
-      const workoutId = parseInt(workout.id);
-
-      // Check if this is a UserWorkout
-      const userWorkout = await prisma.userWorkout.findUnique({
-        where: { id: workoutId },
-      });
-
-      if (userWorkout) {
-        // This is a UserWorkout
-        validWorkouts.push({
-          userWorkoutId: workoutId,
-          sets: workout.sets,
-          reps: workout.reps,
-          amrap: workout.amrap || false,
-        });
-      } else {
-        // Workout doesn't exist, skip it or throw an error
-        console.warn(`UserWorkout with id ${workoutId} not found, skipping`);
-      }
-    }
+    // Only the caller's own exercises. The previous lookup matched on id
+    // alone, so one user could attach another user's exercise to a template.
+    const validWorkouts = (
+      await exports.filterOwnedWorkouts(workouts, userId)
+    ).map((workout) => ({
+      userWorkoutId: workout.id,
+      sets: workout.sets,
+      reps: workout.reps,
+      amrap: workout.amrap || false,
+    }));
 
     // Update template and replace templateWorkouts
     const template = await prisma.workoutTemplate.update({

@@ -63,7 +63,7 @@ export function useWorkoutAutocomplete(fetchWorkouts) {
       }
     } catch (error) {
       console.error("Error creating workout:", error);
-      alert(`Failed to create workout: ${error.message}`);
+      throw error; // surfaced inline by the form rather than an alert
     } finally {
       setIsCreatingWorkout(false);
     }
@@ -118,22 +118,11 @@ export function useWorkoutAutocomplete(fetchWorkouts) {
       }
     } catch (error) {
       console.error("Error adding global workout:", error);
-      // Fallback: add as a temporary workout for now
-      const workoutToAdd = {
-        id: `temp-${globalWorkout.id}`,
-        name: globalWorkout.name,
-        sets: 3,
-        reps: "8-12",
-        amrap: false,
-        muscleGroup: globalWorkout.muscleGroup,
-        equipment: globalWorkout.equipment,
-        isGlobal: true,
-        globalWorkoutId: globalWorkout.id,
-      };
-
-      if (onWorkoutAdded) {
-        onWorkoutAdded(workoutToAdd);
-      }
+      // Previously this fell back to a synthetic `temp-<id>` entry. The server
+      // does parseInt(workout.id) when saving a template, so that id became
+      // NaN and the whole save failed — long after the user had moved on.
+      // Surfacing the failure here keeps the form in a saveable state.
+      throw error;
     } finally {
       setIsCreatingWorkout(false);
     }

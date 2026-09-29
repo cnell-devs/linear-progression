@@ -163,7 +163,7 @@ model Token {
   userId    String   @unique
   token     String
   createdAt DateTime @default(now())
-  expiresAt DateTime @default(dbgenerated("(now() + '01:00:00'::interval)"))
+  expiresAt DateTime @default(dbgenerated("((now() AT TIME ZONE 'UTC') + '01:00:00'::interval)"))
   user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("tokens")

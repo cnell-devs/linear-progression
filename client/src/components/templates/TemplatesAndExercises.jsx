@@ -1,8 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { CreateTemplateModal } from "./CreateTemplateModal";
-import { EditTemplateModal } from "./EditTemplateModal";
+import { TemplateFormModal } from "./TemplateFormModal";
 import { DeleteTemplateModal } from "./DeleteTemplateModal";
 import { RenameExerciseModal } from "../workouts/RenameExerciseModal";
 import { DeleteExerciseModal } from "../workouts/DeleteExerciseModal";
@@ -296,12 +295,13 @@ export function TemplatesAndExercises() {
         </>
       )}
 
-      <CreateTemplateModal
+      <TemplateFormModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onSubmit={handleCreateTemplate}
+        onWorkoutCreated={fetchUserWorkouts}
       />
-      <EditTemplateModal
+      <TemplateFormModal
         isOpen={isEditOpen}
         onClose={() => {
           setIsEditOpen(false);
@@ -309,6 +309,7 @@ export function TemplatesAndExercises() {
         }}
         onSubmit={handleEditTemplate}
         template={selectedTemplate}
+        onWorkoutCreated={fetchUserWorkouts}
       />
       <DeleteTemplateModal
         isOpen={isDeleteOpen}
