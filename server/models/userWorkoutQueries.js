@@ -139,6 +139,11 @@ exports.getUserWorkouts = async (userId, filters = {}) => {
         },
         superset: true,
         alternate: true,
+        // Deleting a UserWorkout cascades to its sets, weight entries, and
+        // template slots. The UI needs these counts to warn before that.
+        _count: {
+          select: { sets: true, weights: true, templateWorkouts: true },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -162,6 +167,11 @@ exports.getUserWorkouts = async (userId, filters = {}) => {
       userId: userWorkout.userId,
       createdAt: userWorkout.createdAt,
       updatedAt: userWorkout.updatedAt,
+      usage: {
+        sets: userWorkout._count.sets,
+        weightEntries: userWorkout._count.weights,
+        templates: userWorkout._count.templateWorkouts,
+      },
     }));
   } catch (error) {
     console.error("Error getting user workouts:", error);

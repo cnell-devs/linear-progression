@@ -1,85 +1,38 @@
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "./auth/authContext";
 
+// Auth pages are dead ends without the bottom tab bar, so they keep a way back.
+const BACK_PATHS = ["/forgot-password", "/signup", "/login"];
+
+// There's no title bar any more — each page owns its own heading and the tab
+// bar handles navigation. This renders only when it has an actual control to
+// show, and nothing at all otherwise, so no empty strip eats vertical space.
 export const Nav = () => {
   const { pathname } = useLocation();
-  const [searchParams] = useSearchParams();
-
-  const back = searchParams.get("split") || pathname == "/forgot-password";
-
   const { user } = useAuth();
 
-  const title =
-    pathname == "/forgot-password" ? "Forgot Password" : "Linear Progression";
+  const showBack = BACK_PATHS.includes(pathname);
+  const showLogIn = !user && pathname !== "/login";
+
+  if (!showBack && !showLogIn) return null;
 
   return (
-    <>
-      <div className="navbar mt-2 sm:mt-4 px-2 sm:px-0 py-0">
-        <div className="flex-1 flex">
-          {back && (
-            <>
-              <Link to={`/`}>
-                <button className="material-icons p-1 sm:p-0">
-                  arrow_back_ios
-                </button>
-              </Link>
-              <div className="divider divider-horizontal"></div>
-            </>
-          )}
-
-          <Link to={"/"} className="text-xl sm:text-2xl md:text-3xl truncate">
-            {title}
+    <div className="navbar min-h-0 px-2 py-2 sm:px-0">
+      <div className="flex flex-1 items-center">
+        {showBack && (
+          <Link to="/" aria-label="Back to home">
+            <button className="material-icons p-1 sm:p-0">
+              arrow_back_ios
+            </button>
           </Link>
-        </div>
-
-        {
-          <div className="dropdown dropdown-end flex-none">
-            <div
-              role="button"
-              className="btn material-icons shadow-none border-none bg-transparent text-2xl"
-              tabIndex="0"
-            >
-              menu
-            </div>
-            <ul
-              tabIndex="0"
-              className="menu dropdown-content z-[1] w-48 sm:w-52 rounded-lg border bg-base-100 p-2 shadow right-0"
-            >
-              <li>
-                <Link to="/">Home</Link>
-              </li>
-              {user && (
-                <li>
-                  <Link to="/profile">My Profile</Link>
-                </li>
-              )}
-              {user && (
-                <li>
-                  <Link to="/templates">Manage Templates</Link>
-                </li>
-              )}
-              {/* <li>
-                <Link to="/about">About</Link>
-              </li> */}
-
-              <div className="flex justify-between">
-                {user ? <li className="p-2">{user.username}</li> : ""}
-                <li>
-                  {user ? (
-                    <Link to="/logout">Log Out</Link>
-                  ) : (
-                    <Link to="/login">Log In</Link>
-                  )}
-                </li>
-              </div>
-            </ul>
-          </div>
-        }
+        )}
       </div>
-    </>
+
+      {showLogIn && (
+        <Link to="/login" className="btn btn-sm btn-ghost flex-none">
+          Log In
+        </Link>
+      )}
+    </div>
   );
 };
-
-// Nav.propTypes = {
-
-// };

@@ -424,19 +424,25 @@ exports.updateWeightEntry = async (id, userId, workoutId, newWeight) => {
   }
 };
 
-exports.deleteWeightEntry = async (id) => {
+exports.deleteWeightEntry = async (id, userId) => {
   try {
     // Ensure id is an integer
     const idInt = typeof id === "string" ? parseInt(id) : id;
 
-    const deleted = await prisma.weightEntry.delete({
+    // Scoped by userId so one user can never delete another's entry. Returns
+    // null when the entry is missing OR not theirs, which the controller
+    // reports as a 404 either way.
+    const { count } = await prisma.weightEntry.deleteMany({
       where: {
         id: idInt,
+        userId: userId,
       },
     });
 
+    if (count === 0) return null;
+
     console.log("Weight deleted");
-    return deleted;
+    return { id: idInt };
   } catch (error) {
     console.error("Error deleted weight:", error.message);
     throw error; // Re-throw the error for proper handling in the controller

@@ -3,6 +3,7 @@ const passport = require("passport");
 const { weightEntry } = require("./weight-entry");
 const { password } = require("./password");
 const { userWorkouts } = require("./userWorkouts");
+const { sessions } = require("./sessions");
 const {
   home,
   logInPost,
@@ -27,8 +28,13 @@ const {
 
 const router = Router();
 
-// Mount the weight-entry router
-router.use("/weight-entry", weightEntry);
+// Mount the weight-entry router. Authenticated: these handlers read and
+// destroy per-user weight entries.
+router.use(
+  "/weight-entry",
+  passport.authenticate("jwt", { session: false }),
+  weightEntry
+);
 
 // Mount the password recovery router
 router.use("/recovery", password);
@@ -38,6 +44,13 @@ router.use(
   "/v2/workouts",
   passport.authenticate("jwt", { session: false }),
   userWorkouts
+);
+
+// Session + per-set tracking
+router.use(
+  "/sessions",
+  passport.authenticate("jwt", { session: false }),
+  sessions
 );
 
 router.get("/", home);
@@ -78,7 +91,6 @@ router.get(
   validate
 );
 
-router.post("/weight-entry", addWeight);
 router.post(
   "/weights/add",
   passport.authenticate("jwt", { session: false }),

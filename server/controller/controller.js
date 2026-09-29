@@ -270,18 +270,12 @@ exports.deleteWorkout = async (req, res) => {
 
 exports.addWeight = async (req, res) => {
   try {
-    // Get userId either from request body or from auth token
-    let userId;
-
-    if (req.user && req.user.id) {
-      // For authenticated requests (/weights/add endpoint)
-      userId = req.user.id;
-    } else if (req.body.userId) {
-      // For backward compatibility with /weight-entry endpoint
-      userId = req.body.userId;
-    } else {
-      return res.status(400).send({ error: "User ID is required" });
+    // Always the authenticated user. Never trust a userId from the body —
+    // doing so let any caller write entries into someone else's log.
+    if (!req.user || !req.user.id) {
+      return res.status(401).send({ error: "Authentication required" });
     }
+    const userId = req.user.id;
 
     const { workoutId: rawWorkoutId, weight: rawWeight, templateId } = req.body;
 
@@ -377,11 +371,12 @@ exports.addWeight = async (req, res) => {
 exports.updateWeight = async (req, res) => {
   try {
     // Validate required parameters
-    const { userId, workoutId: rawWorkoutId, weight: rawWeight } = req.body;
+    const { workoutId: rawWorkoutId, weight: rawWeight } = req.body;
 
-    if (!userId) {
-      return res.status(400).send({ error: "userId is required" });
+    if (!req.user || !req.user.id) {
+      return res.status(401).send({ error: "Authentication required" });
     }
+    const userId = req.user.id;
 
     if (rawWorkoutId === undefined || rawWorkoutId === null) {
       return res.status(400).send({ error: "workoutId is required" });
@@ -447,10 +442,14 @@ exports.deleteWeight = async (req, res) => {
       return res.status(400).send({ error: "ID must be a valid number" });
     }
 
+    if (!req.user || !req.user.id) {
+      return res.status(401).send({ error: "Authentication required" });
+    }
+
     console.log("Deleting weight entry with ID:", id);
 
-    // Delete weight entry
-    const deleted = await db.deleteWeightEntry(id);
+    // Delete weight entry, scoped to the requesting user
+    const deleted = await db.deleteWeightEntry(id, req.user.id);
     if (!deleted) {
       return res.status(404).send({ error: "Weight entry not found" });
     }
