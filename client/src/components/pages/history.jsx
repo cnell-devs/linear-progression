@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Nav } from "../nav";
 import { api } from "../../utils/api";
+import { useWeightUnit } from "../../hooks/useWeightUnit";
 import { convertUtcToDateFormat } from "../../utils/date-formatter";
 import {
   groupSetsByWorkout,
@@ -15,7 +16,7 @@ const PAGE_SIZE = 20;
 
 // A finished workout, summarised the way you'd want to read it later: what you
 // did, per exercise, with the best set called out.
-const SessionCard = ({ session, onDelete }) => {
+const SessionCard = ({ session, onDelete, unit }) => {
   const groups = groupSetsByWorkout(session.sets);
   const completedSets = session.sets.filter(
     (s) => s.completed && !s.isWarmup
@@ -85,7 +86,7 @@ const SessionCard = ({ session, onDelete }) => {
                   {group.name}
                 </span>
                 <span className="flex-none font-mono text-xs opacity-70">
-                  {formatWeight(averageWeight(group.sets))} avg
+                  {formatWeight(averageWeight(group.sets), unit)} avg
                 </span>
               </div>
             );
@@ -97,6 +98,7 @@ const SessionCard = ({ session, onDelete }) => {
 };
 
 export function History() {
+  const unit = useWeightUnit();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -164,6 +166,7 @@ export function History() {
               key={session.id}
               session={session}
               onDelete={handleDelete}
+              unit={unit}
             />
           ))}
         </div>

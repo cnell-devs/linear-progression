@@ -13,6 +13,14 @@ enum Plan {
   PRO
 }
 
+// Weights are stored in pounds throughout — that is what every existing row
+// already holds — and converted at the edges for display and input. Storing
+// one canonical unit keeps history unambiguous when a user switches.
+enum WeightUnit {
+  LB
+  KG
+}
+
 enum SubscriptionStatus {
   ACTIVE
   EXPIRED
@@ -38,6 +46,7 @@ model Users {
   // Set for early users granted PRO without paying, so "paying" and
   // "granted" stay distinguishable in support and analytics.
   grandfatheredAt       DateTime?
+  weightUnit            WeightUnit        @default(LB)
   tokens                Token?
   weights               WeightEntry[]
   userWorkouts          UserWorkout[]     @relation("UserWorkouts")

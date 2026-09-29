@@ -6,6 +6,11 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState();
 
+  // Merge server-confirmed changes (e.g. preferences) into the session user
+  // without forcing a re-login.
+  const updateUser = (changes) =>
+    setUser((prev) => (prev ? { ...prev, ...changes } : prev));
+
   const signup = async (e, email, username, password, setSent, setErrors) => {
     e.preventDefault();
 
@@ -110,7 +115,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, signup, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

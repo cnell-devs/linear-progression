@@ -16,6 +16,7 @@ const {
   updateWorkout,
   deleteWorkout,
   validate,
+  updatePreferences,
   addWeight,
   passwordLink,
   verifyUrl,
@@ -84,6 +85,12 @@ router.delete(
   "/workouts/:id",
   passport.authenticate("jwt", { session: false }),
   deleteWorkout
+);
+
+router.patch(
+  "/me/preferences",
+  passport.authenticate("jwt", { session: false }),
+  updatePreferences
 );
 
 router.get(

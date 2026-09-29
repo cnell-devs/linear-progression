@@ -48,6 +48,13 @@ exports.getUserById = async (userId) => {
   }
 };
 
+exports.updatePreferences = async (userId, { weightUnit }) => {
+  return prisma.users.update({
+    where: { id: userId },
+    data: { ...(weightUnit ? { weightUnit } : {}) },
+  });
+};
+
 exports.updateLastLogin = async (userId) => {
   try {
     const user = await prisma.users.update({

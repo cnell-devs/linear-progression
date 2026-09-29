@@ -7,6 +7,7 @@ import {
   cachePrevious,
 } from "../../utils/localSession";
 import { averageWeight, formatWeight } from "../../utils/workout-display";
+import { useWeightUnit } from "../../hooks/useWeightUnit";
 import { convertUtcToDateFormat } from "../../utils/date-formatter";
 
 // One exercise inside the active session: its set rows, the "last time"
@@ -21,6 +22,7 @@ export const ExerciseCard = ({
   onRemoveExercise,
 }) => {
   const [previous, setPrevious] = useState(null);
+  const unit = useWeightUnit();
 
   useEffect(() => {
     let cancelled = false;
@@ -97,7 +99,7 @@ export const ExerciseCard = ({
                 <span>
                   {completedSets.length} set
                   {completedSets.length === 1 ? "" : "s"} ·{" "}
-                  {formatWeight(avgWeight)} avg
+                  {formatWeight(avgWeight, unit)} avg
                 </span>
               </div>
             )}

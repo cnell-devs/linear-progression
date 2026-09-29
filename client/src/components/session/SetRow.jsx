@@ -1,5 +1,10 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
+import { useWeightUnit } from "../../hooks/useWeightUnit";
+import {
+  toDisplayWeight,
+  fromInputWeight,
+} from "../../utils/workout-display";
 
 // One logged set. Weight/reps are kept in local state while the user types and
 // only pushed to the server on blur or on check-off, so every keystroke isn't
@@ -12,24 +17,28 @@ export const SetRow = ({
   onToggleComplete,
   onDelete,
 }) => {
-  const [weight, setWeight] = useState(set.weight ?? "");
+  const unit = useWeightUnit();
+  // The field shows the user's unit; the record stays in pounds.
+  const [weight, setWeight] = useState(
+    set.weight === undefined ? "" : toDisplayWeight(set.weight, unit)
+  );
   const [reps, setReps] = useState(set.reps ?? "");
 
   // Re-sync if the row is replaced by a server response (e.g. after a retry).
   useEffect(() => {
-    setWeight(set.weight ?? "");
+    setWeight(set.weight === undefined ? "" : toDisplayWeight(set.weight, unit));
     setReps(set.reps ?? "");
-  }, [set.weight, set.reps]);
+  }, [set.weight, set.reps, unit]);
 
   const commit = () => {
-    const nextWeight = weight === "" ? 0 : Number(weight);
+    const nextWeight = weight === "" ? 0 : fromInputWeight(weight, unit);
     const nextReps = reps === "" ? 0 : Number(reps);
     if (nextWeight === set.weight && nextReps === set.reps) return;
     onCommit({ weight: nextWeight, reps: nextReps });
   };
 
   const previousLabel = previous
-    ? `${previous.weight} × ${previous.reps}`
+    ? `${toDisplayWeight(previous.weight, unit)} × ${previous.reps}`
     : "—";
 
   return (
@@ -55,7 +64,7 @@ export const SetRow = ({
         onClick={() => {
           // Tapping "previous" copies last time's numbers in — the fastest
           // path when you're repeating a weight.
-          setWeight(previous.weight);
+          setWeight(toDisplayWeight(previous.weight, unit));
           setReps(previous.reps);
           onCommit({ weight: previous.weight, reps: previous.reps });
         }}
@@ -71,7 +80,7 @@ export const SetRow = ({
         min="0"
         className="input input-sm input-bordered w-full text-center text-base"
         value={weight}
-        placeholder={previous ? String(previous.weight) : "0"}
+        placeholder={previous ? String(toDisplayWeight(previous.weight, unit)) : "0"}
         onChange={(e) => setWeight(e.target.value)}
         onBlur={commit}
         aria-label={`Set ${index + 1} weight`}
@@ -95,7 +104,7 @@ export const SetRow = ({
             set.completed ? "btn-success" : "btn-ghost border border-base-300"
           }`}
           onClick={() => {
-            const nextWeight = weight === "" ? 0 : Number(weight);
+            const nextWeight = weight === "" ? 0 : fromInputWeight(weight, unit);
             const nextReps = reps === "" ? 0 : Number(reps);
             onToggleComplete({ weight: nextWeight, reps: nextReps });
           }}

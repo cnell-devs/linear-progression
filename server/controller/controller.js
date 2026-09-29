@@ -646,6 +646,23 @@ exports.deleteWorkoutTemplate = async (req, res) => {
   }
 };
 
+// Display preferences. Weights are stored in pounds regardless; this only
+// changes how they are shown and entered.
+exports.updatePreferences = async (req, res) => {
+  try {
+    const { weightUnit } = req.body;
+    if (weightUnit !== undefined && !["LB", "KG"].includes(weightUnit)) {
+      return res.status(400).send({ error: "weightUnit must be LB or KG" });
+    }
+    const user = await db.updatePreferences(req.user.id, { weightUnit });
+    const { password, ...safeUser } = user;
+    res.send(safeUser);
+  } catch (error) {
+    console.error("Error updating preferences:", error);
+    res.status(500).send({ error: "Failed to update preferences" });
+  }
+};
+
 exports.validate = (req, res) => {
   // Tokens issued before the fix above still carry a password hash, so strip
   // it here too rather than echoing it back.

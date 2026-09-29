@@ -14,8 +14,10 @@ import { api } from "../../utils/api";
 import {
   workoutName,
   formatWeight,
-  roundWeight,
+  toDisplayWeight,
+  unitLabel,
 } from "../../utils/workout-display";
+import { useWeightUnit } from "../../hooks/useWeightUnit";
 import { convertUtcToDateFormat } from "../../utils/date-formatter";
 
 // Weight alone hides progress made by adding reps, so the same history can be
@@ -52,6 +54,7 @@ const StatTile = ({ label, value, sub }) => (
 );
 
 export function Progress() {
+  const unit = useWeightUnit();
   const { workouts, isLoading } = useUserWorkouts();
   const [selectedId, setSelectedId] = useState(null);
   const [history, setHistory] = useState(null);
@@ -84,9 +87,9 @@ export function Progress() {
     () =>
       (history || []).map((entry) => ({
         x: convertUtcToDateFormat(entry.date),
-        y: entry[metric.key],
+        y: toDisplayWeight(entry[metric.key], unit),
       })),
-    [history, metric]
+    [history, metric, unit]
   );
 
   const latest = history?.length ? history[history.length - 1] : null;
@@ -163,17 +166,17 @@ export function Progress() {
                       on the first tile anchors the row. */}
                   <StatTile
                     label="Est. 1RM"
-                    value={`${latest.estimatedOneRepMax}`}
+                    value={`${toDisplayWeight(latest.estimatedOneRepMax, unit)}`}
                     sub={convertUtcToDateFormat(latest.date)}
                   />
                   <StatTile
                     label="Top Set"
-                    value={`${roundWeight(latest.topWeight)}`}
+                    value={`${toDisplayWeight(latest.topWeight, unit)}`}
                     sub={`${topSetReps} reps`}
                   />
                   <StatTile
                     label="Avg Weight"
-                    value={`${roundWeight(latest.avgWeight)}`}
+                    value={`${toDisplayWeight(latest.avgWeight, unit)}`}
                     sub={`${latest.sets.length} sets`}
                   />
                 </div>
@@ -224,7 +227,7 @@ export function Progress() {
                                   {accessors.yAccessor(
                                     tooltipData.nearestDatum.datum
                                   )}{" "}
-                                  {metric.unit}
+                                  {unitLabel(unit)}
                                 </div>
                               </div>
                             )}
@@ -249,7 +252,7 @@ export function Progress() {
                           {convertUtcToDateFormat(entry.date)}
                         </span>
                         <span className="text-xs opacity-60">
-                          {formatWeight(entry.avgWeight)} avg
+                          {formatWeight(entry.avgWeight, unit)} avg
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1">
@@ -258,7 +261,7 @@ export function Progress() {
                             key={set.setNumber}
                             className="badge badge-ghost badge-sm font-mono"
                           >
-                            {set.weight} × {set.reps}
+                            {toDisplayWeight(set.weight, unit)} × {set.reps}
                           </span>
                         ))}
                       </div>

@@ -48,11 +48,26 @@ export const groupSetsByWorkout = (sets = []) => {
 export const roundWeight = (weight) =>
   Math.round((Number(weight) || 0) * 100) / 100;
 
+const LB_PER_KG = 2.2046226218;
+
+// Weights are stored in pounds everywhere. Conversion happens only at the
+// edges — what the user reads and what they type — so history is never
+// reinterpreted when the preference changes.
+export const toDisplayWeight = (lb, unit = "LB") =>
+  unit === "KG" ? roundWeight(Number(lb || 0) / LB_PER_KG) : roundWeight(lb);
+
+export const fromInputWeight = (value, unit = "LB") => {
+  const n = Number(value) || 0;
+  return unit === "KG" ? roundWeight(n * LB_PER_KG) : roundWeight(n);
+};
+
+export const unitLabel = (unit = "LB") => (unit === "KG" ? "kg" : "lbs");
+
 // Trailing zeros are noise on a weight: 185 not 185.00, but 137.5 kept.
-export const formatWeight = (weight) =>
-  `${roundWeight(weight).toLocaleString(undefined, {
+export const formatWeight = (weight, unit = "LB") =>
+  `${toDisplayWeight(weight, unit).toLocaleString(undefined, {
     maximumFractionDigits: 2,
-  })} lbs`;
+  })} ${unitLabel(unit)}`;
 
 export const formatDuration = (startedAt, finishedAt) => {
   if (!startedAt) return "";
