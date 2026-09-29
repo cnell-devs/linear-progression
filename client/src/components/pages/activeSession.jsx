@@ -9,6 +9,10 @@ import { useSession } from "../../hooks/useSession";
 import { useTemplates } from "../../hooks/useTemplates";
 import { api } from "../../utils/api";
 import {
+  cachePrevious,
+  readCachedPrevious,
+} from "../../utils/localSession";
+import {
   groupSetsByWorkout,
   formatDuration,
   workoutName,
@@ -119,14 +123,28 @@ export function ActiveSession() {
       // Prefill a row per prescribed set so the user only types numbers.
       if (templateId) {
         const template = userTemplates.find((t) => t.id === templateId);
-        for (const tw of template?.templateWorkouts || []) {
-          if (!tw.userWorkoutId) continue;
-          const last = await api(
-            `/sessions/last/${tw.userWorkoutId}?excludeSession=${created.id}`
-          ).catch(() => null);
+        const prescribed = (template?.templateWorkouts || []).filter(
+          (tw) => tw.userWorkoutId
+        );
 
+        // A session created on this device has no saved sets, so there is
+        // nothing to exclude. Fetched in parallel, and falling back to the
+        // cached value so starting a workout works without signal.
+        const previous = await Promise.all(
+          prescribed.map((tw) =>
+            api(`/sessions/last/${tw.userWorkoutId}`)
+              .then((data) => {
+                cachePrevious(tw.userWorkoutId, data);
+                return data;
+              })
+              .catch(() => readCachedPrevious(tw.userWorkoutId))
+          )
+        );
+
+        for (const [index, tw] of prescribed.entries()) {
+          const last = previous[index];
           for (let i = 0; i < (tw.sets || 1); i++) {
-            await addSet(created.id, {
+            await addSet(created.clientId, {
               userWorkoutId: tw.userWorkoutId,
               setNumber: i + 1,
               weight: last?.sets?.[i]?.weight ?? last?.sets?.[0]?.weight ?? 0,

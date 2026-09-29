@@ -214,6 +214,10 @@ exports.syncSession = async (userId, payload) => {
 // session they're in right now. Drives the "last time" reference shown
 // next to each set while logging.
 exports.getLastPerformance = async (userWorkoutId, userId, excludeSessionId) => {
+  // Comes straight off the query string, so it may be absent or junk; only
+  // apply the exclusion when it is actually an id.
+  const excludeId = parseInt(excludeSessionId);
+  const hasExclude = Number.isInteger(excludeId);
   const lastSet = await prisma.workoutSet.findFirst({
     where: {
       userWorkoutId: parseInt(userWorkoutId),
@@ -223,9 +227,7 @@ exports.getLastPerformance = async (userWorkoutId, userId, excludeSessionId) => 
       isWarmup: false,
       session: {
         userId,
-        ...(excludeSessionId
-          ? { id: { not: parseInt(excludeSessionId) } }
-          : {}),
+        ...(hasExclude ? { id: { not: excludeId } } : {}),
       },
     },
     orderBy: [{ session: { date: "desc" } }, { createdAt: "desc" }],
