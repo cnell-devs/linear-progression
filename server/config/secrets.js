@@ -35,9 +35,22 @@ const requireSecret = (name) => {
 // Sessions last a month: this is a phone app people open at the gym, and
 // there is no refresh-token flow to lean on. Verification and password-reset
 // links are short-lived, matching the one hour the tokens table already uses.
+const JWT_SECRET = requireSecret("JWT_SECRET");
+const JWT_VERIFY_SECRET = requireSecret("JWT_VERIFY_SECRET");
+
+// The two must differ. Sharing a value makes a password-reset token — which
+// travels by email, lands in browser history, and is stored in the tokens
+// table — verify as a session token, granting full API access for 30 days.
+if (JWT_SECRET === JWT_VERIFY_SECRET) {
+  throw new Error(
+    "JWT_SECRET and JWT_VERIFY_SECRET must be different values. Sharing one " +
+      "lets a password-reset link be used as a full session token."
+  );
+}
+
 module.exports = {
-  JWT_SECRET: requireSecret("JWT_SECRET"),
-  JWT_VERIFY_SECRET: requireSecret("JWT_VERIFY_SECRET"),
+  JWT_SECRET,
+  JWT_VERIFY_SECRET,
   SESSION_EXPIRES_IN: "30d",
   LINK_EXPIRES_IN: "1h",
 };
