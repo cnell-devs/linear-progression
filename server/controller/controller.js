@@ -324,7 +324,7 @@ exports.addWeight = async (req, res) => {
     console.log("Parsed workoutId:", workoutId, "type:", typeof workoutId);
 
     // Parse and validate weight
-    const weight = parseInt(rawWeight);
+    const weight = parseFloat(rawWeight);
     if (isNaN(weight)) {
       return res.status(400).send({ error: "weight must be a valid number" });
     }
@@ -422,7 +422,7 @@ exports.updateWeight = async (req, res) => {
     }
 
     // Parse and validate weight
-    const weight = parseInt(rawWeight);
+    const weight = parseFloat(rawWeight);
     if (isNaN(weight)) {
       return res.status(400).send({ error: "weight must be a valid number" });
     }

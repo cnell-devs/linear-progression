@@ -11,7 +11,11 @@ import { ParentSize } from "@visx/responsive";
 import { Nav } from "../nav";
 import { useUserWorkouts } from "../hooks/useUserWorkouts";
 import { api } from "../../utils/api";
-import { workoutName, formatWeight } from "../../utils/workout-display";
+import {
+  workoutName,
+  formatWeight,
+  roundWeight,
+} from "../../utils/workout-display";
 import { convertUtcToDateFormat } from "../../utils/date-formatter";
 
 // Weight alone hides progress made by adding reps, so the same history can be
@@ -164,12 +168,12 @@ export function Progress() {
                   />
                   <StatTile
                     label="Top Set"
-                    value={`${latest.topWeight}`}
+                    value={`${roundWeight(latest.topWeight)}`}
                     sub={`${topSetReps} reps`}
                   />
                   <StatTile
                     label="Avg Weight"
-                    value={`${latest.avgWeight}`}
+                    value={`${roundWeight(latest.avgWeight)}`}
                     sub={`${latest.sets.length} sets`}
                   />
                 </div>

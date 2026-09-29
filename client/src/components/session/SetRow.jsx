@@ -67,6 +67,8 @@ export const SetRow = ({
       <input
         type="number"
         inputMode="decimal"
+        step="any"
+        min="0"
         className="input input-sm input-bordered w-full text-center text-base"
         value={weight}
         placeholder={previous ? String(previous.weight) : "0"}

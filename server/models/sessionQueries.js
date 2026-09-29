@@ -96,7 +96,7 @@ exports.addSet = async (sessionId, data) => {
       sessionId: parseInt(sessionId),
       userWorkoutId: parseInt(data.userWorkoutId),
       setNumber: parseInt(data.setNumber),
-      weight: parseInt(data.weight),
+      weight: parseFloat(data.weight),
       reps: parseInt(data.reps),
       rpe: data.rpe === undefined || data.rpe === null ? null : parseInt(data.rpe),
       isWarmup: Boolean(data.isWarmup),
@@ -227,11 +227,14 @@ exports.getWorkoutHistory = async (userWorkoutId, userId) => {
 
   // Mean load across the session's working sets, rounded to whole pounds.
   for (const entry of bySession.values()) {
+    // Rounded to two decimals, not to a whole number: a session of 137.5 and
+    // 140 averages 138.75, and reporting 139 would be wrong.
     entry.avgWeight = entry.sets.length
       ? Math.round(
-          entry.sets.reduce((total, s) => total + s.weight, 0) /
-            entry.sets.length
-        )
+          (entry.sets.reduce((total, s) => total + s.weight, 0) /
+            entry.sets.length) *
+            100
+        ) / 100
       : 0;
   }
 

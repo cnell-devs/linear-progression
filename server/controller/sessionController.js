@@ -91,13 +91,16 @@ exports.addSet = async (req, res) => {
       return res.status(403).send({ error: "Workout does not belong to user" });
     }
 
-    const numericFields = { setNumber, weight, reps };
-    for (const [field, value] of Object.entries(numericFields)) {
+    for (const [field, value] of Object.entries({ setNumber, reps })) {
       if (value === undefined || value === null || isNaN(parseInt(value))) {
-        return res.status(400).send({ error: `${field} must be a number` });
+        return res.status(400).send({ error: `${field} must be a whole number` });
       }
     }
-    if (parseInt(weight) < 0 || parseInt(reps) < 0) {
+    // Weight is fractional — 2.5 lb and 1.25 kg increments are normal.
+    if (weight === undefined || weight === null || isNaN(parseFloat(weight))) {
+      return res.status(400).send({ error: "weight must be a number" });
+    }
+    if (parseFloat(weight) < 0 || parseInt(reps) < 0) {
       return res.status(400).send({ error: "weight and reps cannot be negative" });
     }
 
@@ -114,18 +117,21 @@ exports.updateSet = async (req, res) => {
     const { weight, reps, rpe, setNumber, completed, isWarmup } = req.body;
 
     const data = {};
-    for (const [field, value] of Object.entries({
-      weight,
-      reps,
-      setNumber,
-    })) {
+    for (const [field, value] of Object.entries({ reps, setNumber })) {
       if (value !== undefined) {
         const parsed = parseInt(value);
         if (isNaN(parsed)) {
-          return res.status(400).send({ error: `${field} must be a number` });
+          return res.status(400).send({ error: `${field} must be a whole number` });
         }
         data[field] = parsed;
       }
+    }
+    if (weight !== undefined) {
+      const parsed = parseFloat(weight);
+      if (isNaN(parsed)) {
+        return res.status(400).send({ error: "weight must be a number" });
+      }
+      data.weight = parsed;
     }
     if (rpe !== undefined) data.rpe = rpe === null ? null : parseInt(rpe);
     if (completed !== undefined) data.completed = Boolean(completed);

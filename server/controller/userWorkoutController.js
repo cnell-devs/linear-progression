@@ -195,7 +195,7 @@ exports.addUserWorkoutWeight = async (req, res) => {
     const weightEntry = await userWorkoutQueries.addUserWorkoutWeight({
       userId,
       userWorkoutId: parseInt(userWorkoutId),
-      weight: parseInt(weight),
+      weight: parseFloat(weight),
       date,
       templateId: templateId ? parseInt(templateId) : undefined,
     });

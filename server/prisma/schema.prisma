@@ -8,6 +8,19 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum Plan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  GRACE_PERIOD
+  BILLING_RETRY
+  REVOKED
+}
+
 model Users {
   id                    String            @id @default(uuid())
   admin                 Boolean           @default(false)
@@ -16,14 +29,47 @@ model Users {
   email                 String?           @unique
   verified              Boolean           @default(false)
   lastLogin             DateTime          @default(now()) @db.Date
+  // Entitlement is denormalised onto the user because the JWT strategy
+  // already loads this row on every authenticated request, so reading it
+  // costs nothing extra. Subscription below is the audit trail.
+  // A null planExpiresAt on a PRO user means it never lapses.
+  plan                  Plan              @default(FREE)
+  planExpiresAt         DateTime?
+  // Set for early users granted PRO without paying, so "paying" and
+  // "granted" stay distinguishable in support and analytics.
+  grandfatheredAt       DateTime?
   tokens                Token?
   weights               WeightEntry[]
   userWorkouts          UserWorkout[]     @relation("UserWorkouts")
   createdGlobalWorkouts GlobalWorkout[]   @relation("CreatedGlobalWorkouts")
   WorkoutTemplate       WorkoutTemplate[]
   sessions              WorkoutSession[]
+  subscriptions         Subscription[]
 
   @@map("users")
+}
+
+// One row per store subscription. Written by the store's server-to-server
+// notifications, never by the client — otherwise refunds and cancellations
+// would never revoke access.
+model Subscription {
+  id                    String             @id @default(uuid())
+  userId                String
+  store                 String // "apple" | "google" | "stripe"
+  productId             String
+  originalTransactionId String             @unique // stable per subscriber
+  status                SubscriptionStatus
+  expiresAt             DateTime?
+  autoRenew             Boolean            @default(true)
+  // Sandbox receipts must never grant production entitlement.
+  environment           String             @default("production")
+  lastVerifiedAt        DateTime           @default(now())
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  user                  Users              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("subscription")
 }
 
 // Global canonical workouts - shared across all users
@@ -70,6 +116,7 @@ model UserWorkout {
   templateWorkouts TemplateWorkout[]
   sets             WorkoutSet[]
 
+  @@index([userId])
   @@map("user_workouts")
 }
 
@@ -99,6 +146,7 @@ model WorkoutTemplate {
   sessions         WorkoutSession[]
   user             Users             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("workout_template")
 }
 
@@ -129,7 +177,7 @@ model WorkoutSet {
   sessionId     Int
   userWorkoutId Int
   setNumber     Int
-  weight        Int
+  weight        Float
   reps          Int
   rpe           Int?
   isWarmup      Boolean        @default(false)
@@ -149,7 +197,7 @@ model WeightEntry {
   userId        String
   userWorkoutId Int? // New user workout reference
   templateId    Int?
-  weight        Int
+  weight        Float
   date          DateTime         @default(now()) @db.Date
   user          Users            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userWorkout   UserWorkout?     @relation(fields: [userWorkoutId], references: [id], onDelete: Cascade)
