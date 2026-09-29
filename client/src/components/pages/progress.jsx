@@ -85,13 +85,6 @@ export function Progress() {
     [history, metric]
   );
 
-  const personalBest = useMemo(() => {
-    if (!history?.length) return null;
-    return history.reduce((best, entry) =>
-      entry.estimatedOneRepMax > best.estimatedOneRepMax ? entry : best
-    );
-  }, [history]);
-
   const latest = history?.length ? history[history.length - 1] : null;
 
   // Reps achieved at the heaviest weight of the most recent session.
@@ -162,18 +155,20 @@ export function Progress() {
             {!loadingHistory && history?.length > 0 && (
               <>
                 <div className="mb-4 grid grid-cols-3 gap-2">
+                  {/* All three describe the most recent session; the date
+                      on the first tile anchors the row. */}
                   <StatTile
-                    label="Best 1RM"
-                    value={`${personalBest.estimatedOneRepMax}`}
-                    sub={convertUtcToDateFormat(personalBest.date)}
+                    label="Est. 1RM"
+                    value={`${latest.estimatedOneRepMax}`}
+                    sub={convertUtcToDateFormat(latest.date)}
                   />
                   <StatTile
-                    label="Last Top Set"
+                    label="Top Set"
                     value={`${latest.topWeight}`}
                     sub={`${topSetReps} reps`}
                   />
                   <StatTile
-                    label="Last Avg Weight"
+                    label="Avg Weight"
                     value={`${latest.avgWeight}`}
                     sub={`${latest.sets.length} sets`}
                   />
