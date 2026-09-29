@@ -1,6 +1,9 @@
 const { Router } = require("express");
 const passport = require("passport");
 const { weightEntry } = require("./weight-entry");
+const { password } = require("./password");
+const { userWorkouts } = require("./userWorkouts");
+const { sessions } = require("./sessions");
 const {
   home,
   logInPost,
@@ -21,14 +24,34 @@ const {
   getWorkoutTemplate,
   updateWorkoutTemplate,
   deleteWorkoutTemplate,
-  getUserPreferences,
-  updateTemplateOrder,
 } = require("../controller/controller");
 
 const router = Router();
 
-// Mount the weight-entry router
-router.use("/weight-entry", weightEntry);
+// Mount the weight-entry router. Authenticated: these handlers read and
+// destroy per-user weight entries.
+router.use(
+  "/weight-entry",
+  passport.authenticate("jwt", { session: false }),
+  weightEntry
+);
+
+// Mount the password recovery router
+router.use("/recovery", password);
+
+// Mount the new user workouts router (v2 API)
+router.use(
+  "/v2/workouts",
+  passport.authenticate("jwt", { session: false }),
+  userWorkouts
+);
+
+// Session + per-set tracking
+router.use(
+  "/sessions",
+  passport.authenticate("jwt", { session: false }),
+  sessions
+);
 
 router.get("/", home);
 router.post("/login", logInPost);
@@ -68,13 +91,11 @@ router.get(
   validate
 );
 
-router.post("/weight-entry", addWeight);
 router.post(
   "/weights/add",
   passport.authenticate("jwt", { session: false }),
   addWeight
 );
-router.post("/recovery", passwordLink);
 router.get("/verify", verifyUrl);
 router.delete("/delete", deleteUser);
 
@@ -103,18 +124,6 @@ router.delete(
   "/templates/:id",
   passport.authenticate("jwt", { session: false }),
   deleteWorkoutTemplate
-);
-
-// User Preferences routes
-router.get(
-  "/preferences",
-  passport.authenticate("jwt", { session: false }),
-  getUserPreferences
-);
-router.put(
-  "/preferences/template-order",
-  passport.authenticate("jwt", { session: false }),
-  updateTemplateOrder
 );
 
 module.exports = router;

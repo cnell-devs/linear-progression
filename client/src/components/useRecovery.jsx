@@ -2,16 +2,9 @@ import { useParams } from "react-router-dom";
 
 export const useRecovery = () => {
   const sendEmail = async (email, setSent, setErrors) => {
-    const url = false;
-    // params === "all"
-    //   ? `${import.meta.env.VITE_API_URL}/workouts`
-    //   : `${import.meta.env.VITE_API_URL}/workouts?split=${params.get(
-    //       "split"
-    //     )}&alt=${params.get("alt")}`;
-
     try {
       const response = await fetch(
-        url || `${import.meta.env.VITE_API_URL}/recovery/password-reset`,
+        `${import.meta.env.VITE_API_URL}/recovery/password-reset`,
         {
           method: "POST",
           headers: {
@@ -22,8 +15,6 @@ export const useRecovery = () => {
       );
 
       if (!response.ok) {
-
-
         setErrors(await response.json());
         setSent(false);
         return;
@@ -37,14 +28,9 @@ export const useRecovery = () => {
 
   const params = useParams();
   const resetPassword = async (password) => {
-    const url = false;
-
     try {
       const response = await fetch(
-        url ||
-          `${import.meta.env.VITE_API_URL}/recovery/${params.id}/${
-            params.token
-          }`,
+        `${import.meta.env.VITE_API_URL}/recovery/${params.id}/${params.token}`,
         {
           method: "POST",
           headers: {

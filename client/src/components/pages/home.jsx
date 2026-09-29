@@ -1,144 +1,62 @@
 import { Link } from "react-router-dom";
 import { Nav } from "../nav";
-import { useTemplates } from "../templates/useTemplates";
-import { useState } from "react";
+import { useAuth } from "../auth/authContext";
+import { TemplatesAndExercises } from "../templates/TemplatesAndExercises";
 
 export function Home() {
-  const { allTemplates, loading } = useTemplates();
-  const [isPullModalOpen, setIsPullModalOpen] = useState(false);
-  const [isTemplatesExpanded, setIsTemplatesExpanded] = useState(false);
+  const { user } = useAuth();
 
+  // Landing page for signed-out visitors.
+  if (!user) {
+    return (
+      <>
+        <Nav />
+        <div className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
+          <div className="w-full max-w-2xl text-center">
+            <h1 className="mb-6 text-5xl font-bold">Linear Progression</h1>
+            <p className="mb-8 text-xl text-gray-600">
+              Track your workouts, build templates, and achieve your fitness
+              goals with our simple and powerful workout tracking app.
+            </p>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Link to="/signup" className="btn btn-primary btn-lg">
+                Get Started
+              </Link>
+              <Link to="/login" className="btn btn-secondary btn-lg">
+                Sign In
+              </Link>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Signed in: templates and the exercise library are the landing content,
+  // since starting a workout is the reason to open the app.
   return (
     <>
       <Nav />
-      <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-screen">
-        <div className="w-full max-w-md">
-          <ul className="menu bg-base-200 rounded-box w-full mb-8">
-            <li className="menu-title">Today's Split</li>
-            <Link
-              to="/exercises?defaultTemplate=default-push"
-              className="flex mb-2"
-            >
-              <button className="btn flex-1">Push</button>
-            </Link>
-            <div className="flex mb-2">
-              <button
-                className="btn flex-1"
-                onClick={() => setIsPullModalOpen(true)}
-              >
-                Pull
-              </button>
-            </div>
-            <Link
-              to="/exercises?defaultTemplate=default-legs"
-              className="flex mb-2"
-            >
-              <button className="btn flex-1">Legs</button>
-            </Link>
-          </ul>
-
-          <div className="bg-base-200 rounded-box p-4 w-full mb-8">
-            <div
-              className="flex justify-between items-center cursor-pointer"
-              onClick={() => setIsTemplatesExpanded(!isTemplatesExpanded)}
-            >
-              <h2 className="text-xl font-bold">Workout Templates</h2>
-              <span className="material-icons">
-                {isTemplatesExpanded ? "expand_less" : "expand_more"}
-              </span>
-            </div>
-
-            {isTemplatesExpanded && (
-              <>
-                {loading ? (
-                  <div className="spinner-box mt-4">
-                    <span className="material-icons animate-spin spinner text-4xl">
-                      refresh
-                    </span>
-                  </div>
-                ) : (
-                  <div className="grid gap-3 mt-4">
-                    {allTemplates.map((template) => (
-                      <div
-                        key={template.id}
-                        className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow"
-                      >
-                        <div className="card-body p-4">
-                          <h3 className="card-title text-lg">
-                            {template.name}
-                            {template.isDefault && (
-                              <span className="badge badge-sm ml-2">
-                                Default
-                              </span>
-                            )}
-                          </h3>
-                          {template.description && (
-                            <p className="text-sm text-gray-500 mb-2">
-                              {template.description}
-                            </p>
-                          )}
-                          <p className="text-xs text-gray-400 mt-1">
-                            {template.workouts.length} workout
-                            {template.workouts.length !== 1 ? "s" : ""}
-                          </p>
-                          <div className="card-actions justify-end mt-2">
-                            <Link
-                              to={
-                                template.isDefault
-                                  ? `/exercises?defaultTemplate=${template.id}`
-                                  : `/exercises?template=${template.id}`
-                              }
-                              className="btn btn-sm btn-primary"
-                            >
-                              Use Template
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+      <div className="mx-auto max-w-2xl px-4 pb-24 pt-4">
+        <div className="mb-6 text-center">
+          {/* Same plain-text treatment as the old title bar, scaled down.
+              The full name is kept for screen readers so they don't announce
+              the mark letter by letter. */}
+          <div className="mb-4 text-lg">
+            <span aria-hidden="true">LP</span>
+            <span className="sr-only">Linear Progression</span>
           </div>
+          <h1 className="mb-2 text-3xl font-bold sm:text-4xl">Welcome back!</h1>
+          <p className="text-base text-gray-600 sm:text-xl">
+            Ready to continue your fitness journey?
+          </p>
+        </div>
+
+        <div className="rounded-box bg-base-200 p-4 sm:p-6">
+          <TemplatesAndExercises />
         </div>
       </div>
-
-      {/* Pull Workout Selection Modal */}
-      {isPullModalOpen && (
-        <dialog open className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">Choose Pull Workout</h3>
-            <p className="py-4">
-              Select the pull workout variation you want to do today.
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              <Link
-                to="/exercises?defaultTemplate=default-pull"
-                className="btn btn-primary"
-                onClick={() => setIsPullModalOpen(false)}
-              >
-                Primary
-              </Link>
-              <Link
-                to="/exercises?defaultTemplate=default-pull-alt"
-                className="btn btn-outline"
-                onClick={() => setIsPullModalOpen(false)}
-              >
-                Alt
-              </Link>
-            </div>
-            <div className="modal-action">
-              <button className="btn" onClick={() => setIsPullModalOpen(false)}>
-                Cancel
-              </button>
-            </div>
-          </div>
-          <form method="dialog" className="modal-backdrop">
-            <button onClick={() => setIsPullModalOpen(false)}>close</button>
-          </form>
-        </dialog>
-      )}
     </>
   );
 }

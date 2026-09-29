@@ -1,12 +1,12 @@
-import {  useState } from "react";
+import { useState } from "react";
 import { Nav } from "../nav";
 
 import { useAuth } from "../auth/authContext";
 import { useRecovery } from "../useRecovery";
 
 export const ResetPassword = () => {
-    const [password, setPassword] = useState("");
-    const [changed, setChanged] = useState()
+  const [password, setPassword] = useState("");
+  const [changed, setChanged] = useState();
   const [loginError, setLoginError] = useState("");
   const { user } = useAuth();
   const { resetPassword } = useRecovery();
@@ -14,15 +14,12 @@ export const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const result = resetPassword(password);
-
-        setChanged(result);
-
+      const result = await resetPassword(password);
+      setChanged(result);
     } catch (err) {
       setLoginError(err.message);
     }
   };
-
 
   return (
     !user && (
