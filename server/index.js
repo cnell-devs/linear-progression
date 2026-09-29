@@ -4,6 +4,7 @@ const express = require("express");
 const app = express();
 const passport = require("./config/passport.js");
 const router = require("./routes/routes.js");
+const { apiLimiter } = require("./config/rateLimit.js");
 
 if (process.env.NODE_ENV === "development") {
   // Default to development if NODE_ENV is not set
@@ -43,6 +44,12 @@ app.use(
     credentials: true, // Include cookies if needed
   })
 );
+
+// Vercel terminates TLS upstream, so the client IP is in X-Forwarded-For.
+// Without this every request appears to come from the same address and the
+// rate limiter would throttle all users collectively.
+app.set("trust proxy", 1);
+app.use(apiLimiter);
 
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));

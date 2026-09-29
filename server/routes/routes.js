@@ -4,6 +4,7 @@ const { weightEntry } = require("./weight-entry");
 const { password } = require("./password");
 const { userWorkouts } = require("./userWorkouts");
 const { sessions } = require("./sessions");
+const { authLimiter, emailLimiter } = require("../config/rateLimit");
 const {
   home,
   logInPost,
@@ -37,7 +38,7 @@ router.use(
 );
 
 // Mount the password recovery router
-router.use("/recovery", password);
+router.use("/recovery", emailLimiter, password);
 
 // Mount the new user workouts router (v2 API)
 router.use(
@@ -54,8 +55,8 @@ router.use(
 );
 
 router.get("/", home);
-router.post("/login", logInPost);
-router.post("/signup", signUpPost);
+router.post("/login", authLimiter, logInPost);
+router.post("/signup", authLimiter, signUpPost);
 router.get("/logout", logout);
 
 // Workout routes

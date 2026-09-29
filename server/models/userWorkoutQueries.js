@@ -1,6 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
+const prisma = require("./prisma");
 
 // Search for global workouts by name with autocomplete
 exports.searchGlobalWorkouts = async (query, limit = 10) => {

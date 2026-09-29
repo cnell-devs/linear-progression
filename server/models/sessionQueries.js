@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("./prisma");
 
 // Everything the client needs to render a session card / logger screen.
 const sessionInclude = {
