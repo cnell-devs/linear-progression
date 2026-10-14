@@ -226,6 +226,8 @@ exports.getLastPerformance = async (userWorkoutId, userId, excludeSessionId) => 
       isWarmup: false,
       session: {
         userId,
+        // A workout still in progress is not a result yet.
+        finishedAt: { not: null },
         ...(hasExclude ? { id: { not: excludeId } } : {}),
       },
     },
@@ -259,7 +261,11 @@ exports.getWorkoutHistory = async (userWorkoutId, userId) => {
   const sets = await prisma.workoutSet.findMany({
     where: {
       userWorkoutId: parseInt(userWorkoutId),
-      session: { userId },
+      // Only finished workouts count, matching History and the overview.
+      // Counting an in-progress session made Progress disagree with them:
+      // a set logged in an unfinished workout showed as the latest result
+      // while the overview still reported the previous session's best.
+      session: { userId, finishedAt: { not: null } },
       isWarmup: false,
       // Rows the user left unchecked were never performed, so they must not
       // inflate volume, rep counts, or the 1RM estimate.
