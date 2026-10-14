@@ -18,6 +18,7 @@ import {
   unitLabel,
 } from "../../utils/workout-display";
 import { useWeightUnit } from "../../hooks/useWeightUnit";
+import { ProgressOverview } from "./ProgressOverview";
 import { convertUtcToDateFormat } from "../../utils/date-formatter";
 
 // Weight alone hides progress made by adding reps, so the same history can be
@@ -61,10 +62,22 @@ export function Progress() {
   const [metric, setMetric] = useState(METRICS[0]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Default to the first exercise so the page isn't an empty dropdown.
+  const [overview, setOverview] = useState(null);
+  const [loadingOverview, setLoadingOverview] = useState(true);
+
+  // Nothing is preselected: picking the first exercise alphabetically told
+  // the user nothing. The overview answers "how am I doing overall" first,
+  // and doubles as navigation into any single exercise.
   useEffect(() => {
-    if (!selectedId && workouts?.length) setSelectedId(workouts[0].id);
-  }, [workouts, selectedId]);
+    let cancelled = false;
+    api("/sessions/overview")
+      .then((data) => !cancelled && setOverview(data))
+      .catch((err) => console.error("Failed to load overview:", err))
+      .finally(() => !cancelled && setLoadingOverview(false));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!selectedId) return;
@@ -107,6 +120,14 @@ export function Progress() {
 
   const accessors = { xAccessor: (d) => d.x, yAccessor: (d) => d.y };
 
+  // At most four labels, always including the first and last session.
+  const axisTicks = useMemo(() => {
+    const n = chartData.length;
+    if (n <= 4) return chartData.map((d) => d.x);
+    const step = (n - 1) / 3;
+    return [...new Set([0, 1, 2, 3].map((i) => chartData[Math.round(i * step)].x))];
+  }, [chartData]);
+
   return (
     <>
       <Nav />
@@ -116,16 +137,31 @@ export function Progress() {
         <select
           className="select select-bordered mb-4 w-full text-base"
           value={selectedId || ""}
-          onChange={(e) => setSelectedId(parseInt(e.target.value))}
+          onChange={(e) =>
+            setSelectedId(e.target.value ? parseInt(e.target.value) : null)
+          }
           disabled={isLoading}
         >
-          {isLoading && <option>Loading exercises...</option>}
+          <option value="">
+            {isLoading ? "Loading exercises..." : "Select an exercise"}
+          </option>
           {(workouts || []).map((workout) => (
             <option key={workout.id} value={workout.id}>
               {workoutName(workout)}
             </option>
           ))}
         </select>
+
+        {!selectedId &&
+          (loadingOverview ? (
+            <div className="py-12 text-center opacity-60">Loading...</div>
+          ) : overview && overview.totals.workouts > 0 ? (
+            <ProgressOverview
+              data={overview}
+              unit={unit}
+              onSelect={setSelectedId}
+            />
+          ) : null)}
 
         {!isLoading && !workouts?.length && (
           <div className="rounded-lg border border-dashed p-8 text-center text-sm opacity-60">
@@ -202,9 +238,12 @@ export function Progress() {
                         >
                           <AnimatedGrid columns={false} numTicks={4} />
                           <AnimatedAxis orientation="left" numTicks={5} />
+                          {/* A band scale ignores numTicks and renders every
+                              label, which overlaps into gibberish past a few
+                              sessions. Pick evenly spaced dates explicitly. */}
                           <AnimatedAxis
                             orientation="bottom"
-                            numTicks={Math.min(4, chartData.length)}
+                            tickValues={axisTicks}
                           />
                           <AnimatedLineSeries
                             dataKey={metric.label}

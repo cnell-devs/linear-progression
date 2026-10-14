@@ -11,6 +11,7 @@ const {
   deleteSet,
   getLastPerformance,
   getWorkoutHistory,
+  getOverview,
   syncSession,
 } = require("../controller/sessionController");
 
@@ -24,6 +25,8 @@ sessions.get("/", getSessions);
 sessions.put("/sync", syncSession);
 sessions.post("/", createSession);
 
+// Literal paths before "/:id".
+sessions.get("/overview", getOverview);
 sessions.get("/history/:workoutId", getWorkoutHistory);
 sessions.get("/last/:workoutId", getLastPerformance);
 

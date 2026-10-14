@@ -317,3 +317,116 @@ exports.getWorkoutHistory = async (userWorkoutId, userId) => {
 
   return Array.from(bySession.values());
 };
+
+// Cross-exercise summary for the Progress landing view: one query plus
+// in-memory grouping, rather than a history request per exercise.
+//
+// Progression is measured on top weight rather than estimated 1RM. Weight is
+// exact for every row, whereas reps on imported sessions are inferred, so an
+// exercise would appear to leap forward purely by crossing from imported to
+// logged data. Ranking on weight keeps the comparison honest.
+exports.getOverview = async (userId) => {
+  const sets = await prisma.workoutSet.findMany({
+    where: {
+      session: { userId, finishedAt: { not: null } },
+      isWarmup: false,
+      completed: true,
+    },
+    select: {
+      weight: true,
+      reps: true,
+      userWorkoutId: true,
+      session: { select: { id: true, date: true } },
+      userWorkout: {
+        select: { customName: true, globalWorkout: { select: { name: true } } },
+      },
+    },
+    orderBy: { session: { date: "asc" } },
+  });
+
+  const sessionIds = new Set();
+  const lifetimeVolume = sets.reduce((total, s) => {
+    sessionIds.add(s.session.id);
+    return total + s.weight * s.reps;
+  }, 0);
+
+  // Group by exercise, tracking per-session top weight in date order.
+  const byExercise = new Map();
+  for (const s of sets) {
+    const name =
+      s.userWorkout.customName || s.userWorkout.globalWorkout?.name || "Unknown";
+    if (!byExercise.has(s.userWorkoutId)) {
+      byExercise.set(s.userWorkoutId, {
+        userWorkoutId: s.userWorkoutId,
+        name,
+        sets: 0,
+        sessions: new Map(), // sessionId -> { date, topWeight }
+      });
+    }
+    const ex = byExercise.get(s.userWorkoutId);
+    ex.sets += 1;
+    const prev = ex.sessions.get(s.session.id);
+    if (!prev || s.weight > prev.topWeight) {
+      ex.sessions.set(s.session.id, { date: s.session.date, topWeight: s.weight });
+    }
+  }
+
+  const exercises = [...byExercise.values()].map((ex) => {
+    const points = [...ex.sessions.values()].sort((a, b) => a.date - b.date);
+    const first = points[0];
+    const latest = points[points.length - 1];
+    const best = points.reduce((m, p) => Math.max(m, p.topWeight), 0);
+    const change = points.length > 1 ? latest.topWeight - first.topWeight : 0;
+    return {
+      userWorkoutId: ex.userWorkoutId,
+      name: ex.name,
+      sets: ex.sets,
+      sessions: points.length,
+      firstWeight: first.topWeight,
+      latestWeight: latest.topWeight,
+      bestWeight: best,
+      lastTrained: latest.date,
+      change,
+      percent:
+        points.length > 1 && first.topWeight > 0
+          ? Math.round((change / first.topWeight) * 1000) / 10
+          : 0,
+      // A personal best set in the most recent session is worth surfacing.
+      isRecentPR: points.length > 1 && latest.topWeight >= best,
+    };
+  });
+
+  // Ranking progression needs at least two sessions to compare.
+  const comparable = exercises.filter((e) => e.sessions > 1);
+  const byChange = [...comparable].sort((a, b) => b.change - a.change || b.percent - a.percent);
+
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(now.getDate() - 30);
+  const recentSessions = new Set(
+    sets.filter((s) => s.session.date >= thirtyDaysAgo).map((s) => s.session.id)
+  );
+
+  const allDates = [...new Set(sets.map((s) => s.session.date.getTime()))].sort(
+    (a, b) => b - a
+  );
+
+  return {
+    totals: {
+      workouts: sessionIds.size,
+      sets: sets.length,
+      exercises: exercises.length,
+      lifetimeVolume,
+      last30Days: recentSessions.size,
+      lastWorkout: allDates.length ? new Date(allDates[0]) : null,
+    },
+    mostLogged: [...exercises].sort((a, b) => b.sets - a.sets).slice(0, 5),
+    mostProgressed: byChange.filter((e) => e.change > 0).slice(0, 5),
+    // Negative or flat first, so stalls surface rather than hide.
+    leastProgressed: [...byChange].reverse().filter((e) => e.change <= 0).slice(0, 5),
+    recentPRs: exercises
+      .filter((e) => e.isRecentPR)
+      .sort((a, b) => b.lastTrained - a.lastTrained)
+      .slice(0, 5),
+  };
+};

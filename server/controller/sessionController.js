@@ -190,6 +190,15 @@ exports.getLastPerformance = async (req, res) => {
   }
 };
 
+exports.getOverview = async (req, res) => {
+  try {
+    res.send(await db.getOverview(req.user.id));
+  } catch (error) {
+    console.error("Error building overview:", error);
+    res.status(500).send({ error: "Failed to build overview" });
+  }
+};
+
 exports.getWorkoutHistory = async (req, res) => {
   try {
     const history = await db.getWorkoutHistory(
