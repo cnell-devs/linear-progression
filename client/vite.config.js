@@ -22,8 +22,8 @@ export default defineConfig(({ mode }) => {
         registerType: "autoUpdate",
         includeAssets: ["icon.svg"],
         manifest: {
-          name: "Linear Progression",
-          short_name: "LP",
+          name: "OneRep",
+          short_name: "OneRep",
           description: "Track your lifts and progress over time.",
           start_url: "/",
           display: "standalone",

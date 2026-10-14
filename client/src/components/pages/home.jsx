@@ -13,7 +13,7 @@ export function Home() {
         <Nav />
         <div className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
           <div className="w-full max-w-2xl text-center">
-            <h1 className="mb-6 text-5xl font-bold">Linear Progression</h1>
+            <h1 className="mb-6 text-5xl font-bold">OneRep</h1>
             <p className="mb-8 text-xl text-gray-600">
               Track your workouts, build templates, and achieve your fitness
               goals with our simple and powerful workout tracking app.
@@ -40,13 +40,8 @@ export function Home() {
       <Nav />
       <div className="mx-auto max-w-2xl px-4 pb-24 pt-4">
         <div className="mb-6 text-center">
-          {/* Same plain-text treatment as the old title bar, scaled down.
-              The full name is kept for screen readers so they don't announce
-              the mark letter by letter. */}
-          <div className="mb-4 text-lg">
-            <span aria-hidden="true">LP</span>
-            <span className="sr-only">Linear Progression</span>
-          </div>
+          {/* Same plain-text treatment as the old title bar, scaled down. */}
+          <div className="mb-4 text-lg">OneRep</div>
           <h1 className="mb-2 text-3xl font-bold sm:text-4xl">Welcome back!</h1>
           <p className="text-base text-gray-600 sm:text-xl">
             Ready to continue your fitness journey?
