@@ -11,7 +11,8 @@ exports.searchGlobalWorkouts = async (req, res) => {
 
     const workouts = await userWorkoutQueries.searchGlobalWorkouts(
       query.trim(),
-      parseInt(limit)
+      parseInt(limit),
+      req.user?.id
     );
     res.send(workouts);
   } catch (error) {

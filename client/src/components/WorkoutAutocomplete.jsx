@@ -253,6 +253,13 @@ export function WorkoutAutocomplete({
                         {workout.name}
                       </div>
                       <div className="text-sm text-gray-500 flex items-center gap-2">
+                        {/* Distinguishes an exercise the user already owns
+                            from a catalog entry that still needs adding. */}
+                        {workout.source === "user" && (
+                          <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">
+                            Your exercise
+                          </span>
+                        )}
                         {workout.muscleGroup && (
                           <span className="bg-blue-100 px-2 py-1 rounded text-xs">
                             {workout.muscleGroup}

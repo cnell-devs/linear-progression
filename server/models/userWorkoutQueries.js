@@ -1,21 +1,58 @@
 const prisma = require("./prisma");
 
 // Search for global workouts by name with autocomplete
-exports.searchGlobalWorkouts = async (query, limit = 10) => {
+// Autocomplete source. Searches the shared catalog *and* the caller's own
+// exercises: a custom exercise that only exists as a UserWorkout was
+// previously invisible here, so adding it to a second template found nothing
+// and the user created a duplicate instead.
+//
+// Results are tagged: "user" entries already exist and are reused by id,
+// "global" entries still need a UserWorkout created from them.
+exports.searchGlobalWorkouts = async (query, limit = 10, userId = null) => {
   try {
-    const workouts = await prisma.globalWorkout.findMany({
+    const globals = await prisma.globalWorkout.findMany({
       where: {
-        name: {
-          contains: query,
-          mode: "insensitive",
-        },
-        isApproved: true, // Only show approved workouts
+        name: { contains: query, mode: "insensitive" },
+        isApproved: true,
       },
       take: limit,
-      orderBy: {
-        name: "asc",
-      },
+      orderBy: { name: "asc" },
     });
+
+    if (!userId) return globals.map((g) => ({ ...g, source: "global" }));
+
+    const mine = await prisma.userWorkout.findMany({
+      where: {
+        userId,
+        OR: [
+          { customName: { contains: query, mode: "insensitive" } },
+          { globalWorkout: { name: { contains: query, mode: "insensitive" } } },
+        ],
+      },
+      include: { globalWorkout: true },
+      take: limit,
+    });
+
+    // The user's own copy wins over the catalog entry it came from, so
+    // picking a result can never create a second UserWorkout for it.
+    const ownedGlobalIds = new Set(
+      mine.map((w) => w.globalWorkoutId).filter(Boolean)
+    );
+
+    const workouts = [
+      ...mine.map((w) => ({
+        id: w.id,
+        name: w.customName || w.globalWorkout?.name,
+        muscleGroup: w.globalWorkout?.muscleGroup,
+        equipment: w.globalWorkout?.equipment,
+        source: "user",
+      })),
+      ...globals
+        .filter((g) => !ownedGlobalIds.has(g.id))
+        .map((g) => ({ ...g, source: "global" })),
+    ]
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+      .slice(0, limit);
 
     return workouts;
   } catch (error) {
@@ -84,6 +121,26 @@ exports.createUserWorkout = async ({
         },
       });
     }
+
+    // Does this user already have an exercise by this name? Creating a second
+    // one is how duplicates appeared: the autocomplete could not surface a
+    // custom exercise, so the user retyped the name and got a new row with
+    // its history split across both.
+    const existingOwn = await prisma.userWorkout.findFirst({
+      where: {
+        userId,
+        OR: [
+          { customName: { equals: workoutName, mode: "insensitive" } },
+          {
+            globalWorkout: {
+              name: { equals: workoutName, mode: "insensitive" },
+            },
+          },
+        ],
+      },
+      include: { globalWorkout: true },
+    });
+    if (existingOwn) return existingOwn;
 
     // If no globalWorkoutId, check if a global workout with this name exists
     const existingGlobal = await prisma.globalWorkout.findFirst({

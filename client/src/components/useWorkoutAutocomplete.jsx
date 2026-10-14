@@ -7,7 +7,22 @@ export function useWorkoutAutocomplete(fetchWorkouts) {
 
   // Handle workout selection from autocomplete
   const handleWorkoutSelect = async (selectedWorkout, onWorkoutAdded) => {
-    console.log("handleWorkoutSelect called with:", selectedWorkout);
+    // Already one of the user's own exercises — reuse it. Creating anything
+    // here would fork its history across two rows.
+    if (selectedWorkout.source === "user") {
+      if (onWorkoutAdded) {
+        onWorkoutAdded({
+          id: selectedWorkout.id,
+          name: selectedWorkout.name,
+          sets: 3,
+          reps: "8-12",
+          amrap: false,
+          muscleGroup: selectedWorkout.muscleGroup,
+          equipment: selectedWorkout.equipment,
+        });
+      }
+      return;
+    }
 
     if (selectedWorkout.isCustom) {
       // Handle custom workout creation
