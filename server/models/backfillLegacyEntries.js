@@ -2,11 +2,11 @@
  * Converts pre-set-tracking WeightEntry rows into WorkoutSessions + WorkoutSets
  * so old history appears in History and Progress alongside new workouts.
  *
- * A WeightEntry recorded the top set's weight for an exercise on a given day,
- * within a three-working-set scheme, and never stored reps. Only the top set's
- * weight is known, so each entry becomes a single set — inventing the other two
- * sets' weights would be fabrication — recorded at TOP_SET_REPS reps, which is
- * how that top set was performed. Every imported session says so in its notes.
+ * A WeightEntry recorded one weight for an exercise on a given day and never
+ * stored reps. The program behind that data was three working sets of eight at
+ * the recorded weight, so each entry is reconstructed as IMPORT_SETS x
+ * IMPORT_REPS. That is an estimate, and every imported session says so in its
+ * notes: only the weight was actually recorded.
  *
  * Entries are skipped when a WorkoutSet already exists for that exercise on
  * that date, so running this after set-level data exists cannot duplicate it.
@@ -19,10 +19,11 @@ require("dotenv").config();
 
 const prisma = new PrismaClient();
 const APPLY = process.argv.includes("--apply");
-const TOP_SET_REPS = 3;
+const IMPORT_SETS = 3;
+const IMPORT_REPS = 8;
 const IMPORT_NOTE =
-  "Imported from weight-only history — the top set, recorded at " +
-  `${TOP_SET_REPS} reps.`;
+  "Imported from weight-only history — only the weight was recorded, " +
+  `estimated as ${IMPORT_SETS} sets of ${IMPORT_REPS} reps.`;
 
 const dateKey = (d) => new Date(d).toISOString().slice(0, 10);
 
@@ -95,15 +96,17 @@ async function main() {
         });
 
         await prisma.workoutSet.createMany({
-          data: group.map((entry) => ({
-            sessionId: session.id,
-            userWorkoutId: entry.userWorkoutId,
-            setNumber: 1,
-            weight: entry.weight,
-            reps: TOP_SET_REPS,
-            isWarmup: false,
-            completed: true,
-          })),
+          data: group.flatMap((entry) =>
+            Array.from({ length: IMPORT_SETS }, (_, i) => ({
+              sessionId: session.id,
+              userWorkoutId: entry.userWorkoutId,
+              setNumber: i + 1,
+              weight: entry.weight,
+              reps: IMPORT_REPS,
+              isWarmup: false,
+              completed: true,
+            }))
+          ),
         });
       }
 
