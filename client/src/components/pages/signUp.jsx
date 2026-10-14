@@ -22,11 +22,11 @@ export const SignUp = () => {
             onSubmit={(e) =>
               signup(e, email, username, password, setSent, setErrors)
             }
-            // className="mx-auto flex w-2/5 flex-1 flex-col content-center justify-center gap-2 "
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-2 w-2/5"
+            // className="mx-auto flex w-[min(92vw,24rem)] flex-1 flex-col content-center justify-center gap-2 "
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-2 w-[min(92vw,24rem)]"
           >
             <h1 className="mb-5 text-center font-bold">Create your account</h1>
-            <label className="input input-bordered flex items-center gap-2">
+            <label className="input input-bordered flex h-12 items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 16 16"
@@ -39,11 +39,11 @@ export const SignUp = () => {
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="grow"
+                className="grow text-base"
                 placeholder="Email"
               />
             </label>
-            <label className="input input-bordered flex items-center gap-2">
+            <label className="input input-bordered flex h-12 items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 16 16"
@@ -56,11 +56,11 @@ export const SignUp = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="grow"
+                className="grow text-base"
                 placeholder="Username"
               />
             </label>
-            <label className="input input-bordered flex items-center gap-2">
+            <label className="input input-bordered flex h-12 items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 16 16"
@@ -75,7 +75,7 @@ export const SignUp = () => {
               </svg>
               <input
                 type="text"
-                className="grow"
+                className="grow text-base"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -95,7 +95,7 @@ export const SignUp = () => {
             </div>
           </form>
         ) : (
-          <div className="absolute left-1/2 top-1/2 text-center w-2/5 -translate-x-1/2 -translate-y-1/2 text-3xl">
+          <div className="absolute left-1/2 top-1/2 text-center w-[min(92vw,24rem)] -translate-x-1/2 -translate-y-1/2 text-3xl">
             Verify your email address <br />
             Check your inbox
           </div>

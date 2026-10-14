@@ -45,12 +45,12 @@ export const Login = () => {
 
           <form
             onSubmit={handleSubmit}
-            className="absolute left-1/2 top-1/2 flex w-2/5 -translate-x-1/2 -translate-y-1/2 flex-col gap-2"
+            className="absolute left-1/2 top-1/2 flex w-[min(92vw,24rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2"
           >
             <h1 className="mb-5 text-center font-bold">
               Sign into your account
             </h1>
-            <label className="input input-bordered flex items-center gap-2">
+            <label className="input input-bordered flex h-12 items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 16 16"
@@ -63,11 +63,11 @@ export const Login = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="grow"
+                className="grow text-base"
                 placeholder="Username"
               />
             </label>
-            <label className="input input-bordered flex items-center gap-2">
+            <label className="input input-bordered flex h-12 items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 16 16"
@@ -82,7 +82,7 @@ export const Login = () => {
               </svg>
               <input
                 type="password"
-                className="grow"
+                className="grow text-base"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

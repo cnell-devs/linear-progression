@@ -35,13 +35,13 @@ export const ForgotPassword = () => {
           {!sent ? (
             <form
               onSubmit={handleSubmit}
-              //   className="mx-auto flex w-2/5 flex-1 flex-col content-center justify-center gap-2"
-              className="absolute left-1/2 top-1/2 flex w-2/5 -translate-x-1/2 -translate-y-1/2 flex-col gap-2"
+              //   className="mx-auto flex w-[min(92vw,24rem)] flex-1 flex-col content-center justify-center gap-2"
+              className="absolute left-1/2 top-1/2 flex w-[min(92vw,24rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2"
             >
               <h1 className="mb-5 text-center font-bold">
                 Enter your email address
               </h1>
-              <label className="input input-bordered flex items-center gap-2">
+              <label className="input input-bordered flex h-12 items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 16 16"
@@ -54,7 +54,7 @@ export const ForgotPassword = () => {
                   type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="grow"
+                  className="grow text-base"
                   placeholder="email"
                 />
               </label>
@@ -72,7 +72,7 @@ export const ForgotPassword = () => {
                 ))}
             </form>
           ) : (
-            <div className="absolute left-1/2 top-1/2 text-center w-2/5 -translate-x-1/2 -translate-y-1/2 text-3xl">
+            <div className="absolute left-1/2 top-1/2 text-center w-[min(92vw,24rem)] -translate-x-1/2 -translate-y-1/2 text-3xl">
               Recovery email sent <br />
               Check your registered email
             </div>

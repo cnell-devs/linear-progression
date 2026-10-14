@@ -14,7 +14,7 @@ export const Logout = () => {
 
   return (
     <>
-      <div className="mx-auto flex h-screen w-2/5 flex-1 flex-col content-center items-center justify-center gap-2">
+      <div className="mx-auto flex h-screen w-[min(92vw,24rem)] flex-1 flex-col content-center items-center justify-center gap-2">
         <p className="text-xl font-bold">Logging out...</p>
         <div className="material-icons animate-spin text-5xl">refresh</div>
       </div>

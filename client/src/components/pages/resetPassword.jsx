@@ -30,12 +30,12 @@ export const ResetPassword = () => {
           {!changed ? (
             <form
               onSubmit={handleSubmit}
-              className="absolute left-1/2 top-1/2 flex w-2/5 -translate-x-1/2 -translate-y-1/2 flex-col gap-2"
+              className="absolute left-1/2 top-1/2 flex w-[min(92vw,24rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2"
             >
               <h1 className="mb-5 text-center font-bold">
                 Enter your new password
               </h1>
-              <label className="input input-bordered flex items-center gap-2">
+              <label className="input input-bordered flex h-12 items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 16 16"
@@ -48,7 +48,7 @@ export const ResetPassword = () => {
                   type="text"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="grow"
+                  className="grow text-base"
                   placeholder="password"
                 />
               </label>
@@ -61,7 +61,7 @@ export const ResetPassword = () => {
               <div className="text-center text-red-600">{loginError}</div>
             </form>
           ) : (
-            <div className="absolute left-1/2 top-1/2 text-center w-2/5 -translate-x-1/2 -translate-y-1/2 text-3xl">
+            <div className="absolute left-1/2 top-1/2 text-center w-[min(92vw,24rem)] -translate-x-1/2 -translate-y-1/2 text-3xl">
               Password Changed!
             </div>
           )}
