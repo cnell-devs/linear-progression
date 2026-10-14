@@ -152,6 +152,7 @@ const CATALOG = [
   ["Side Plank", "core", "bodyweight"],
   ["Hanging Leg Raise", "core", "bodyweight"],
   ["Cable Crunch", "core", "cable"],
+  ["Weighted Crunch Machine", "core", "machine"],
   ["Ab Wheel Rollout", "core", "bodyweight"],
   ["Russian Twists", "core", "bodyweight"],
   ["Sit Ups", "core", "bodyweight"],
