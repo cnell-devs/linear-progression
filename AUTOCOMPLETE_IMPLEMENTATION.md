@@ -2,7 +2,7 @@
 
 ## Overview
 
-I've implemented a smart autocomplete/suggestion system for the Linear-PPL fitness application that allows users to search and add existing global workouts when creating or editing workout templates.
+I've implemented a smart autocomplete/suggestion system for the OneRep fitness application that allows users to search and add existing global workouts when creating or editing workout templates.
 
 ## Files Created/Modified
 

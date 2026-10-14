@@ -12,9 +12,18 @@ if (process.env.NODE_ENV === "development") {
   process.env.DATABASE_URL = process.env.DATABASE_URL_DEV;
 }
 
+// Extra origins can be supplied as a comma-separated ALLOWED_ORIGINS env var.
+// That matters for renaming the deployment: the hostname here is the live
+// frontend, so swapping it for a new name before that name exists would block
+// every real request. Adding the new origin by env lets both work during the
+// switch, with no code change and no outage window.
 const allowedOrigins = [
   "http://localhost:5173", // Local development
   "https://linear-progression.vercel.app", // Vercel production URL
+  ...(process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean),
 ];
 
 // In development only, accept any localhost port so the dev server can move

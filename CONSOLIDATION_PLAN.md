@@ -4,7 +4,7 @@
 
 ### Summary
 
-Successfully consolidated legacy entities in the linear-ppl codebase, removing technical debt and simplifying the database schema.
+Successfully consolidated legacy entities in the OneRep codebase, removing technical debt and simplifying the database schema.
 
 ## Final Results
 
