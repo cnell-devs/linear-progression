@@ -8,7 +8,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
   // Default API URL if not specified in .env
-  const apiUrl = env.VITE_API_URL || "http://localhost:3000";
+  const apiUrl =
+    env.VITE_API_URL ||
+    (mode === "production"
+      ? "https://onerep-fit-backend.vercel.app"
+      : "http://localhost:3000");
 
   console.log("Using API URL:", apiUrl);
 

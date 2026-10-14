@@ -1,4 +1,11 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// VITE_API_URL is baked in at build time. The fallback is environment-aware:
+// defaulting a deployed bundle to localhost can only fail, so production
+// falls back to the real API instead.
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? "https://onerep-fit-backend.vercel.app"
+    : "http://localhost:3000");
 
 // Single place that knows how to attach the token and unwrap an error body,
 // so callers can just await a parsed response or catch a real Error.

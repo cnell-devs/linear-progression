@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === "development") {
 // switch, with no code change and no outage window.
 const allowedOrigins = [
   "http://localhost:5173", // Local development
-  "https://linear-progression.vercel.app", // Vercel production URL
+  "https://onerep-fit.vercel.app", // Vercel production URL
   ...(process.env.ALLOWED_ORIGINS || "")
     .split(",")
     .map((o) => o.trim())
